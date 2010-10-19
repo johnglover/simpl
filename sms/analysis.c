@@ -222,6 +222,11 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
 		pSpectralPeaks->nPeaksFound = pAnalParams->ppFrames[iCurrentFrame]->nPeaks;
 		pSpectralPeaks->nPeaks = pAnalParams->peakParams.iMaxPeaks;
 		pSpectralPeaks->pSpectralPeaks = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks;
+        /* convert peak amps to mag */
+        for(i = 0; i < pSpectralPeaks->nPeaksFound; i++)
+        {
+            pSpectralPeaks->pSpectralPeaks[i].fMag = sms_dBToMag(pSpectralPeaks->pSpectralPeaks[i].fMag);
+        }
 		return pSpectralPeaks->nPeaksFound;
 	}
 	else
@@ -253,8 +258,8 @@ void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, float* amps,
 
 	for(i = 0; i < numamps; i++)
 	{
-		/* copy current peaks to the previous frame's peaks */
-		currentFrame->pSpectralPeaks[i].fMag = amps[i];
+		/* copy current peaks data */
+		currentFrame->pSpectralPeaks[i].fMag = sms_magToDB(amps[i]);
 		currentFrame->pSpectralPeaks[i].fFreq = freqs[i];
 		currentFrame->pSpectralPeaks[i].fPhase = phases[i];
 	}

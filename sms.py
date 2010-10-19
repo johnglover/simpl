@@ -15,8 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import simpl
-import pysms 
-import numpy as np
+import simpl.pysms as pysms
 
 class SMSPeakDetection(simpl.PeakDetection):
     "Sinusoidal peak detection using SMS"
@@ -173,7 +172,6 @@ class SMSPeakDetection(simpl.PeakDetection):
         pos = 0
         self._analysis_params.iSizeSound = len(audio)
         while pos < len(audio):
-            print pos, self.frame_size, self._analysis_params.sizeNextRead, len(audio)
             # change frame size based on sizeNextRead
             if not self.static_frame_size:
                 if pos + self.frame_size < len(audio):

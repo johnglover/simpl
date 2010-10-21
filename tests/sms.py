@@ -24,7 +24,7 @@ import numpy as np
 FLOAT_PRECISION = 3 # number of decimal places to check for accuracy
 input_file = 'audio/flute.wav'
 audio_in_data = read(input_file)
-audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
 sampling_rate = audio_in_data[0]
 frame_size = 2048
 hop_size = 256

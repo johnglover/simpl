@@ -45,20 +45,20 @@ class FFT : public SndObj {
   int m_halfsize; // 1/2 fftsize
   int *m_counter; // counter 
   rfftw_plan m_plan; // FFTW initialisation
-  float m_fund;
+  double m_fund;
 
-  float m_scale; // scaling factor
-  float m_norm;  // norm factor
+  double m_scale; // scaling factor
+  double m_norm;  // norm factor
   int m_frames;  // frame overlaps
-  float** m_sigframe; // signal frames
-  float* m_ffttmp; // tmp vector for fft transform
+  double** m_sigframe; // signal frames
+  double* m_ffttmp; // tmp vector for fft transform
   int m_cur;    // index into current frame 
 
   Table*  m_table; // window
 
  private:
   // fft wrapper method
-  void inline fft(float* signal);
+  void inline fft(double* signal);
 
   // reset memory and initialisation
   void ReInit();
@@ -66,9 +66,9 @@ class FFT : public SndObj {
  public:
 
   FFT();
-  FFT(Table* window, SndObj* input, float scale=1.f, 
+  FFT(Table* window, SndObj* input, double scale=1.f, 
       int fftsize=DEF_FFTSIZE, int hopsize=DEF_VECSIZE,
-      float m_sr=DEF_SR);
+      double m_sr=DEF_SR);
 
   ~FFT();
   
@@ -76,8 +76,8 @@ class FFT : public SndObj {
   int GetHopSize() { return m_hopsize; }
   void SetWindow(Table* window){ m_table = window;}
   int Connect(char* mess, void* input);
-  int Set(char* mess, float value);
-  void SetScale(float scale){ m_scale = scale; m_norm = m_fftsize/m_scale;}
+  int Set(char* mess, double value);
+  void SetScale(double scale){ m_scale = scale; m_norm = m_fftsize/m_scale;}
   virtual void SetFFTSize(int fftsize);
   virtual void SetHopSize(int hopsize);
 

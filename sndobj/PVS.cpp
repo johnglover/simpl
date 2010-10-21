@@ -31,20 +31,20 @@
 
 PVS::PVS(){
   m_rotcount = m_vecsize;
-  m_phases = new float[m_halfsize];
-  memset(m_phases, 0, sizeof(float)*m_halfsize);
+  m_phases = new double[m_halfsize];
+  memset(m_phases, 0, sizeof(double)*m_halfsize);
   m_factor = (m_hopsize*TWOPI)/m_sr;
   m_first = true;
 }
 
 PVS::PVS(Table* window, SndObj* input, int fftsize,
-	 int hopsize, float sr)
+	 int hopsize, double sr)
   :IFFT(window, input,fftsize,hopsize,sr)
 {
   m_rotcount = m_vecsize;
   if(m_halfsize){
-    m_phases = new float[m_halfsize];
-    memset(m_phases, 0, sizeof(float)*m_halfsize);
+    m_phases = new double[m_halfsize];
+    memset(m_phases, 0, sizeof(double)*m_halfsize);
   }
   m_factor = (m_hopsize*TWOPI)/m_sr;
   m_first = true;
@@ -57,7 +57,7 @@ PVS::~PVS(){
 
 
 int
-PVS::Set(char* mess, float value){
+PVS::Set(char* mess, double value){
 	
   switch(FindMsg(mess)){
 		
@@ -89,7 +89,7 @@ PVS::SetHopSize(int hopsize){
 }
 
 void
-PVS::pvsynthesis(float* signal){
+PVS::pvsynthesis(double* signal){
   double pha;
   int i2;
 	
@@ -113,7 +113,7 @@ PVS::DoProcess(){
   if(!m_error){
     if(m_input){
       if(m_enable){
-	int i; float out = 0.;
+	int i; double out = 0.;
 	// phase vocoder synthesis
 				
 	if(m_first) {
@@ -138,7 +138,7 @@ PVS::DoProcess(){
 	  }
 	  m_rotcount++;
 	  // output it.
-	  m_output[m_vecpos] = (float) out;
+	  m_output[m_vecpos] = (double) out;
 	  out = 0.;	   
 	}
 	m_rotcount %= m_fftsize;

@@ -45,7 +45,7 @@ int sms_prepSine (int nTableSize)
         register int i;
         sfloat fTheta;
   
-        if((sms_tab_sine = (sfloat *)malloc(nTableSize*sizeof(float))) == 0)
+        if((sms_tab_sine = (sfloat *)malloc(nTableSize*sizeof(sfloat))) == 0)
                 return (SMS_MALLOC);
         fSineScale =  (sfloat)(TWO_PI) / (sfloat)(nTableSize - 1);
         fSineIncr = 1.0 / fSineScale;
@@ -110,7 +110,7 @@ int sms_prepSinc (int nTableSize)
         sfloat fTheta = -4.0 * TWO_PI / N;
         sfloat fThetaIncr = (8.0 * TWO_PI / N) / (nTableSize);
 
-        if((sms_tab_sinc = (sfloat *) calloc (nTableSize, sizeof(float))) == 0)
+        if((sms_tab_sinc = (sfloat *) calloc (nTableSize, sizeof(sfloat))) == 0)
                 return (SMS_MALLOC);
         
         for(i = 0; i < nTableSize; i++) 

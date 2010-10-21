@@ -80,7 +80,7 @@ void sms_freeModify(SMS_ModifyParams *params)
  *
  * The values in env2 are overwritten by the new interpolated envelope values.
  */
-void sms_interpEnvelopes(int sizeEnv, sfloat *env1, sfloat *env2, float interpFactor)
+void sms_interpEnvelopes(int sizeEnv, sfloat *env1, sfloat *env2, sfloat interpFactor)
 {
         if(sizeEnv <= 0)
         {       
@@ -88,7 +88,7 @@ void sms_interpEnvelopes(int sizeEnv, sfloat *env1, sfloat *env2, float interpFa
         }
         
         int i;
-        float amp1, amp2;
+        sfloat amp1, amp2;
         
         for(i = 0; i < sizeEnv; i++)
         {
@@ -113,7 +113,7 @@ void sms_applyEnvelope(int numPeaks, sfloat *pFreqs, sfloat *pMags, int sizeEnv,
         }
 
 	int i, envPos;
-        float frac, binSize = (float)maxFreq / (float)sizeEnv;
+    sfloat frac, binSize = (sfloat)maxFreq / (sfloat)sizeEnv;
         
         for(i = 0; i < numPeaks; i++)
 	{

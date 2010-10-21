@@ -86,7 +86,15 @@ class SndObjPeakDetection(simpl.PeakDetection):
             p.amplitude = self._analysis.Output(i*3)
             p.frequency = self._analysis.Output((i*3)+1)
             p.phase = self._analysis.Output((i*3)+2)
-            current_peaks.append(p)
+            if not current_peaks:
+                current_peaks.append(p)
+            else:
+                if np.abs(p.frequency - current_peaks[-1].frequency) > self._min_peak_separation:
+                    current_peaks.append(p)
+                else:
+                    if p.amplitude > current_peaks[-1].amplitude:
+                        current_peaks.remove(current_peaks[-1])
+                        current_peaks.append(p)
         return current_peaks
     
 
@@ -108,9 +116,9 @@ class SndObjPartialTracking(simpl.PartialTracking):
         frame_partials = []
         # load Peak amplitudes, frequencies and phases into arrays
         num_peaks = len(frame)
-        amps = np.zeros(num_peaks, dtype=np.float32)
-        freqs = np.zeros(num_peaks, dtype=np.float32)
-        phases = np.zeros(num_peaks, dtype=np.float32)
+        amps = simpl.zeros(num_peaks)
+        freqs = simpl.zeros(num_peaks)
+        phases = simpl.zeros(num_peaks)
         for i in range(num_peaks):
             peak = frame[i]
             amps[i] = peak.amplitude
@@ -146,16 +154,24 @@ class SimplSndObjAnalysisWrapper(pysndobj.SinAnal):
     data to the SndObj synthesis objects."""
     def __init__(self):
         pysndobj.SinAnal.__init__(self)
-        self.peaks = None
+        self.peaks = []
         
     def GetTracks(self):
         return len(self.peaks)
 
     def GetTrackID(self, partial_number):
-        return self.peaks[partial_number].partial_id
+        if partial_number < len(self.peaks):
+            return self.peaks[partial_number].partial_id
+        else:
+            # TODO: what should this return if no matching partial found?
+            return 0
         
     def Output(self, position):
         peak = int(position) / 3
+        if peak > len(self.peaks):
+            # TODO: what should this return if no matching partial found?
+            return 0.0
+
         data_field = int(position) % 3
         if data_field is 0:
             return self.peaks[peak].amplitude
@@ -179,12 +195,12 @@ class SndObjSynthesis(simpl.Synthesis):
                                           self._table, 1, self.hop_size)
         else:
             raise Exception("UnknownSynthesisType")
-        self._current_frame = np.zeros(self.hop_size, dtype=np.float32)
+        self._current_frame = simpl.zeros(self.hop_size)
         
     def set_hop_size(self, hop_size):
         self._synth.SetVectorSize(hop_size)
         self._hop_size = hop_size
-        self._current_frame = np.zeros(hop_size, dtype=np.float32)
+        self._current_frame = simpl.zeros(hop_size)
         
     def set_max_partials(self, num_partials):
         self._synth.Set('max tracks', num_partials)
@@ -194,8 +210,7 @@ class SndObjSynthesis(simpl.Synthesis):
         "Synthesises a frame of audio, given a list of peaks from tracks"
         self._analysis.peaks = peaks
         if len(peaks) > self._max_partials:
-            self._synth.Set('max tracks', len(peaks))
-            self._max_partials = len(peaks)
+            self.max_partials = len(peaks)
         self._synth.DoProcess()
         self._synth.PopOut(self._current_frame)
         return self._current_frame
@@ -229,3 +244,4 @@ class SndObjSynthesis(simpl.Synthesis):
             current_partials = [partial for partial in current_partials if partial]
             
         return audio_out
+

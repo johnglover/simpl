@@ -211,7 +211,7 @@ static int StocSynthApprox (SMS_Data *pSmsData, SMS_SynthParams *pSynthParams)
         int sizeSpec1 = pSmsData->nCoeff;
         int sizeSpec2 = pSynthParams->sizeHop;
         int sizeFft = pSynthParams->sizeHop << 1; /* 50% overlap, so sizeFft is 2x sizeHop */
-        float fStocGain;
+        sfloat fStocGain;
         /* if no gain or no coefficients return  */
         if (*(pSmsData->pFStocGain) <= 0)
                 return 0;

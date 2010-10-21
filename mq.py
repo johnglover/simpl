@@ -62,7 +62,6 @@ class MQPeakDetection(simpl.PeakDetection):
                 current_mag > next_mag):
                 p = simpl.Peak()
                 p.amplitude = current_mag
-                p.bin_number = bin - 1
                 p.frequency = (bin - 1) * self._fundamental
                 p.phase = np.angle(spectrum[bin-1])
                 current_peaks.append(p)

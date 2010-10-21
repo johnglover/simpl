@@ -201,7 +201,7 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
 	pAnalParams->sizeNextRead = (pAnalParams->iDefaultSizeWindow + 1) * 0.5; /* \todo REMOVE THIS from other files first */
 
 	/* sound buffer */
-	if ((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(float))) == NULL)
+	if ((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(sfloat))) == NULL)
 	{
 		sms_error("could not allocate memory");
 		return(-1);
@@ -234,7 +234,7 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
   
 	/* deterministic synthesis buffer */
 	pSynthBuf->sizeBuffer = pAnalParams->sizeHop << 1;
-	if((pSynthBuf->pFBuffer = (sfloat *)calloc(pSynthBuf->sizeBuffer, sizeof(float))) == NULL)
+	if((pSynthBuf->pFBuffer = (sfloat *)calloc(pSynthBuf->sizeBuffer, sizeof(sfloat))) == NULL)
 	{
 		sms_error("could not allocate memory");
 		return(-1);
@@ -267,19 +267,19 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
 		}
 		(pAnalParams->pFrames[i].deterministic).nTracks = pAnalParams->nGuides;
 		if (((pAnalParams->pFrames[i].deterministic).pFSinFreq =
-		    (sfloat *)calloc (pAnalParams->nGuides, sizeof(float))) == NULL)
+		    (sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)
 		{
 			sms_error("could not allocate memory");
 			return(-1);
 		}
 		if (((pAnalParams->pFrames[i].deterministic).pFSinAmp =
-			(sfloat *)calloc (pAnalParams->nGuides, sizeof(float))) == NULL)
+			(sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)
 		{
 			sms_error("could not allocate memory");
 			return(-1);
 		}
 		if (((pAnalParams->pFrames[i].deterministic).pFSinPha =
-	        (sfloat *) calloc (pAnalParams->nGuides, sizeof(float))) == NULL)
+	        (sfloat *) calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)
 		{
 			sms_error("could not allocate memory");
 			return(-1);
@@ -303,10 +303,10 @@ void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams)
 			pAnalParams->nStochasticCoeff = sms_power2(pAnalParams->sizeHop);
 
 	/* sound buffer */
-	if ((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(float))) == NULL)
+	if ((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(sfloat))) == NULL)
 	{
 		sms_error("could not allocate memory");
-		return(-1);
+		return;
 	}
 	pSoundBuf->iMarker = -sizeBuffer;
 	pSoundBuf->iFirstGood = sizeBuffer;
@@ -314,10 +314,10 @@ void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams)
 
 	/* deterministic synthesis buffer */
 	pSynthBuf->sizeBuffer = pAnalParams->sizeHop << 1;
-	if((pSynthBuf->pFBuffer = (sfloat *)calloc(pSynthBuf->sizeBuffer, sizeof(float))) == NULL)
+	if((pSynthBuf->pFBuffer = (sfloat *)calloc(pSynthBuf->sizeBuffer, sizeof(sfloat))) == NULL)
 	{
 		sms_error("could not allocate memory");
-		return(-1);
+		return;
 	}
 	pSynthBuf->iMarker = -sizeBuffer;
 	pSynthBuf->iMarker = pSynthBuf->sizeBuffer;
@@ -379,9 +379,9 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
 	}
 	sizeFft = sizeHop * 2;
 
-	pSynthParams->pFStocWindow =(sfloat *) calloc(sizeFft, sizeof(float));
+	pSynthParams->pFStocWindow =(sfloat *) calloc(sizeFft, sizeof(sfloat));
 	sms_getWindow( sizeFft, pSynthParams->pFStocWindow, SMS_WIN_HANNING );
-	pSynthParams->pFDetWindow = (sfloat *) calloc(sizeFft, sizeof(float));
+	pSynthParams->pFDetWindow = (sfloat *) calloc(sizeFft, sizeof(sfloat));
 	sms_getWindow( sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT );
 
 	/* allocate memory for analysis data - size of original hopsize */
@@ -391,10 +391,10 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
                    pSynthParams->nStochasticCoeff + 1, 1,
                    pSynthParams->iStochasticType, 0);
 
-	pSynthParams->pSynthBuff = (sfloat *) calloc(sizeFft, sizeof(float));
-	pSynthParams->pMagBuff = (sfloat *) calloc(sizeHop, sizeof(float));
-	pSynthParams->pPhaseBuff = (sfloat *) calloc(sizeHop, sizeof(float));
-	pSynthParams->pSpectra = (sfloat *) calloc(sizeFft, sizeof(float));
+	pSynthParams->pSynthBuff = (sfloat *) calloc(sizeFft, sizeof(sfloat));
+	pSynthParams->pMagBuff = (sfloat *) calloc(sizeHop, sizeof(sfloat));
+	pSynthParams->pPhaseBuff = (sfloat *) calloc(sizeHop, sizeof(sfloat));
+	pSynthParams->pSpectra = (sfloat *) calloc(sizeFft, sizeof(sfloat));
 
 	/* set/check modification parameters */
 //	pSynthParams->modParams.maxFreq = pSmsHeader->iMaxFreq;
@@ -406,15 +406,15 @@ int sms_changeSynthHop( SMS_SynthParams *pSynthParams, int sizeHop)
 {
         int sizeFft = sizeHop * 2;
 
-        pSynthParams->pSynthBuff = (sfloat *) realloc(pSynthParams->pSynthBuff, sizeFft * sizeof(float));
-        pSynthParams->pSpectra = (sfloat *) realloc(pSynthParams->pSpectra, sizeFft * sizeof(float));
-        pSynthParams->pMagBuff = (sfloat *) realloc(pSynthParams->pMagBuff, sizeHop * sizeof(float));
-        pSynthParams->pPhaseBuff = (sfloat *) realloc(pSynthParams->pPhaseBuff, sizeHop * sizeof(float));
+        pSynthParams->pSynthBuff = (sfloat *) realloc(pSynthParams->pSynthBuff, sizeFft * sizeof(sfloat));
+        pSynthParams->pSpectra = (sfloat *) realloc(pSynthParams->pSpectra, sizeFft * sizeof(sfloat));
+        pSynthParams->pMagBuff = (sfloat *) realloc(pSynthParams->pMagBuff, sizeHop * sizeof(sfloat));
+        pSynthParams->pPhaseBuff = (sfloat *) realloc(pSynthParams->pPhaseBuff, sizeHop * sizeof(sfloat));
         pSynthParams->pFStocWindow = 
-		(sfloat *) realloc(pSynthParams->pFStocWindow, sizeFft * sizeof(float));
+		(sfloat *) realloc(pSynthParams->pFStocWindow, sizeFft * sizeof(sfloat));
         sms_getWindow( sizeFft, pSynthParams->pFStocWindow, SMS_WIN_HANNING );
 	pSynthParams->pFDetWindow =
-		(sfloat *) realloc(pSynthParams->pFDetWindow, sizeFft * sizeof(float));
+		(sfloat *) realloc(pSynthParams->pFDetWindow, sizeFft * sizeof(sfloat));
         sms_getWindow( sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT );
 
         pSynthParams->sizeHop = sizeHop;

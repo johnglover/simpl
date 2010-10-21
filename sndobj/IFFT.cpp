@@ -40,16 +40,16 @@ IFFT::IFFT(){
   m_fftsize = DEF_FFTSIZE;
   m_frames = m_fftsize/m_hopsize;
 
-  m_sigframe = new float*[m_frames];
-  m_ffttmp = new float[m_fftsize];
+  m_sigframe = new double*[m_frames];
+  m_ffttmp = new double[m_fftsize];
   m_counter = new int[m_frames];
   m_halfsize = m_fftsize/2;
   m_fund = m_sr/m_fftsize;
   int i;
-  memset(m_ffttmp, 0, m_fftsize*sizeof(float));
+  memset(m_ffttmp, 0, m_fftsize*sizeof(double));
   for(i = 0; i < m_frames; i++){
-    m_sigframe[i] = new float[m_fftsize];
-    memset(m_sigframe[i], 0, m_fftsize*sizeof(float));
+    m_sigframe[i] = new double[m_fftsize];
+    memset(m_sigframe[i], 0, m_fftsize*sizeof(double));
     m_counter[i] = i*m_hopsize;
   }
 
@@ -63,7 +63,7 @@ IFFT::IFFT(){
 }
 
 IFFT::IFFT(Table* window, SndObj* input, int fftsize, int hopsize,
-	   float sr):
+	   double sr):
   SndObj(input,hopsize, sr)
 {
 	
@@ -75,16 +75,16 @@ IFFT::IFFT(Table* window, SndObj* input, int fftsize, int hopsize,
   if(m_fftsize){
     m_frames = m_fftsize/m_hopsize;
 
-    m_sigframe = new float*[m_frames];
-    m_ffttmp = new float[m_fftsize];
+    m_sigframe = new double*[m_frames];
+    m_ffttmp = new double[m_fftsize];
     m_counter = new int[m_frames];
     m_halfsize = m_fftsize/2;
     m_fund = m_sr/m_fftsize;
-    memset(m_ffttmp, 0, m_fftsize*sizeof(float));
+    memset(m_ffttmp, 0, m_fftsize*sizeof(double));
     int i;
     for(i = 0; i < m_frames; i++){
-      m_sigframe[i] = new float[m_fftsize];
-      memset(m_sigframe[i], 0, m_fftsize*sizeof(float));
+      m_sigframe[i] = new double[m_fftsize];
+      memset(m_sigframe[i], 0, m_fftsize*sizeof(double));
       m_counter[i] = i*m_hopsize;
     }
 		
@@ -131,7 +131,7 @@ IFFT::ReInit(){
   delete[] m_ffttmp;
   delete[] m_output;
 
-  if(!(m_output = new float[m_vecsize])){
+  if(!(m_output = new double[m_vecsize])){
     m_error = 1;
 #ifdef DEBUG
     cout << ErrorMessage();
@@ -141,15 +141,15 @@ IFFT::ReInit(){
 
 
   m_frames = m_fftsize/m_hopsize;
-  m_sigframe = new float*[m_frames];
-  m_ffttmp = new float[m_fftsize];
+  m_sigframe = new double*[m_frames];
+  m_ffttmp = new double[m_fftsize];
   m_counter = new int[m_frames];
   m_halfsize = m_fftsize/2;
   m_fund = m_sr/m_fftsize;
   int i;
   for(i = 0; i < m_frames; i++){
-    m_sigframe[i] = new float[m_fftsize];
-    memset(m_sigframe[i], 0, m_fftsize*sizeof(float));
+    m_sigframe[i] = new double[m_fftsize];
+    memset(m_sigframe[i], 0, m_fftsize*sizeof(double));
     m_counter[i] = i*m_hopsize;
   }
 
@@ -160,7 +160,7 @@ IFFT::ReInit(){
 
 
 int
-IFFT::Set(char* mess, float value){
+IFFT::Set(char* mess, double value){
 
   switch(FindMsg(mess)){
 
@@ -201,7 +201,7 @@ IFFT::DoProcess(){
   if(!m_error){
     if(m_input && m_table){
       if(m_enable){
-	int i; float out = 0.;  	  	  
+	int i; double out = 0.;  	  	  
 	// Put the input fftframe into
 	// the current (free) signal frame
 	// and transform it
@@ -218,7 +218,7 @@ IFFT::DoProcess(){
 	    m_counter[i]++;
 	  }
 	  // output it.
-	  m_output[m_vecpos] = (float) out;
+	  m_output[m_vecpos] = (double) out;
 	  out = 0.;	   
 	}
 
@@ -241,7 +241,7 @@ IFFT::DoProcess(){
 
 
 void 
-IFFT::ifft(float* signal) {
+IFFT::ifft(double* signal) {
 
   // get input FFT frame and
   // prepare data for fftw

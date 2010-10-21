@@ -37,7 +37,7 @@ extern "C" {
  * flag directly 
  */
 /* #undef  FFTW_ENABLE_FLOAT*/
-#define FFTW_ENABLE_FLOAT
+//#define FFTW_ENABLE_FLOAT
 
 /* our real numbers */
 #ifdef FFTW_ENABLE_FLOAT

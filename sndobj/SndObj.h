@@ -44,7 +44,7 @@ class  SndIO;
 const double PI = 4.*atan(1.);
 const int DEF_FFTSIZE = 1024;
 const int DEF_VECSIZE = 256;
-const float DEF_SR = 44100.f;
+const double DEF_SR = 44100.f;
 
 struct msg_link {
   string msg;
@@ -56,9 +56,9 @@ class SndObj {
 
  protected:
 
-  float* m_output; // output samples
+  double* m_output; // output samples
   SndObj* m_input; // input object
-  float  m_sr;    // sampling rate
+  double  m_sr;    // sampling rate
   int    m_vecsize; //vector size
   int    m_vecpos; // vector pos counter
   int    m_vecsize_max; // for limiting operation
@@ -72,9 +72,9 @@ class SndObj {
   void AddMsg(const char* mess, int ID);
 
 #if defined (WIN) && !defined(GCC)
-  int Ftoi(float x){
+  int Ftoi(double x){
     union {
-      float   f;
+      double   f;
       int     i;
     } u;
     unsigned int  tmp;
@@ -107,8 +107,8 @@ class SndObj {
     return temp;
   }
 #else 
-  int Ftoi(float fval) { return (int) fval; }
   int Ftoi(double fval) { return (int) fval; }
+  int Ftoi(float fval) { return (int) fval; }
 #endif
 
  public:
@@ -142,17 +142,17 @@ class SndObj {
     return *this;
   }
 
-  SndObj& operator+=(float val){
+  SndObj& operator+=(double val){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]+val;
     return *this;
   }
  
-  SndObj& operator-=(float val){
+  SndObj& operator-=(double val){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]-val;
     return *this;
   }
   
-  SndObj& operator*=(float val){
+  SndObj& operator*=(double val){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]*val;
     return *this;
   }
@@ -175,30 +175,30 @@ class SndObj {
     return temp;
   }
 
-  SndObj operator+(float val){
+  SndObj operator+(double val){
     SndObj temp(0, m_vecsize, m_sr);
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]+val;
     return temp;
   }
  
-  SndObj operator-(float val){
+  SndObj operator-(double val){
     SndObj temp(0, m_vecsize, m_sr);
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]-val;
     return temp;
   }
 
-  SndObj operator*(float val){
+  SndObj operator*(double val){
     SndObj temp(0, m_vecsize, m_sr);
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]*val;
     return temp;
   } 
 
-  void operator<<(float val){        
+  void operator<<(double val){        
     if(m_vecpos >= m_vecsize) m_vecpos=0;
     m_output[m_vecpos++] = val;
   }
 
-  void operator<<(float* vector){
+  void operator<<(double* vector){
     for(m_vecpos=0;m_vecpos<m_vecsize;m_vecpos++)
       m_output[m_vecpos] = vector[m_vecpos];
   }
@@ -208,7 +208,7 @@ class SndObj {
 
 #endif 
 
-  int PushIn(float *in_vector, int size){
+  int PushIn(double *in_vector, int size){
     for(int i = 0; i<size; i++){
       if(m_vecpos >= m_vecsize) m_vecpos = 0;
       m_output[m_vecpos++] = in_vector[i];
@@ -216,7 +216,7 @@ class SndObj {
     return m_vecpos;
   }
 
-  int PopOut(float *out_vector, int size){
+  int PopOut(double *out_vector, int size){
     for(int i = 0; i<size; i++){
       if(m_altvecpos >= m_vecsize) m_altvecpos = 0;
       out_vector[i] = m_output[m_altvecpos++]; 
@@ -225,7 +225,7 @@ class SndObj {
   }
 
 
-  int AddOut(float *vector, int size){
+  int AddOut(double *vector, int size){
     for(int i = 0; i<size; i++){
       if(m_altvecpos >= m_vecsize) m_altvecpos = 0;
       vector[i] += m_output[m_altvecpos++]; 
@@ -237,7 +237,7 @@ class SndObj {
   void   GetMsgList(string* list);
   void   Enable(){ m_enable = 1;  }
   void   Disable(){ m_enable = 0; }
-  virtual float  Output(int pos){ return m_output[pos%m_vecsize];}
+  virtual double  Output(int pos){ return m_output[pos%m_vecsize];}
 
   int GetVectorSize() { return m_vecsize; } 
   void SetVectorSize(int vecsize);
@@ -246,9 +246,9 @@ class SndObj {
                  m_vecsize = limit; 
   }
   void RestoreVectorSize(){ m_vecsize = m_vecsize_max; }
-  float  GetSr(){ return m_sr;}
-  virtual void SetSr(float sr){ m_sr = sr;}
-  virtual int Set(char* mess, float value);
+  double  GetSr(){ return m_sr;}
+  virtual void SetSr(double sr){ m_sr = sr;}
+  virtual int Set(char* mess, double value);
   virtual int Connect(char* mess, void* input);
 
  
@@ -258,7 +258,7 @@ class SndObj {
  
   SndObj* GetInput(){ return m_input; }
 
-  SndObj(SndObj* input, int vecsize = DEF_VECSIZE, float sr = DEF_SR);
+  SndObj(SndObj* input, int vecsize = DEF_VECSIZE, double sr = DEF_SR);
   SndObj();
 #if !defined (SWIGPYTHON) && !defined(SWIGCFFI)
   SndObj(SndObj& obj);

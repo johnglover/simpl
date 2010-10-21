@@ -45,8 +45,8 @@ SinAnal::SinAnal(){
 	AddMsg("threshold", 22);
 }
 
-SinAnal::SinAnal(SndObj* input, float threshold, int maxtracks, 
-				 int minpoints, int maxgap, float sr)
+SinAnal::SinAnal(SndObj* input, double threshold, int maxtracks, 
+				 int minpoints, int maxgap, double sr)
 				 :SndObj(input,maxtracks*3,sr){
 
 	m_minpoints = (minpoints > 1 ? minpoints : 1) - 1;
@@ -59,20 +59,20 @@ SinAnal::SinAnal(SndObj* input, float threshold, int maxtracks,
 	m_numpeaks = 0;
 	m_numbins = ((FFT *)m_input)->GetFFTSize()/2 + 1;
 	
-	m_bndx = new float*[minpoints+2];
-	m_pkmags = new float*[minpoints+2];
-	m_adthresh = new float*[minpoints+2];
+	m_bndx = new double*[minpoints+2];
+	m_pkmags = new double*[minpoints+2];
+	m_adthresh = new double*[minpoints+2];
 	m_tstart = new unsigned int*[minpoints+2];
 	m_lastpk = new unsigned int*[minpoints+2];
 	m_trkid = new unsigned int*[minpoints+2];
 	int i;
 	for(i=0; i<minpoints+2; i++){
-		m_bndx[i] = new float[m_maxtracks];
-		memset(m_bndx[i],0,sizeof(float)*m_maxtracks);
-		m_pkmags[i] = new float[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(float)*m_maxtracks);
-		m_adthresh[i] = new float[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(float)*m_maxtracks);
+		m_bndx[i] = new double[m_maxtracks];
+		memset(m_bndx[i],0,sizeof(double)*m_maxtracks);
+		m_pkmags[i] = new double[m_maxtracks];
+		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
+		m_adthresh[i] = new double[m_maxtracks];
+		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
 		m_tstart[i] = new unsigned int[m_maxtracks];
         memset(m_tstart[i],0,sizeof(unsigned int)*m_maxtracks);
 		m_lastpk[i] = new unsigned int[m_maxtracks];
@@ -82,29 +82,29 @@ SinAnal::SinAnal(SndObj* input, float threshold, int maxtracks,
 		
 	}
 	
-	m_bins = new float[m_maxtracks];
-	memset(m_bins, 0, sizeof(float) * m_maxtracks);
+	m_bins = new double[m_maxtracks];
+	memset(m_bins, 0, sizeof(double) * m_maxtracks);
 	m_trndx = new int[m_maxtracks];
 	memset(m_trndx, 0, sizeof(int) * m_maxtracks);
 	m_contflag = new bool[m_maxtracks];
 	memset(m_contflag, 0, sizeof(bool) * m_maxtracks);
 
-	m_phases = new float[m_numbins];
-	memset(m_phases, 0, sizeof(float) * m_numbins);
-	m_freqs = new float[m_numbins];
-	memset(m_freqs, 0, sizeof(float) * m_numbins);
-	m_mags = new float[m_numbins];
-	memset(m_mags, 0, sizeof(float) * m_numbins);
+	m_phases = new double[m_numbins];
+	memset(m_phases, 0, sizeof(double) * m_numbins);
+	m_freqs = new double[m_numbins];
+	memset(m_freqs, 0, sizeof(double) * m_numbins);
+	m_mags = new double[m_numbins];
+	memset(m_mags, 0, sizeof(double) * m_numbins);
 
-	m_binmax = new float[m_numbins];
-	memset(m_binmax, 0, sizeof(float) * m_numbins);
-	m_magmax = new float[m_numbins];
-	memset(m_magmax, 0, sizeof(float) * m_numbins);
-	m_diffs = new float[m_numbins];
-	memset(m_diffs, 0, sizeof(float) * m_numbins);
+	m_binmax = new double[m_numbins];
+	memset(m_binmax, 0, sizeof(double) * m_numbins);
+	m_magmax = new double[m_numbins];
+	memset(m_magmax, 0, sizeof(double) * m_numbins);
+	m_diffs = new double[m_numbins];
+	memset(m_diffs, 0, sizeof(double) * m_numbins);
 	
 	m_maxix = new int[m_numbins];
-	memset(m_maxix, 0, sizeof(float) * m_numbins);
+	memset(m_maxix, 0, sizeof(double) * m_numbins);
 	m_timecount = 0;
 	
 	m_phases[0] = 0.f;
@@ -120,8 +120,8 @@ SinAnal::SinAnal(SndObj* input, float threshold, int maxtracks,
 	
 }
 
-SinAnal::SinAnal(SndObj* input, int numbins, float threshold, int maxtracks,
-				 int minpoints, int maxgap, float sr)
+SinAnal::SinAnal(SndObj* input, int numbins, double threshold, int maxtracks,
+				 int minpoints, int maxgap, double sr)
 				 :SndObj(input,maxtracks*3,sr){
 
 	m_minpoints = (minpoints > 1 ? minpoints : 1) - 1;
@@ -134,20 +134,20 @@ SinAnal::SinAnal(SndObj* input, int numbins, float threshold, int maxtracks,
 	m_numpeaks = 0;
 	m_numbins = numbins;
 
-	m_bndx = new float*[minpoints+2];
-	m_pkmags = new float*[minpoints+2];
-	m_adthresh = new float*[minpoints+2];
+	m_bndx = new double*[minpoints+2];
+	m_pkmags = new double*[minpoints+2];
+	m_adthresh = new double*[minpoints+2];
 	m_tstart = new unsigned int*[minpoints+2];
 	m_lastpk = new unsigned int*[minpoints+2];
 	m_trkid = new unsigned int*[minpoints+2];
 	int i;
 	for(i=0; i<minpoints+2; i++){
-		m_bndx[i] = new float[m_maxtracks];
-		memset(m_bndx[i],0,sizeof(float)*m_maxtracks);
-		m_pkmags[i] = new float[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(float)*m_maxtracks);
-		m_adthresh[i] = new float[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(float)*m_maxtracks);
+		m_bndx[i] = new double[m_maxtracks];
+		memset(m_bndx[i],0,sizeof(double)*m_maxtracks);
+		m_pkmags[i] = new double[m_maxtracks];
+		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
+		m_adthresh[i] = new double[m_maxtracks];
+		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
 		m_tstart[i] = new unsigned int[m_maxtracks];
         memset(m_tstart[i],0,sizeof(unsigned int)*m_maxtracks);
 		m_lastpk[i] = new unsigned int[m_maxtracks];
@@ -157,29 +157,29 @@ SinAnal::SinAnal(SndObj* input, int numbins, float threshold, int maxtracks,
 
 	}
 
-	m_bins = new float[m_maxtracks];
-	memset(m_bins, 0, sizeof(float) * m_maxtracks);
+	m_bins = new double[m_maxtracks];
+	memset(m_bins, 0, sizeof(double) * m_maxtracks);
 	m_trndx = new int[m_maxtracks];
 	memset(m_trndx, 0, sizeof(int) * m_maxtracks);
 	m_contflag = new bool[m_maxtracks];
 	memset(m_contflag, 0, sizeof(bool) * m_maxtracks);
 
-	m_phases = new float[m_numbins];
-	memset(m_phases, 0, sizeof(float) * m_numbins);
-	m_freqs = new float[m_numbins];
-	memset(m_freqs, 0, sizeof(float) * m_numbins);
-	m_mags = new float[m_numbins];
-	memset(m_mags, 0, sizeof(float) * m_numbins);
+	m_phases = new double[m_numbins];
+	memset(m_phases, 0, sizeof(double) * m_numbins);
+	m_freqs = new double[m_numbins];
+	memset(m_freqs, 0, sizeof(double) * m_numbins);
+	m_mags = new double[m_numbins];
+	memset(m_mags, 0, sizeof(double) * m_numbins);
 
-	m_binmax = new float[m_numbins];
-	memset(m_binmax, 0, sizeof(float) * m_numbins);
-	m_magmax = new float[m_numbins];
-	memset(m_magmax, 0, sizeof(float) * m_numbins);
-	m_diffs = new float[m_numbins];
-	memset(m_diffs, 0, sizeof(float) * m_numbins);
+	m_binmax = new double[m_numbins];
+	memset(m_binmax, 0, sizeof(double) * m_numbins);
+	m_magmax = new double[m_numbins];
+	memset(m_magmax, 0, sizeof(double) * m_numbins);
+	m_diffs = new double[m_numbins];
+	memset(m_diffs, 0, sizeof(double) * m_numbins);
 
 	m_maxix = new int[m_numbins];
-	memset(m_maxix, 0, sizeof(float) * m_numbins);
+	memset(m_maxix, 0, sizeof(double) * m_numbins);
 	m_timecount = 0;
 
 	m_phases[0] = 0.f;
@@ -234,23 +234,23 @@ SinAnal::SetMaxTracks(int maxtracks){
 	}
 	
 	m_contflag = new bool[m_maxtracks];
-	m_bins = new float[m_maxtracks];
+	m_bins = new double[m_maxtracks];
 	m_trndx = new int[m_maxtracks];
 	m_prev = m_minpoints+1; m_cur = 0;
-	m_bndx = new float*[2];
-	m_pkmags = new float*[2];
-	m_adthresh = new float*[2];
+	m_bndx = new double*[2];
+	m_pkmags = new double*[2];
+	m_adthresh = new double*[2];
 	m_tstart = new unsigned int*[2];
 	m_lastpk = new unsigned int*[2];
 	m_trkid = new unsigned int*[2];
 	int i;
 	for(i=0; i<m_minpoints+2; i++){
-        m_bndx[i] = new float[m_maxtracks];
-		memset(m_bndx[i],0,sizeof(float)*m_maxtracks);
-		m_pkmags[i] = new float[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(float)*m_maxtracks);
-		m_adthresh[i] = new float[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(float)*m_maxtracks);
+        m_bndx[i] = new double[m_maxtracks];
+		memset(m_bndx[i],0,sizeof(double)*m_maxtracks);
+		m_pkmags[i] = new double[m_maxtracks];
+		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
+		m_adthresh[i] = new double[m_maxtracks];
+		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
 		m_tstart[i] = new unsigned int[m_maxtracks];
         memset(m_tstart[i],0,sizeof(unsigned int)*m_maxtracks);
 		m_lastpk[i] = new unsigned int[m_maxtracks];
@@ -284,12 +284,12 @@ SinAnal::SetIFGram(SndObj* input){
 	SetInput(input);
 	m_numbins = ((FFT *)m_input)->GetFFTSize()/2 + 1;
 	
-	m_phases = new float[m_numbins];
-	m_freqs = new float[m_numbins];
-	m_mags = new float[m_numbins];
-	m_binmax = new float[m_numbins];
-	m_magmax = new float[m_numbins];
-	m_diffs = new float[m_numbins];
+	m_phases = new double[m_numbins];
+	m_freqs = new double[m_numbins];
+	m_mags = new double[m_numbins];
+	m_binmax = new double[m_numbins];
+	m_magmax = new double[m_numbins];
+	m_diffs = new double[m_numbins];
 	m_maxix = new int[m_numbins];
 	
 	m_phases[0] = 0.f;
@@ -302,7 +302,7 @@ SinAnal::SetIFGram(SndObj* input){
 
 
 int
-SinAnal::Set(char* mess, float value){
+SinAnal::Set(char* mess, double value){
 	
 	switch(FindMsg(mess)){
 		
@@ -339,9 +339,9 @@ SinAnal::Connect(char* mess, void *input){
 int
 SinAnal::peakdetection(){
 	
-	float logthresh;
+	double logthresh;
 	int i = 0, n = 0;
-	float max = 0.f;
+	double max = 0.f;
 	double y1, y2, a, b, ftmp;
 	
 	for(i=0; i<m_numbins;i++)
@@ -383,8 +383,8 @@ SinAnal::peakdetection(){
 		a = (y2 - 2*y1)/2.f;
 		b = 1.f - y1/a;
 		
-		m_binmax[i] = (float) (rmax - 1. + b/2.);
-		m_magmax[i] = (float) exp(ftmp - a*b*b/4.);
+		m_binmax[i] = (double) (rmax - 1. + b/2.);
+		m_magmax[i] = (double) exp(ftmp - a*b*b/4.);
 	}
 	
 	return n;
@@ -414,7 +414,7 @@ SinAnal::FindPeaks(){
 				// output peaks
 				for(m_vecpos=0; m_vecpos < m_vecsize; m_vecpos += 3){
 					int pos = m_vecpos/3, ndx;
-					float frac, a, b;
+					double frac, a, b;
 					if((pos < n) && (pos < m_maxtracks)){
 						// bin number
 						ndx = Ftoi(m_binmax[pos]);
@@ -455,9 +455,9 @@ SinAnal::FindPeaks(){
 }
 
 void
-SinAnal::SetPeaks(int numamps, float* amps, int numfreqs,
-		          float* freqs, int numphases, float* phases){
-	float binwidth = (m_sr / 2) / m_numbins;
+SinAnal::SetPeaks(int numamps, double* amps, int numfreqs,
+		          double* freqs, int numphases, double* phases){
+	double binwidth = (m_sr / 2) / m_numbins;
 	m_numpeaks = numamps;
 	for(int i = 0; i < m_numbins; i++){
 		if(i < m_numpeaks){
@@ -474,7 +474,7 @@ SinAnal::SetPeaks(int numamps, float* amps, int numfreqs,
 void
 SinAnal::PartialTracking(){
 	int bestix, count=0, i = 0, n = 0, j = 0;
-	float dbstep;
+	double dbstep;
 
 	// reset allowcont flags
 	for(i=0; i < m_maxtracks; i++){
@@ -490,7 +490,7 @@ SinAnal::PartialTracking(){
 
 		if(m_numpeaks > 0){ // check for peaks; m_numpeaks will be > 0
 
-			float F = m_bndx[m_prev][j];
+			double F = m_bndx[m_prev][j];
 
 			for(i=0; i < m_numbins; i++){
 				m_diffs[i] = m_binmax[i] - F; //differences
@@ -503,7 +503,7 @@ SinAnal::PartialTracking(){
 				if(m_diffs[i] < m_diffs[bestix]) bestix = i;
 
 				// if difference smaller than 1 bin
-				float tempf = F -  m_binmax[bestix];
+				double tempf = F -  m_binmax[bestix];
 				tempf = (tempf < 0 ? -tempf : tempf);
 				if(tempf < 1.){
 
@@ -525,8 +525,8 @@ SinAnal::PartialTracking(){
 						count++;
 
 						// update the adaptive mag threshold
-						float tmp1 = dbstep*1.5f;
-						float tmp2 = m_adthresh[m_prev][j] -
+						double tmp1 = dbstep*1.5f;
+						double tmp2 = m_adthresh[m_prev][j] -
 							(m_adthresh[m_prev][j] - 1.5f)*0.048770575f;
 						m_adthresh[m_prev][j] = (tmp1 > tmp2 ? tmp1 : tmp2);
 
@@ -631,7 +631,7 @@ SinAnal::PartialTracking(){
 	if(!m_error){
 		if(m_input){
 			if(m_enable){
-				float binwidth = (m_sr / 2) / m_numbins;
+				double binwidth = (m_sr / 2) / m_numbins;
 
 				for(m_vecpos=0; m_vecpos < m_vecsize; m_vecpos += 3){
 					int pos = m_vecpos/3;
@@ -664,7 +664,7 @@ void
 SinAnal::sinanalysis(){
 
 	int bestix, count=0, i = 0, n = 0, j = 0;
-	float dbstep;
+	double dbstep;
 
 	n = peakdetection();
 		
@@ -684,7 +684,7 @@ SinAnal::sinanalysis(){
 		
 		if(n > 0){ // check for peaks; n will be > 0
 			
-			float F = m_bndx[m_prev][j];
+			double F = m_bndx[m_prev][j];
 			
 			for(i=0; i < m_numbins; i++){
 				m_diffs[i] = m_binmax[i] - F; //differences
@@ -697,7 +697,7 @@ SinAnal::sinanalysis(){
 				if(m_diffs[i] < m_diffs[bestix]) bestix = i;
 				
 				// if difference smaller than 1 bin
-				float tempf = F -  m_binmax[bestix];
+				double tempf = F -  m_binmax[bestix];
 				tempf = (tempf < 0 ? -tempf : tempf);
 				if(tempf < 1.){
 					
@@ -719,8 +719,8 @@ SinAnal::sinanalysis(){
 						count++;
 						
 						// update the adaptive mag threshold 
-						float tmp1 = dbstep*1.5f;
-						float tmp2 = m_adthresh[m_prev][j] -
+						double tmp1 = dbstep*1.5f;
+						double tmp2 = m_adthresh[m_prev][j] -
 							(m_adthresh[m_prev][j] - 1.5f)*0.048770575f;
 						m_adthresh[m_prev][j] = (tmp1 > tmp2 ? tmp1 : tmp2);
 						
@@ -854,7 +854,7 @@ SinAnal::DoProcess(){
 				
 				for(m_vecpos=0; m_vecpos < m_vecsize; m_vecpos+=3){
 					int pos = m_vecpos/3, ndx;
-					float frac,a,b;
+					double frac,a,b;
 					if(pos < m_tracks){
 						// magnitudes
 						ndx = Ftoi(m_bins[pos]);

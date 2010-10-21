@@ -37,7 +37,7 @@ class HarmTable : public Table {
   protected :
 
     int m_harm;
-  float m_phase;
+  double m_phase;
   int m_typew;
          
  public:
@@ -47,8 +47,8 @@ class HarmTable : public Table {
   char* ErrorMessage();
   short MakeTable();
   HarmTable();
-  void SetPhase(float phase){ m_phase = (float)(phase*TWOPI); }
-  HarmTable(long L, int harm, int type, float phase=0.f);
+  void SetPhase(double phase){ m_phase = (double)(phase*TWOPI); }
+  HarmTable(long L, int harm, int type, double phase=0.f);
   ~HarmTable();
 };
 

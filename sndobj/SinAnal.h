@@ -30,30 +30,30 @@ class SinAnal : public SndObj {
 
  protected:
 
-  float** m_bndx;  // bin indexes
-  float** m_pkmags;  // peak mags
-  float** m_adthresh;  // thresholds
+  double** m_bndx;  // bin indexes
+  double** m_pkmags;  // peak mags
+  double** m_adthresh;  // thresholds
   unsigned int** m_tstart;  // start times 
   unsigned int** m_lastpk; // end times
   unsigned int** m_trkid; // track ids
 
-  float* m_phases; // phases
-  float* m_freqs;  // frequencies
-  float* m_mags;   // magnitudes
-  float* m_bins;   // track bin indexes
+  double* m_phases; // phases
+  double* m_freqs;  // frequencies
+  double* m_mags;   // magnitudes
+  double* m_bins;   // track bin indexes
   int* m_trndx;    // track IDs
 
-  float* m_binmax;  // peak bin indexes
-  float* m_magmax;  // peak mags
-  float* m_diffs;    // differences
+  double* m_binmax;  // peak bin indexes
+  double* m_magmax;  // peak mags
+  double* m_diffs;    // differences
 
   int* m_maxix;     // max peak locations
   bool* m_contflag; // continuation flags
 
   int m_numbins;    // number of bins
   int m_maxtracks;   // max number of tracks
-  float m_startupThresh;  // startup threshold
-  float m_thresh;    // threshold
+  double m_startupThresh;  // startup threshold
+  double m_thresh;    // threshold
 
   int m_tracks;      // tracks in a frame
   int m_prev;         
@@ -72,25 +72,25 @@ class SinAnal : public SndObj {
  public:
 
   SinAnal();
-  SinAnal(SndObj* input, float threshold, int maxtracks, int minpoints=1,
-	  int maxgap=3, float sr=DEF_SR);
-  SinAnal(SndObj* input, int numbins, float threshold, int maxtracks, int minpoints=1,
-  	  int maxgap=3, float sr=DEF_SR);
+  SinAnal(SndObj* input, double threshold, int maxtracks, int minpoints=1,
+	  int maxgap=3, double sr=DEF_SR);
+  SinAnal(SndObj* input, int numbins, double threshold, int maxtracks, int minpoints=1,
+  	  int maxgap=3, double sr=DEF_SR);
   ~SinAnal();
 
   virtual int GetTrackID(int track){ return m_trndx[track]; }
   virtual int GetTracks(){ return m_tracks;}
 
-  int Set(char* mess, float value);
+  int Set(char* mess, double value);
   int Connect(char* mess, void* input);
 
-  void SetThreshold(float threshold){ m_thresh = threshold; }
+  void SetThreshold(double threshold){ m_thresh = threshold; }
   void SetIFGram(SndObj* input);
   void SetMaxTracks(int maxtracks);
 
   int FindPeaks();
-  void SetPeaks(int numamps, float* amps, int numfreqs, float* freqs,
-		        int numphases, float* phases);
+  void SetPeaks(int numamps, double* amps, int numfreqs, double* freqs,
+		        int numphases, double* phases);
   void PartialTracking();
   short DoProcess();
 };

@@ -37,22 +37,22 @@ class PVS : public IFFT {
  protected:
 	
   int m_rotcount; // rotation counter
-  float m_factor;  // conversion factor
-  float* m_phases;  // old phases
+  double m_factor;  // conversion factor
+  double* m_phases;  // old phases
 	
  private:
-  void inline pvsynthesis(float* signal); 
+  void inline pvsynthesis(double* signal); 
   bool m_first;
 	
  public:
 		
   PVS();
   PVS(Table* window, SndObj* input, int fftsize=DEF_FFTSIZE,
-      int hopsize=DEF_VECSIZE, float sr=DEF_SR);
+      int hopsize=DEF_VECSIZE, double sr=DEF_SR);
   ~PVS();
 	
 	
-  int Set(char* mess, float value);
+  int Set(char* mess, double value);
   void SetFFTSize(int fftsize);
   void SetHopSize(int hopsize);
 	

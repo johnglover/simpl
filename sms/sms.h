@@ -34,11 +34,8 @@
 
 #define SMS_MAX_NPEAKS 400    /*!< \brief maximum number of peaks  */
 
-#ifdef DOUBLE_PRECISION
 #define sfloat double
-#else
-#define sfloat float
-#endif
+/*#define sfloat float*/
 
 /*! \struct SMS_Header 
  *  \brief structure for the header of an SMS file 
@@ -573,12 +570,7 @@ sfloat sms_sine (sfloat fTheta);
 sfloat sms_sinc (sfloat fTheta);
 sfloat sms_random ( void );
 int sms_power2(int n);
-//sfloat sms_temperedToFreq( float x ); /*!< raise frequency to the 12th root of 2 */
-//inline sfloat sms_temperedToFreq( float x ){ return(powf(1.0594630943592953, x)); }
-
-/*! \todo remove this define now that there is sms_scalerTempered */
-//#define TEMPERED_TO_FREQ( x ) (powf(1.0594630943592953, x)) /*!< raise frequency to the 12th root of 2 */
-sfloat sms_scalarTempered( float x);
+sfloat sms_scalarTempered( sfloat x);
 void sms_arrayScalarTempered( int sizeArray, sfloat *pArray);
 
 #ifndef MAX
@@ -592,8 +584,8 @@ void sms_arrayScalarTempered( int sizeArray, sfloat *pArray);
 /*! \} */
 
 /* function declarations */ 
-void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, float* amps,
-		          int numfreqs, float* freqs, int numphases, float* phases);
+void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, sfloat* amps,
+		          int numfreqs, sfloat* freqs, int numphases, sfloat* phases);
 
 int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalParams, SMS_SpectralPeaks *pSpectralPeaks);
 
@@ -630,33 +622,33 @@ void sms_freeSynth( SMS_SynthParams *pSynthParams );
 
 void sms_fillSoundBuffer (int sizeWaveform, sfloat *pWaveform,  SMS_AnalParams *pAnalParams);
 
-void sms_windowCentered (int sizeWindow, sfloat *pWaveform, float *pWindow, int sizeFft, float *pFftBuffer);
+void sms_windowCentered (int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeFft, sfloat *pFftBuffer);
 
 void sms_getWindow (int sizeWindow, sfloat *pWindow, int iWindowType);
 
 void sms_scaleWindow (int sizeWindow, sfloat *pWindow);
 
-int sms_spectrum (int sizeWindow, sfloat *pWaveform, float *pWindow, int sizeMag, 
-                  sfloat *pMag, float *pPhase);
+int sms_spectrum (int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag, 
+                  sfloat *pMag, sfloat *pPhase);
 
-int sms_invSpectrum (int sizeWaveform, sfloat *pWaveform, float *pWindow ,
-                     int sizeMag, sfloat *pMag, float *pPhase);
+int sms_invSpectrum (int sizeWaveform, sfloat *pWaveform, sfloat *pWindow ,
+                     int sizeMag, sfloat *pMag, sfloat *pPhase);
 
 /* \todo remove this once invSpectrum is completely implemented */
-int sms_invQuickSpectrumW (sfloat *pFMagSpectrum, float *pFPhaseSpectrum, 
+int sms_invQuickSpectrumW (sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum, 
                            int sizeFft, sfloat *pFWaveform, int sizeWave,
                            sfloat *pFWindow);
 
 int sms_spectralApprox (sfloat *pSpec1, int sizeSpec1, int sizeSpec1Used,
                     sfloat *pSpec2, int sizeSpec2, int nCoefficients);
 
-int sms_spectrumMag (int sizeWindow, sfloat *pWaveform, float *pWindow,  
+int sms_spectrumMag (int sizeWindow, sfloat *pWaveform, sfloat *pWindow,  
                      int sizeMag, sfloat *pMag);
 		  
-void sms_dCepstrum( int sizeCepstrum, sfloat *pCepstrum, int sizeFreq, float *pFreq, float *pMag, 
+void sms_dCepstrum( int sizeCepstrum, sfloat *pCepstrum, int sizeFreq, sfloat *pFreq, sfloat *pMag, 
                     sfloat fLambda, int iSamplingRate);
 
-void sms_dCepstrumEnvelope (int sizeCepstrum, sfloat *pCepstrum, int sizeEnv, float *pEnv);
+void sms_dCepstrumEnvelope (int sizeCepstrum, sfloat *pCepstrum, int sizeEnv, sfloat *pEnv);
 
 void sms_spectralEnvelope ( SMS_Data *pSmsData, SMS_SEnvParams *pSpecEnvParams);
 
@@ -664,7 +656,7 @@ int sms_sizeNextWindow (int iCurrentFrame, SMS_AnalParams *pAnalParams);
 
 sfloat sms_fundDeviation (SMS_AnalParams *pAnalParams, int iCurrentFrame);
 
-int sms_detectPeaks (int sizeSpec, sfloat *pFMag, float *pPhase,
+int sms_detectPeaks (int sizeSpec, sfloat *pFMag, sfloat *pPhase,
                      SMS_Peak *pSpectralPeaks, SMS_PeakParams *pPeakParams);
 
 //void sms_harmDetection (SMS_AnalFrame *pFrame, sfloat fRefFundamental,
@@ -682,7 +674,7 @@ sfloat sms_deEmphasis(sfloat fInput, SMS_SynthParams *pSynthParams);
 
 void sms_cleanTracks (int iCurrentFrame, SMS_AnalParams *pAnalParams);
 
-void sms_scaleDet (sfloat *pSynthBuffer, float *pOriginalBuffer,
+void sms_scaleDet (sfloat *pSynthBuffer, sfloat *pOriginalBuffer,
                          sfloat *pSinAmp, SMS_AnalParams *pAnalParams, int nTracks);
 			
 int sms_prepSine (int nTableSize);
@@ -735,11 +727,11 @@ void sms_copyFrame (SMS_Data *pCopySmsFrame, SMS_Data *pOriginalSmsFrame);
 
 int sms_frameSizeB (SMS_Header *pSmsHeader);
 
-int sms_residual (int sizeWindow, sfloat *pSynthesis, float *pOriginal, float *pResidual);
+int sms_residual (int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, sfloat *pResidual);
 
 void sms_filterHighPass ( int sizeResidual, sfloat *pResidual, int iSamplingRate);
 
-int sms_stocAnalysis ( int sizeWindow, sfloat *pResidual, float *pWindow,
+int sms_stocAnalysis ( int sizeWindow, sfloat *pResidual, sfloat *pWindow,
                   SMS_Data *pSmsFrame);
 
 void sms_interpolateFrames (SMS_Data *pSmsFrame1, SMS_Data *pSmsFrame2,
@@ -749,11 +741,11 @@ void sms_fft(int sizeFft, sfloat *pArray);
 
 void sms_ifft(int sizeFft, sfloat *pArray);
 
-void sms_RectToPolar( int sizeSpec, sfloat *pReal, float *pMag, float *pPhase);
+void sms_RectToPolar( int sizeSpec, sfloat *pReal, sfloat *pMag, sfloat *pPhase);
 
-void sms_PolarToRect( int sizeSpec, sfloat *pReal, float *pMag, float *pPhase);
+void sms_PolarToRect( int sizeSpec, sfloat *pReal, sfloat *pMag, sfloat *pPhase);
 
-void sms_spectrumRMS( int sizeMag, sfloat *pReal, float *pMag);
+void sms_spectrumRMS( int sizeMag, sfloat *pReal, sfloat *pMag);
 
 void sms_initModify(SMS_Header *header, SMS_ModifyParams *params);
 
@@ -768,7 +760,7 @@ void sms_modify(SMS_Data *frame, SMS_ModifyParams *params);
 
 int sms_createDebugFile (SMS_AnalParams *pAnalParams);
 
-void sms_writeDebugData (sfloat *pBuffer1, float *pBuffer2, 
+void sms_writeDebugData (sfloat *pBuffer1, sfloat *pBuffer2, 
                              sfloat *pBuffer3, int sizeBuffer);
 
 void sms_writeDebugFile ( void );
@@ -778,28 +770,6 @@ void sms_error( char *pErrorMessage );
 int sms_errorCheck( void );
 
 char* sms_errorString( void );
-
-/***********************************************************************************/
-/************ things for hybrid program that are not currently used **********************/
-/* (this is because they were utilized with the MusicKit package that is out of date now) */
-
-/* /\*! \struct SMS_HybParams */
-/*  * \brief structure for hybrid program  */
-/*  *\/ */
-/* typedef struct */
-/* { */
-/*   int nCoefficients; */
-/*   sfloat fGain; */
-/*   sfloat fMagBalance; */
-/*   int iSmoothOrder; */
-/*   sfloat *pCompressionEnv; */
-/*   int sizeCompressionEnv; */
-/* } SMS_HybParams; */
-
-/* void sms_hybridize (sfloat *pFWaveform1, int sizeWave1, float *pFWaveform2,  */
-/*                int sizeWave2, sfloat *pFWaveform, SMS_HybParams *pHybParams); */
-
-/* void sms_filterArray (sfloat *pFArray, int size1, int size2, float *pFOutArray); */
 
 #endif /* _SMS_H */
 

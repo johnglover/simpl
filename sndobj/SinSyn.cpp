@@ -43,7 +43,7 @@ SinSyn::SinSyn(){
 }
 
 SinSyn::SinSyn(SinAnal* input, int maxtracks, Table* table, 
-	       float scale, int vecsize, float sr)	  
+	       double scale, int vecsize, double sr)	  
   :SndObj(input, vecsize, sr){
 
   m_ptable = table;
@@ -56,12 +56,12 @@ SinSyn::SinSyn(SinAnal* input, int maxtracks, Table* table,
   m_tracks = 0;
   m_scale = scale;
   m_input = input;
-  m_freqs = new float[m_maxtracks];
-  m_amps = new float[m_maxtracks];
-  m_phases = new float[m_maxtracks];
+  m_freqs = new double[m_maxtracks];
+  m_amps = new double[m_maxtracks];
+  m_phases = new double[m_maxtracks];
   m_trackID = new int[m_maxtracks];
 
-  memset(m_phases, 0, sizeof(float)*m_maxtracks);
+  memset(m_phases, 0, sizeof(double)*m_maxtracks);
 
   m_incr = 0.f;
   m_ratio = m_size/m_sr;
@@ -109,7 +109,7 @@ SinSyn::Connect(char* mess, void* input){
 
 
 int
-SinSyn::Set(char* mess, float value){
+SinSyn::Set(char* mess, double value){
 
   switch(FindMsg(mess)){
 
@@ -141,9 +141,9 @@ SinSyn::SetMaxTracks(int maxtracks){
   }
 
   m_maxtracks = maxtracks;
-  m_freqs = new float[m_maxtracks];
-  m_amps = new float[m_maxtracks];
-  m_phases = new float[m_maxtracks];
+  m_freqs = new double[m_maxtracks];
+  m_amps = new double[m_maxtracks];
+  m_phases = new double[m_maxtracks];
   m_trackID = new int[m_maxtracks];
 
 }
@@ -153,17 +153,17 @@ SinSyn::DoProcess() {
 	
   if(m_input){
 		
-    float ampnext,amp,freq, freqnext, phase,phasenext;
-    float a2, a3, phasediff, cph;
+    double ampnext,amp,freq, freqnext, phase,phasenext;
+    double a2, a3, phasediff, cph;
     int i3, i, j, ID, track;
     int notcontin = 0;
     bool contin = false;
     int oldtracks = m_tracks;
-    float* tab = m_ptable->GetTable(); 
+    double* tab = m_ptable->GetTable(); 
     if((m_tracks = ((SinAnal *)m_input)->GetTracks()) >
        m_maxtracks) m_tracks = m_maxtracks;
 		
-    memset(m_output, 0, sizeof(float)*m_vecsize);
+    memset(m_output, 0, sizeof(double)*m_vecsize);
    		
     // for each track
     i = j = 0;
@@ -220,7 +220,7 @@ SinSyn::DoProcess() {
       a3 = 1./(3*m_facsqr)  * (freqnext - freq - 2*a2*m_factor);
 
       // interpolation resynthesis loop	
-      float inc1, inc2, a, ph, cnt, frac;
+      double inc1, inc2, a, ph, cnt, frac;
       int ndx;
       a = amp;
       ph = phase;

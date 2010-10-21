@@ -124,6 +124,7 @@ class PeakDetection(object):
         self._max_peaks = 100
         self._window_type = "hamming"
         self._window_size = 2048
+        self._min_peak_separation = 1.0 # in Hz
         self.peaks = []
         
     # properties
@@ -293,7 +294,7 @@ class Synthesis(object):
         
     def synth(self, partials):
         "Synthesise audio from the given partials"
-        audio_out = np.array([], dtype=np.float32)
+        audio_out = simpl.array([])
         # return an empty frame if there are no partials
         if not partials:
             return audio_out

@@ -29,22 +29,22 @@
 #include "IFGram.h"
 
 IFGram::IFGram(){
-  m_diffwin = new float[m_fftsize];
-  m_fftdiff = new float[m_fftsize];
-  m_diffsig = new float[m_fftsize];
+  m_diffwin = new double[m_fftsize];
+  m_fftdiff = new double[m_fftsize];
+  m_diffsig = new double[m_fftsize];
   m_factor = m_sr/TWOPI; 
-  m_pdiff = new float[m_halfsize];
+  m_pdiff = new double[m_halfsize];
 }
 
 
-IFGram::IFGram(Table* window, SndObj* input, float scale,
-	       int fftsize, int hopsize, float sr)
+IFGram::IFGram(Table* window, SndObj* input, double scale,
+	       int fftsize, int hopsize, double sr)
   :PVA(window, input, scale, fftsize, hopsize, sr)
 {
-  m_diffwin = new float[m_fftsize];
-  m_fftdiff = new float[m_fftsize];
-  m_diffsig = new float[m_fftsize];
-  m_pdiff = new float[m_halfsize];
+  m_diffwin = new double[m_fftsize];
+  m_fftdiff = new double[m_fftsize];
+  m_diffsig = new double[m_fftsize];
+  m_pdiff = new double[m_halfsize];
   for(int i=0; i<m_fftsize; i++)
     m_diffwin[i] = m_table->Lookup(i) - m_table->Lookup(i+1);
   m_factor = m_sr/TWOPI;
@@ -60,7 +60,7 @@ IFGram::~IFGram(){
 
 
 int
-IFGram::Set(char* mess, float value){
+IFGram::Set(char* mess, double value){
 
   switch(FindMsg(mess)){
 
@@ -103,9 +103,9 @@ IFGram::SetFFTSize(int fftsize){
   delete[] m_phases;
 
   m_factor = m_sr*TWOPI/m_fftsize;
-  m_diffwin = new float[m_fftsize];
-  m_fftdiff = new float[m_fftsize];
-  m_phases = new float[m_halfsize];
+  m_diffwin = new double[m_fftsize];
+  m_fftdiff = new double[m_fftsize];
+  m_phases = new double[m_halfsize];
 
   for(int i=0; i<m_fftsize; i++)
     m_diffwin[i] = m_table->Lookup(i) - m_table->Lookup(i+1);
@@ -113,7 +113,7 @@ IFGram::SetFFTSize(int fftsize){
 }
 
 void
-IFGram::IFAnalysis(float* signal){
+IFGram::IFAnalysis(double* signal){
 
   double powerspec, da,db, a, b, ph,d; 
   int i2, i;
@@ -123,7 +123,7 @@ IFGram::IFAnalysis(float* signal){
     signal[i] = signal[i]*m_table->Lookup(i);
   }
 
-  float tmp1, tmp2;
+  double tmp1, tmp2;
   for(i=0; i<m_halfsize; i++){
     tmp1 = m_diffsig[i+m_halfsize];
     tmp2 = m_diffsig[i];
@@ -152,9 +152,9 @@ IFGram::IFAnalysis(float* signal){
     db = m_fftdiff[m_fftsize-(i2)]*2/m_norm;
     powerspec = a*a+b*b;
 	
-    if((m_output[i] = (float)sqrt(powerspec)) != 0.f){
+    if((m_output[i] = (double)sqrt(powerspec)) != 0.f){
       m_output[i+1] = ((a*db - b*da)/powerspec)*m_factor + i2*m_fund;
-      ph = (float) atan2(b, a);	
+      ph = (double) atan2(b, a);	
       d = ph - m_phases[i2];
       while(d > PI) d -= TWOPI;
       while(d < -PI) d += TWOPI;
@@ -174,14 +174,14 @@ IFGram::DoProcess(){
   if(!m_error){
     if(m_input){
       if(m_enable){
-	int i; float sig = 0.f;
+	int i; double sig = 0.f;
 	for(m_vecpos = 0; m_vecpos < m_hopsize; m_vecpos++) {
 	  // signal input
 	  sig = m_input->Output(m_vecpos);		
 	  // distribute to the signal input frames
 	  // according to a time pointer (kept by counter[n])
 	  for(i=0;i < m_frames; i++){
-	    m_sigframe[i][m_counter[i]]= (float) sig; 
+	    m_sigframe[i][m_counter[i]]= (double) sig; 
 	    m_counter[i]++;		   
 	  } 
 	}

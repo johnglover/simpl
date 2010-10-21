@@ -23,34 +23,34 @@
 }
 
 /* apply all numpy typemaps to various names in sms.h */
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeWindow, float* pWindow)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeWaveform, float* pWaveform)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(long sizeSound, float* pSound)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeFft, float* pArray)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeFft, float* pFftBuffer)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeFreq, float* pFreq)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeAmp, float* pAmp)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeMag, float* pMag)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizePhase, float* pPhase)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeRes, float* pRes)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeCepstrum, float* pCepstrum)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeEnv, float* pEnv)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeTrack, float* pTrack)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeArray, float* pArray)};
-%apply (int DIM1, float* IN_ARRAY1) {(int sizeInArray, float* pInArray)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeOutArray, float* pOutArray)};
-%apply (int DIM1, float* INPLACE_ARRAY1) {(int sizeHop, float* pSynthesis)};
-%apply (int DIM1, float* IN_ARRAY1)
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeWindow, double* pWindow)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeWaveform, double* pWaveform)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(long sizeSound, double* pSound)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeFft, double* pArray)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeFft, double* pFftBuffer)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeFreq, double* pFreq)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeAmp, double* pAmp)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeMag, double* pMag)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizePhase, double* pPhase)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeRes, double* pRes)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeCepstrum, double* pCepstrum)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeEnv, double* pEnv)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeTrack, double* pTrack)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeArray, double* pArray)};
+%apply (int DIM1, double* IN_ARRAY1) {(int sizeInArray, double* pInArray)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeOutArray, double* pOutArray)};
+%apply (int DIM1, double* INPLACE_ARRAY1) {(int sizeHop, double* pSynthesis)};
+%apply (int DIM1, double* IN_ARRAY1)
 {
-    (int numamps, float* amps),
-    (int numfreqs, float* freqs),
-    (int numphases, float* phases)
+    (int numamps, double* amps),
+    (int numfreqs, double* freqs),
+    (int numphases, double* phases)
 }
-%apply (int DIM1, float* IN_ARRAY1)
+%apply (int DIM1, double* IN_ARRAY1)
 {
-    (int sizeSynthesis, float* pSynthesis),
-    (int sizeOriginal, float* pOriginal),
-    (int sizeResidual, float* pResidual)
+    (int sizeSynthesis, double* pSynthesis),
+    (int sizeOriginal, double* pOriginal),
+    (int sizeResidual, double* pResidual)
 }
 
 %include "sms.h" 
@@ -76,13 +76,13 @@
 		int allocated;
 	} SMS_File;
 	
-	void simplsms_dCepstrum( int sizeCepstrum, float *pCepstrum, int sizeFreq, float *pFreq, int sizeMag, float *pMag, 
-						float fLambda, int iSamplingRate)
+	void simplsms_dCepstrum( int sizeCepstrum, sfloat *pCepstrum, int sizeFreq, sfloat *pFreq, int sizeMag, sfloat *pMag, 
+						sfloat fLambda, int iSamplingRate)
 	{
 		sms_dCepstrum(sizeCepstrum,pCepstrum, sizeFreq, pFreq, pMag, 
 					  fLambda, iSamplingRate);
 	}
-	int simplsms_detectPeaks(int sizeMag, float *pMag, int sizePhase, float *pPhase, 
+	int simplsms_detectPeaks(int sizeMag, sfloat *pMag, int sizePhase, sfloat *pPhase, 
 						  SMS_SpectralPeaks *pPeakStruct, SMS_PeakParams *pPeakParams)
 	{
 		if(sizeMag != sizePhase)
@@ -98,23 +98,23 @@
 		pPeakStruct->nPeaksFound = sms_detectPeaks(sizeMag, pMag, pPhase, pPeakStruct->pSpectralPeaks, pPeakParams);
 		return pPeakStruct->nPeaksFound;	
 	}
-	int simplsms_spectrum( int sizeWaveform, float *pWaveform, int sizeWindow, float *pWindow,
-						int sizeMag, float *pMag, int sizePhase, float *pPhase)
+	int simplsms_spectrum( int sizeWaveform, sfloat *pWaveform, int sizeWindow, sfloat *pWindow,
+						int sizeMag, sfloat *pMag, int sizePhase, sfloat *pPhase)
 	{
 		return(sms_spectrum(sizeWindow, pWaveform, pWindow, sizeMag, pMag, pPhase));
 	}
-	int simplsms_spectrumMag( int sizeWaveform, float *pWaveform, int sizeWindow, float *pWindow,
-						   int sizeMag, float *pMag)
+	int simplsms_spectrumMag( int sizeWaveform, sfloat *pWaveform, int sizeWindow, sfloat *pWindow,
+						   int sizeMag, sfloat *pMag)
 	{
 		return(sms_spectrumMag(sizeWindow, pWaveform, pWindow, sizeMag, pMag));
 	}
-	int simplsms_invSpectrum( int sizeWaveform, float *pWaveform, int sizeWindow, float *pWindow,
-						   int sizeMag, float *pMag, int sizePhase, float *pPhase)
+	int simplsms_invSpectrum( int sizeWaveform, sfloat *pWaveform, int sizeWindow, sfloat *pWindow,
+						   int sizeMag, sfloat *pMag, int sizePhase, sfloat *pPhase)
 	{
 		return(sms_invSpectrum(sizeWaveform, pWaveform, pWindow, sizeMag, pMag, pPhase));
 	}
-	void simplsms_windowCentered(int sizeWaveform, float *pWaveform, int sizeWindow,
-							  float *pWindow, int sizeFft, float *pFftBuffer)
+	void simplsms_windowCentered(int sizeWaveform, sfloat *pWaveform, int sizeWindow,
+							  sfloat *pWindow, int sizeFft, sfloat *pFftBuffer)
 	{
 		if (sizeWaveform != sizeWindow)
 		{ 
@@ -123,7 +123,7 @@
 		}
 		sms_windowCentered(sizeWindow, pWaveform, pWindow, sizeFft, pFftBuffer);
 	}
-	void simplsms_synthesize_wrapper(SMS_Data *pSmsData, int sizeHop, float *pSynthesis, SMS_SynthParams *pSynthParams) 
+	void simplsms_synthesize_wrapper(SMS_Data *pSmsData, int sizeHop, sfloat *pSynthesis, SMS_SynthParams *pSynthParams) 
 	{
 		if(sizeHop != pSynthParams->sizeHop)
 		{
@@ -181,8 +181,8 @@
                 }
                 frame = &$self->smsData[i];
         }
-        void getTrack(int track, int sizeFreq, float *pFreq, int sizeAmp,
-                   float *pAmp)
+        void getTrack(int track, int sizeFreq, sfloat *pFreq, int sizeAmp,
+                   sfloat *pAmp)
         {
                 /* fatal error protection first */
                 if(!$self->allocated)
@@ -210,8 +210,8 @@
                 }
         }
         // TODO turn into getTrackP - and check if phase exists
-        void getTrack(int track, int sizeFreq, float *pFreq, int sizeAmp,
-                   float *pAmp, int sizePhase, float *pPhase)
+        void getTrack(int track, int sizeFreq, sfloat *pFreq, int sizeAmp,
+                   sfloat *pAmp, int sizePhase, sfloat *pPhase)
         {
                 /* fatal error protection first */
                 if(!$self->allocated)
@@ -249,7 +249,7 @@
                 
                 return;
         }
-        void getFrameDet(int i, int sizeFreq, float *pFreq, int sizeAmp, float *pAmp)
+        void getFrameDet(int i, int sizeFreq, sfloat *pFreq, int sizeAmp, sfloat *pAmp)
         {
                 if(!$self->allocated)
                 {
@@ -272,15 +272,15 @@
                         sms_error("freq and amp arrays are different in size");
                         return;
                 }
-                memcpy(pFreq, $self->smsData[i].pFSinFreq, sizeof(float) * nTracks);
-                memcpy(pAmp, $self->smsData[i].pFSinAmp, sizeof(float) * nTracks);
+                memcpy(pFreq, $self->smsData[i].pFSinFreq, sizeof(sfloat) * nTracks);
+                memcpy(pAmp, $self->smsData[i].pFSinAmp, sizeof(sfloat) * nTracks);
                 
                 if($self->header->iFormat < SMS_FORMAT_HP) return;
                 
                 return;
         }
-        void getFrameDetP(int i, int sizeFreq, float *pFreq, int sizeAmp,
-                             float *pAmp, int sizePhase, float *pPhase)
+        void getFrameDetP(int i, int sizeFreq, sfloat *pFreq, int sizeAmp,
+                             sfloat *pAmp, int sizePhase, sfloat *pPhase)
         {
                 if(!$self->allocated)
                 {
@@ -308,19 +308,19 @@
                         sms_error("freq and amp arrays are different in size");
                         return;
                 }
-                memcpy(pFreq, $self->smsData[i].pFSinFreq, sizeof(float) * nTracks);
-                memcpy(pAmp, $self->smsData[i].pFSinAmp, sizeof(float) * nTracks);
+                memcpy(pFreq, $self->smsData[i].pFSinFreq, sizeof(sfloat) * nTracks);
+                memcpy(pAmp, $self->smsData[i].pFSinAmp, sizeof(sfloat) * nTracks);
                 
                 if(sizePhase != sizeFreq || sizePhase != sizeAmp)
                 {
                         sms_error("phase array and freq/amp arrays are different in size");
                         return;
                 }
-                memcpy(pPhase, $self->smsData[i].pFSinPha, sizeof(float) * nTracks);
+                memcpy(pPhase, $self->smsData[i].pFSinPha, sizeof(sfloat) * nTracks);
                 
                 return;
         }
-        void getFrameRes(int i, int sizeRes, float *pRes)
+        void getFrameRes(int i, int sizeRes, sfloat *pRes)
         {
                 
                 if(!$self->allocated)
@@ -337,10 +337,10 @@
                 if($self->header->nStochasticCoeff > sizeRes) 
                         nCoeff = $self->header->nStochasticCoeff; // return what you can
 
-                memcpy(pRes, $self->smsData[i].pFStocCoeff, sizeof(float) * nCoeff);
+                memcpy(pRes, $self->smsData[i].pFStocCoeff, sizeof(sfloat) * nCoeff);
                 return;
         }
-        void getFrameEnv(int i, int sizeEnv, float *pEnv)
+        void getFrameEnv(int i, int sizeEnv, sfloat *pEnv)
         {
                 
                 if(!$self->allocated)
@@ -397,7 +397,7 @@
                 s->nPeaksFound = 0;
                 return s;
         }
-        void getFreq( int sizeArray, float *pArray )
+        void getFreq( int sizeArray, sfloat *pArray )
         {
                 if(sizeArray < $self->nPeaksFound)
                 {
@@ -409,7 +409,7 @@
                         pArray[i] = $self->pSpectralPeaks[i].fFreq;
 
         }
-        void getMag( int sizeArray, float *pArray )
+        void getMag( int sizeArray, sfloat *pArray )
         {
                 if(sizeArray < $self->nPeaksFound)
                 {
@@ -420,7 +420,7 @@
                 for (i = 0; i < $self->nPeaksFound; i++)
                         pArray[i] = $self->pSpectralPeaks[i].fMag;
         }
-        void getPhase( int sizeArray, float *pArray )
+        void getPhase( int sizeArray, sfloat *pArray )
         {
                 if(sizeArray < $self->nPeaksFound)
                 {
@@ -436,7 +436,7 @@
 
 %extend SMS_Data 
 {
-        void getSinAmp(int sizeArray, float *pArray)
+        void getSinAmp(int sizeArray, sfloat *pArray)
         {
                 if(sizeArray < $self->nTracks)
                 {
@@ -447,7 +447,7 @@
                 for (i = 0; i < $self->nTracks; i++)
                         pArray[i] = $self->pFSinAmp[i];
         }
-        void getSinFreq(int sizeArray, float *pArray)
+        void getSinFreq(int sizeArray, sfloat *pArray)
         {
                 if(sizeArray < $self->nTracks)
                 {
@@ -458,7 +458,7 @@
                 for (i = 0; i < $self->nTracks; i++)
                         pArray[i] = $self->pFSinFreq[i];
         }
-        void getSinPhase(int sizeArray, float *pArray)
+        void getSinPhase(int sizeArray, sfloat *pArray)
         {
                 if(sizeArray < $self->nTracks)
                 {
@@ -469,7 +469,7 @@
                 for (i = 0; i < $self->nTracks; i++)
                         pArray[i] = $self->pFSinPha[i];
         }
-        void getSinEnv(int sizeArray, float *pArray)
+        void getSinEnv(int sizeArray, sfloat *pArray)
         {
                 if(sizeArray < $self->nEnvCoeff)
                 {
@@ -480,7 +480,7 @@
                 for (i = 0; i < $self->nEnvCoeff; i++)
                         pArray[i] = $self->pSpecEnv[i];
         }
-        void setSinAmp(int sizeArray, float *pArray)
+        void setSinAmp(int sizeArray, sfloat *pArray)
         {
                 if(sizeArray < $self->nTracks)
                 {
@@ -492,7 +492,7 @@
                         $self->pFSinAmp[i] = pArray[i];
                                 
         }
-        void setSinFreq(int sizeArray, float *pArray)
+        void setSinFreq(int sizeArray, sfloat *pArray)
         {
                 if(sizeArray < $self->nTracks)
                 {
@@ -503,7 +503,7 @@
                 for (i = 0; i < $self->nTracks; i++)
                         $self->pFSinFreq[i] = pArray[i];
         }
-        void setSinPha(int sizeArray, float *pArray)
+        void setSinPha(int sizeArray, sfloat *pArray)
         {
                 if(sizeArray < $self->nTracks)
                 {
@@ -519,7 +519,7 @@
 %extend SMS_ModifyParams
 {
         /* no need to return an error code, if sms_error is called, it will throw an exception in python */
-        void setSinEnv(int sizeArray, float *pArray)
+        void setSinEnv(int sizeArray, sfloat *pArray)
         {
                 if(!$self->ready)
                 {

@@ -33,15 +33,15 @@
 class HammingTable : public Table {
   protected :
  
-    float  m_alpha;
+    double  m_alpha;
 
  public:
   
-  void SetParam(long L, float alpha=.54);
+  void SetParam(long L, double alpha=.54);
   char* ErrorMessage();
   short MakeTable();
   HammingTable();
-  HammingTable(long L, float alpha);
+  HammingTable(long L, double alpha);
   ~HammingTable();
 };
 

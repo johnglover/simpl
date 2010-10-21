@@ -19,7 +19,7 @@ from pylab import plot, show
 def _plot_frame_peaks(frame, frame_number):
     "Plot one frame, which is a list of Peak objects"
     x_values = [frame_number for x in range(len(frame))]
-    y_values = [peak.frequency for peak in frame]
+    y_values = [int(peak.frequency) for peak in frame]
     plot(x_values, y_values, "ro")
     
 def plot_peaks(peaks):
@@ -32,7 +32,7 @@ def plot_frame_peaks(peaks):
     x_values = []
     y_values = []
     for peak in peaks:
-        x_values.append(peak.frequency)
+        x_values.append(int(peak.frequency))
         y_values.append(peak.amplitude)
     plot(x_values, y_values, 'ro')
         
@@ -45,8 +45,9 @@ def plot_partials(partials, show_peaks=True):
         y_values = []
         for peak_number, peak in enumerate(partial.peaks):
             x_values.append(partial.starting_frame + peak_number)
-            y_values.append(peak.frequency)
+            y_values.append(int(peak.frequency))
             peaks[partial.starting_frame + peak_number].append(peak)
         plot(x_values, y_values, "b")
     if show_peaks:
         plot_peaks(peaks)  
+

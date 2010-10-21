@@ -26,7 +26,7 @@ AdSyn::AdSyn(){
 }
 
 AdSyn::AdSyn(SinAnal* input, int maxtracks, Table* table,
-	     float pitch, float scale, int vecsize, float sr)	  
+	     double pitch, double scale, int vecsize, double sr)	  
   :ReSyn(input, maxtracks, table, pitch, scale, 1.f, vecsize, sr){
 }
 
@@ -38,15 +38,15 @@ AdSyn::DoProcess() {
 	
   if(m_input){
 		
-    float ampnext,amp,freq,freqnext,phase;
+    double ampnext,amp,freq,freqnext,phase;
     int i3, i, j, ID, track;
     int notcontin = 0;
     bool contin = false;
     int oldtracks = m_tracks;
-    float* tab = m_ptable->GetTable(); 
+    double* tab = m_ptable->GetTable(); 
     if((m_tracks = ((SinAnal *)m_input)->GetTracks()) >
        m_maxtracks) m_tracks = m_maxtracks;
-    memset(m_output, 0, sizeof(float)*m_vecsize);
+    memset(m_output, 0, sizeof(double)*m_vecsize);
 		
     // for each track
     i = j = 0;
@@ -89,7 +89,7 @@ AdSyn::DoProcess() {
       }
 		
       // interpolation & track synthesis loop
-      float a,f,frac,incra,incrph;
+      double a,f,frac,incra,incrph;
       int ndx;
       a = amp;
       f = freq;

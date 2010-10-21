@@ -30,11 +30,11 @@
 %ignore SndObj::SndObj(SndObj &);
 %ignore SndObj::operator=(SndObj);
 
-%apply(float* IN_ARRAY1, int DIM1) {(float* in_vector, int size)};
-%apply(float* INPLACE_ARRAY1, int DIM1) {(float* out_vector, int size)};
+%apply(double* IN_ARRAY1, int DIM1) {(double* in_vector, int size)};
+%apply(double* INPLACE_ARRAY1, int DIM1) {(double* out_vector, int size)};
 %include "SndObj.h"
-%clear(float* in_vector, int size);
-%clear(float* out_vector, int size);
+%clear(double* in_vector, int size);
+%clear(double* out_vector, int size);
 
 %include "SndIO.h"
 %include "Table.h"
@@ -44,11 +44,11 @@
 %include "PVS.h"
 %include "IFGram.h"
 
-%apply (int DIM1, float* IN_ARRAY1)
+%apply (int DIM1, double* IN_ARRAY1)
 {
-    (int numamps, float* amps),
-    (int numfreqs, float* freqs),
-    (int numphases, float* phases)
+    (int numamps, double* amps),
+    (int numfreqs, double* freqs),
+    (int numphases, double* phases)
 }
 %include "SinAnal.h"
 %include "SinSyn.h"

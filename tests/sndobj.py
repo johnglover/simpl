@@ -35,11 +35,11 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + (num_frames * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
-        frame_out = np.zeros(hop_size, dtype=np.float32)
-        audio_out = np.array([])
+        frame = simpl.zeros(frame_size)
+        frame_out = simpl.zeros(hop_size)
+        audio_out = simpl.array([])
         
         input = pysndobj.SndObj()
         input.SetVectorSize(frame_size)
@@ -72,9 +72,9 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + ((num_frames - 1) * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
+        frame = simpl.zeros(frame_size)
         
         sndobj_input = sndobj.SndObj()
         simpl_input = pysndobj.SndObj()
@@ -106,9 +106,9 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + ((num_frames - 1) * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
+        frame = simpl.zeros(frame_size)
         
         sndobj_input = sndobj.SndObj()
         simpl_input = pysndobj.SndObj()
@@ -144,13 +144,13 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + ((num_frames - 1) * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
-        sndobj_frame_out = np.zeros(hop_size, dtype=np.float32)
-        simpl_frame_out = np.zeros(hop_size, dtype=np.float32)
-        sndobj_audio_out = np.array([])
-        simpl_audio_out = np.array([])
+        frame = simpl.zeros(frame_size)
+        sndobj_frame_out = simpl.zeros(hop_size)
+        simpl_frame_out = simpl.zeros(hop_size)
+        sndobj_audio_out = simpl.array([])
+        simpl_audio_out = simpl.array([])
         
         sndobj_input = sndobj.SndObj()
         simpl_input = pysndobj.SndObj()
@@ -198,13 +198,13 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + ((num_frames - 1) * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
-        sndobj_frame_out = np.zeros(hop_size, dtype=np.float32)
-        simpl_frame_out = np.zeros(hop_size, dtype=np.float32)
-        sndobj_audio_out = np.array([])
-        simpl_audio_out = np.array([])
+        frame = simpl.zeros(frame_size)
+        sndobj_frame_out = simpl.zeros(hop_size)
+        simpl_frame_out = simpl.zeros(hop_size)
+        sndobj_audio_out = simpl.array([])
+        simpl_audio_out = simpl.array([])
         
         sndobj_input = sndobj.SndObj()
         simpl_input = pysndobj.SndObj()
@@ -253,9 +253,9 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + ((num_frames - 1) * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
+        frame = simpl.zeros(frame_size)
         
         sndobj_input = sndobj.SndObj()
         sndobj_input.SetVectorSize(frame_size)
@@ -298,9 +298,9 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + ((num_frames - 1) * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
+        frame = simpl.zeros(frame_size)
         
         sndobj_input = sndobj.SndObj()
         sndobj_input.SetVectorSize(frame_size)
@@ -347,11 +347,11 @@ class TestSimplSndObj(unittest.TestCase):
         num_samples = frame_size + ((num_frames - 1) * hop_size)
         
         audio_in_data = read(self.input_file)
-        audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0
+        audio_in = simpl.asarray(audio_in_data[1]) / 32768.0
         audio_in = audio_in[0:num_samples]
-        frame = np.zeros(frame_size, dtype=np.float32)
-        sndobj_frame_out = np.zeros(hop_size, dtype=np.float32)
-        sndobj_audio_out = np.array([])
+        frame = simpl.zeros(frame_size)
+        sndobj_frame_out = simpl.zeros(hop_size)
+        sndobj_audio_out = simpl.array([])
         
         sndobj_input = sndobj.SndObj()
         sndobj_input.SetVectorSize(frame_size)

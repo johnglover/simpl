@@ -35,7 +35,7 @@ class Table {
  protected:
 
   long  m_L;         // size;
-  float* m_table;    // table
+  double* m_table;    // table
   int   m_error;     // error code
   void ZeroTable () 
     {
@@ -47,8 +47,8 @@ class Table {
  public:
 
   long GetLen() { return m_L; }
-  float* GetTable(){ return m_table; }
-  float Lookup(int pos){
+  double* GetTable(){ return m_table; }
+  double Lookup(int pos){
     return m_table[pos%m_L];
   }
 

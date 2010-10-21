@@ -30,8 +30,8 @@ ReSyn::ReSyn(){
 
 }
 
-ReSyn::ReSyn(SinAnal* input, int maxtracks, Table* table, float pitch, float scale, float tscal, 
-	     int vecsize, float sr)	  
+ReSyn::ReSyn(SinAnal* input, int maxtracks, Table* table, double pitch, double scale, double tscal, 
+	     int vecsize, double sr)	  
   : SinSyn(input, maxtracks, table, scale, vecsize, sr){
   m_pitch = pitch;
   AddMsg("pitch", 31);
@@ -42,7 +42,7 @@ ReSyn::~ReSyn(){
 }
 
 int
-ReSyn::Set(char* mess, float value){
+ReSyn::Set(char* mess, double value){
 
   switch(FindMsg(mess)){
 
@@ -67,17 +67,17 @@ ReSyn::DoProcess() {
 	
   if(m_input){
 		
-    float ampnext,amp,freq, freqnext, phase,phasenext;
-    float a2, a3, phasediff, cph;
+    double ampnext,amp,freq, freqnext, phase,phasenext;
+    double a2, a3, phasediff, cph;
     int i3, i, j, ID;
     int notcontin = 0;
     bool contin = false;
     int oldtracks = m_tracks;
-    float* tab = m_ptable->GetTable(); 
+    double* tab = m_ptable->GetTable(); 
     if((m_tracks = ((SinAnal *)m_input)->GetTracks()) >
        m_maxtracks) m_tracks = m_maxtracks;
 		
-    memset(m_output, 0, sizeof(float)*m_vecsize);
+    memset(m_output, 0, sizeof(double)*m_vecsize);
 		
     // for each track
     i = j = 0;
@@ -132,7 +132,7 @@ ReSyn::DoProcess() {
       a3 = 1./(3*m_facsqr)  * (freqnext - freq - 2*a2*m_factor);
 
       // interpolation resynthesis loop	
-      float inc1, inc2, a, ph, cnt, frac;
+      double inc1, inc2, a, ph, cnt, frac;
       int ndx;
       a = amp;
       ph = phase;

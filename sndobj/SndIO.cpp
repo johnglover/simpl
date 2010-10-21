@@ -31,7 +31,7 @@
 
 
 SndIO::SndIO(short channels, short bits, SndObj** inputlist,
-	     int vecsize, float sr){
+	     int vecsize, double sr){
 
   int n;
   m_channels = channels;
@@ -78,7 +78,7 @@ SndIO::SndIO(short channels, short bits, SndObj** inputlist,
     SndIO::SetVectorSize(int vecsize){
      m_samples = vecsize*m_channels;
     if(m_output) delete[] m_output;
-    if(!(m_output = new float[m_samples])){
+    if(!(m_output = new double[m_samples])){
       m_error = 1;
 #ifdef DEBUG
       cout << ErrorMessage();

@@ -37,20 +37,20 @@ HarmTable :: HarmTable(){
   m_harm = 1;
   m_typew = SINE;
   m_phase  = 0.f;
-  m_table = new float[m_L+1];
+  m_table = new double[m_L+1];
   MakeTable();
 
 }
 
 
-HarmTable :: HarmTable(long L, int harm, int type, float phase){
+HarmTable :: HarmTable(long L, int harm, int type, double phase){
 
   m_L = L;
   m_harm = harm;
   m_typew = type;
-  m_phase = (float)(phase*TWOPI);
+  m_phase = (double)(phase*TWOPI);
 
-  m_table = new float [m_L+1];
+  m_table = new double [m_L+1];
   MakeTable();
 
 }
@@ -76,20 +76,20 @@ HarmTable::SetHarm(int harm, int type)
 short
 HarmTable :: MakeTable(){
   
-  float max = 1.f;	
+  double max = 1.f;	
   int n = 1, harm = m_harm, i;       
 
   switch (m_typew){
   case SINE:
     for(i=0; i < m_L; i++)
-      m_table[i] = (float)(sin(i*TWOPI/m_L + m_phase)); 
+      m_table[i] = (double)(sin(i*TWOPI/m_L + m_phase)); 
     break;
 
   case SAW:
     ZeroTable();
     for(i=0; i < m_L; i++){
       for(n = 1 ; n <= harm ; n++)
-	m_table[i] += (float)((1/(float)n)*sin(n*i*TWOPI/m_L + m_phase));
+	m_table[i] += (double)((1/(double)n)*sin(n*i*TWOPI/m_L + m_phase));
       max = (fabs((double)max) < fabs((double)m_table[i])) ? m_table[i] : max;
     }
     break;
@@ -98,7 +98,7 @@ HarmTable :: MakeTable(){
     ZeroTable();
     for(i=0; i < m_L; i++){
       for(n = 1 ; n <= harm ; n+=2)
-	m_table[i] += (float)((1/(float)n)*sin(n*TWOPI*i/m_L + m_phase));		 
+	m_table[i] += (double)((1/(double)n)*sin(n*TWOPI*i/m_L + m_phase));		 
       max = (fabs((double)max) < fabs((double)m_table[i])) ? m_table[i] : max;
     }
     break;
@@ -107,7 +107,7 @@ HarmTable :: MakeTable(){
     ZeroTable();
     for(i=0; i < m_L; i++){
       for(n = 1 ; n <= harm ; n++)
-	m_table[i] += (float) sin(n*TWOPI*i/m_L + m_phase);			
+	m_table[i] += (double) sin(n*TWOPI*i/m_L + m_phase);			
       max = (fabs((double)max) < fabs((double)m_table[i])) ? m_table[i] : max;
     }
     break;

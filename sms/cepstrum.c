@@ -102,7 +102,7 @@ void sms_dCepstrum( int sizeCepstrum, sfloat *pCepstrum, int sizeFreq, sfloat *p
 {
         int i, k;
         sfloat factor;
-        sfloat fNorm = PI  / (float)iMaxFreq; /* value to normalize frequencies to 0:0.5 */
+        sfloat fNorm = PI  / (sfloat)iMaxFreq; /* value to normalize frequencies to 0:0.5 */
         //static sizeCepstrumStatic
         static CepstrumMatrices m;
         //printf("nPoints: %d, nCoeff: %d \n", m.nPoints, m.nCoeff);
@@ -176,7 +176,7 @@ void sms_dCepstrumEnvelope(int sizeCepstrum, sfloat *pCepstrum, int sizeEnv, sfl
                 {
                         sms_error("bad fft size, incremented to power of 2");
                 }
-                if ((pFftBuffer = (sfloat *) malloc(sizeFftArray * sizeof(float))) == NULL)
+                if ((pFftBuffer = (sfloat *) malloc(sizeFftArray * sizeof(sfloat))) == NULL)
                 {
                         sms_error("could not allocate memory for fft array");
                         return;

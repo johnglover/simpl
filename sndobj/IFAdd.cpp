@@ -26,7 +26,7 @@ IFAdd::IFAdd(){
 }
 
 IFAdd::IFAdd(IFGram* input, int bins, Table* table,
-	     float pitch, float scale, float tscal, int vecsize, float sr)	  
+	     double pitch, double scale, double tscal, int vecsize, double sr)	  
   : ReSyn((SinAnal *)input, bins, table, pitch, scale, tscal, vecsize, sr){
 }
 
@@ -38,13 +38,13 @@ IFAdd::DoProcess() {
 	
   if(m_input){
 		
-    float ampnext,amp,freq, freqnext, phase;
-    float inc1, inc2, a, ph, cnt, frac;
-    float a2, a3, phasediff, phasenext, cph, shf;
+    double ampnext,amp,freq, freqnext, phase;
+    double inc1, inc2, a, ph, cnt, frac;
+    double a2, a3, phasediff, phasenext, cph, shf;
     bool lock;
     int i2, i, bins = m_maxtracks, ndx;
-    float* tab = m_ptable->GetTable(); 
-    memset(m_output, 0, sizeof(float)*m_vecsize);
+    double* tab = m_ptable->GetTable(); 
+    memset(m_output, 0, sizeof(double)*m_vecsize);
 
     shf = m_tscal*m_pitch;
     if(shf  - Ftoi(shf)) lock = false;

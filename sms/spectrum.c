@@ -312,14 +312,14 @@ void sms_spectrumRMS( int sizeMag, sfloat *pInRect, sfloat *pOutMag)
  * sfloat *pFWaveform           output waveform
  * int sizeWave                size of output waveform
  */
-/* int sms_invSpectrum (sfloat *pFMagSpectrum, float *pFPhaseSpectrum, */
+/* int sms_invSpectrum (sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum, */
 /*                           int sizeFft, sfloat *pFWaveform, int sizeWave) */
 /* { */
 /* 	int sizeMag = sizeFft >> 1, i, it2; */
 /* 	sfloat *pFBuffer, fPower; */
   
 /* 	/\* allocate buffer *\/ */
-/* 	if ((pFBuffer = (sfloat *) calloc(sizeFft+1, sizeof(float))) == NULL) */
+/* 	if ((pFBuffer = (sfloat *) calloc(sizeFft+1, sizeof(sfloat))) == NULL) */
 /* 		return -1; */
    
 /* 	/\* convert from polar coordinates to rectangular  *\/ */

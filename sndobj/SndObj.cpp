@@ -46,7 +46,7 @@ SndObj::SndObj(){
 	
 }
 
-SndObj::SndObj(SndObj* input, int vecsize, float sr){
+SndObj::SndObj(SndObj* input, int vecsize, double sr){
   m_output = NULL;
   SetVectorSize(vecsize);	
   m_input = input; 
@@ -135,7 +135,7 @@ SndObj::Connect(char* mess, void *input){
 }
 
 int 
-SndObj::Set(char* mess, float value){
+SndObj::Set(char* mess, double value){
 
   switch (FindMsg(mess)){
 
@@ -159,7 +159,7 @@ SndObj::Set(char* mess, float value){
 void
 SndObj::SetVectorSize(int vecsize){
   if(m_output) delete[] m_output;
-  if(!(m_output = new float[vecsize])){
+  if(!(m_output = new double[vecsize])){
     m_error = 1;
 #ifdef DEBUG
     cout << ErrorMessage();

@@ -31,35 +31,35 @@ class SinSyn : public SndObj {
 
  protected:
 
-  float m_size;
+  double m_size;
   Table* m_ptable;
 
-  float m_factor;
-  float m_facsqr;
-  float m_LoTWOPI;
-  float m_scale;
-  float m_incr;
-  float m_ratio;
+  double m_factor;
+  double m_facsqr;
+  double m_LoTWOPI;
+  double m_scale;
+  double m_incr;
+  double m_ratio;
 
   int m_tracks;
   int* m_trackID;
   int m_maxtracks;
  
-  float* m_phases;
-  float* m_freqs;
-  float* m_amps;
+  double* m_phases;
+  double* m_freqs;
+  double* m_amps;
  
  public:
 
   SinSyn();
-  SinSyn(SinAnal* input, int maxtracks, Table* table, float scale=1.f, 
-	 int vecsize=DEF_VECSIZE, float sr=DEF_SR);
+  SinSyn(SinAnal* input, int maxtracks, Table* table, double scale=1.f, 
+	 int vecsize=DEF_VECSIZE, double sr=DEF_SR);
 
   ~SinSyn();
   void SetTable(Table* table); 
   void SetMaxTracks(int maxtracks);
-  void SetScale(float scale) { m_scale = scale; }
-  int Set(char* mess, float value);
+  void SetScale(double scale) { m_scale = scale; }
+  int Set(char* mess, double value);
   int Connect(char* mess, void* input);
   short DoProcess();
 

@@ -82,8 +82,8 @@ class SndIO {
  protected:
  
   SndObj**  m_IOobjs; 
-  float* m_output;
-  float m_sr;
+  double* m_output;
+  double m_sr;
   short m_channels;
   short m_bits;
   int m_vecsize;
@@ -100,7 +100,7 @@ class SndIO {
  public:
   short m_sampsize;
          
-  float GetSr(){ return m_sr; }
+  double GetSr(){ return m_sr; }
   int   GetVectorSize() { return m_vecsize; }
   void SetVectorSize(int vecsize);
   void LimitVectorSize(int limit) {
@@ -112,8 +112,8 @@ class SndIO {
   void RestoreVectorSize(){ m_vecsize = m_vecsize_max; }
   short GetChannels() { return m_channels; }
   short GetSize() { return m_bits; }
-  float Output(int pos){ return m_output[pos]; }
-  float Output(int pos, int channel){
+  double Output(int pos){ return m_output[pos]; }
+  double Output(int pos, int channel){
     return m_output[(pos*m_channels)+(channel-1)];
   }
   short SetOutput(short channel, SndObj* input){
@@ -124,7 +124,7 @@ class SndIO {
   }
          
   SndIO(short channels=1, short bits=16,SndObj** inputlist=0, 
-	int vecsize = DEF_VECSIZE, float sr = DEF_SR);
+	int vecsize = DEF_VECSIZE, double sr = DEF_SR);
   virtual ~SndIO();
   virtual short Read();
   virtual short Write();

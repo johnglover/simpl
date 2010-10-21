@@ -29,19 +29,19 @@
 
 PVA::PVA(){
   m_rotcount = 0;
-  m_phases = new float[m_halfsize];
-  memset(m_phases, 0, sizeof(float)*m_halfsize);
+  m_phases = new double[m_halfsize];
+  memset(m_phases, 0, sizeof(double)*m_halfsize);
   m_factor = m_sr/(m_hopsize*TWOPI);
 }
 
 
-PVA::PVA(Table* window, SndObj* input, float scale,
-	 int fftsize, int hopsize, float sr)
+PVA::PVA(Table* window, SndObj* input, double scale,
+	 int fftsize, int hopsize, double sr)
   :FFT(window, input, scale, fftsize, hopsize, sr)
 {
   m_rotcount = 0;
-  m_phases = new float[m_halfsize];
-  memset(m_phases, 0, sizeof(float)*m_halfsize);
+  m_phases = new double[m_halfsize];
+  memset(m_phases, 0, sizeof(double)*m_halfsize);
   m_factor = m_sr/(m_hopsize*TWOPI);
 }
 
@@ -53,7 +53,7 @@ PVA::~PVA(){
 
 
 int
-PVA::Set(char* mess, float value){
+PVA::Set(char* mess, double value){
 
   switch(FindMsg(mess)){
 
@@ -84,7 +84,7 @@ PVA::SetHopSize(int hopsize){
 }
 
 void
-PVA::pvanalysis(float* signal){
+PVA::pvanalysis(double* signal){
 
   double re, im, pha, diff; 
   int i2;
@@ -105,12 +105,12 @@ PVA::pvanalysis(float* signal){
     else {
       pha = atan2(im,re);
       diff = pha - m_phases[i2];
-      m_phases[i2] = (float) pha;
+      m_phases[i2] = (double) pha;
 
       while(diff > PI) diff -= TWOPI;
       while(diff < -PI) diff += TWOPI;
     }
-    m_output[i+1] = (float) diff*m_factor + i2*m_fund;
+    m_output[i+1] = (double) diff*m_factor + i2*m_fund;
 
   }
 
@@ -123,7 +123,7 @@ PVA::DoProcess(){
   if(!m_error){
     if(m_input){
       if(m_enable){
-	int i; float sig = 0.f;
+	int i; double sig = 0.f;
 	for(m_vecpos = 0; m_vecpos < m_hopsize; m_vecpos++) {
 	  // signal input
 	  sig = m_input->Output(m_vecpos);		
@@ -131,7 +131,7 @@ PVA::DoProcess(){
 	  // according to a time pointer (kept by counter[n])
 	  // input is also rotated according to the input time.
 	  for(i=0;i < m_frames; i++){
-	    m_sigframe[i][m_rotcount]= (float) sig*m_table->Lookup(m_counter[i]);
+	    m_sigframe[i][m_rotcount]= (double) sig*m_table->Lookup(m_counter[i]);
 	    m_counter[i]++;		   
 	  }  
 	  m_rotcount++;

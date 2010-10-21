@@ -36,7 +36,7 @@ int sms_stocAnalysis ( int sizeWindow, sfloat *pResidual, sfloat *pWindow, SMS_D
 {
         int i;
         sfloat fMag = 0.0;
-        float fStocNorm;
+        sfloat fStocNorm;
 
         static sfloat *pMagSpectrum;
         static int sizeWindowStatic = 0;

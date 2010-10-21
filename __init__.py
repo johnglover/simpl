@@ -20,10 +20,15 @@ from sndobj import SndObjPeakDetection, SndObjPartialTracking, SndObjSynthesis
 from sms import SMSPeakDetection, SMSPartialTracking, SMSSynthesis, SMSResidual
 from mq import MQPeakDetection, MQPartialTracking
 
-from numpy import array as np_array
-def array (n, type='float32'):
-    return(np_array(n, type))
+import numpy
+#float = numpy.float64
 
-from numpy import zeros as np_zeros
-def zeros (n, type='float32'):
-    return(np_zeros(n, type))
+def array (n, type=float):
+    return(numpy.array(n, dtype=type))
+
+def asarray (n, type=float):
+    return(numpy.asarray(n, dtype=type))
+
+def zeros (n, type=float):
+    return(numpy.zeros(n, dtype=type))
+

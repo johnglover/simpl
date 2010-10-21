@@ -35,8 +35,8 @@ class IFAdd : public ReSyn {
  public:
 
   IFAdd();
-  IFAdd(IFGram* input, int bins, Table* table, float pitch=1.f, float scale=1.f,
-        float tscal=1.f, int vecsize=DEF_VECSIZE, float sr=DEF_SR);
+  IFAdd(IFGram* input, int bins, Table* table, double pitch=1.f, double scale=1.f,
+        double tscal=1.f, int vecsize=DEF_VECSIZE, double sr=DEF_SR);
   ~IFAdd();
   short DoProcess();
 

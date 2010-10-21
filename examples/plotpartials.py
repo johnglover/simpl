@@ -16,12 +16,11 @@
 
 import simpl
 import simpl.plot
-import numpy as np
 from scipy.io.wavfile import read
 
-input_file = '../test/audio/flute.wav'
+input_file = '../tests/audio/flute.wav'
 audio_in_data = read(input_file)
-audio_in = np.asarray(audio_in_data[1], np.float32) / 32768.0  # values between -1 and 1
+audio_in = simpl.asarray(audio_in_data[1]) / 32768.0  # values between -1 and 1
 sample_rate = audio_in_data[0]
 
 # take just the first few frames

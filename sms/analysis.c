@@ -222,7 +222,7 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
 		pSpectralPeaks->nPeaksFound = pAnalParams->ppFrames[iCurrentFrame]->nPeaks;
 		pSpectralPeaks->nPeaks = pAnalParams->peakParams.iMaxPeaks;
 		pSpectralPeaks->pSpectralPeaks = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks;
-        /* convert peak amps to mag */
+        /* convert peak amps to linear */
         for(i = 0; i < pSpectralPeaks->nPeaksFound; i++)
         {
             pSpectralPeaks->pSpectralPeaks[i].fMag = sms_dBToMag(pSpectralPeaks->pSpectralPeaks[i].fMag);
@@ -235,8 +235,8 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
 	}
 }
 
-void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, float* amps,
-		          int numfreqs, float* freqs, int numphases, float* phases)
+void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, sfloat* amps,
+		          int numfreqs, sfloat* freqs, int numphases, sfloat* phases)
 {
 	int i;
 	SMS_AnalFrame *tempFrame;
@@ -379,7 +379,7 @@ void sms_approxResidual(int sizeResidual, sfloat* pResidual,
 //	//				              (iSoundLoc - pAnalParams->soundBuffer.iMarker),
 //	//				              sizeResidual);
 //		int sizeData = sizeResidual;
-//		if ((pFResidual = (sfloat *) calloc (sizeResidual, sizeof(float))) == NULL)
+//		if ((pFResidual = (sfloat *) calloc (sizeResidual, sizeof(sfloat))) == NULL)
 //		{
 //			sms_error("sms_analyze: error allocating memory for pFResidual");
 //			return -1;
@@ -387,7 +387,7 @@ void sms_approxResidual(int sizeResidual, sfloat* pResidual,
 //		if (sizeWindowArray != sizeData)
 //		{
 //			if(sizeWindowArray != 0) free(pWindow);
-//			if((pWindow = (sfloat *) calloc(sizeData, sizeof(float))) == NULL)
+//			if((pWindow = (sfloat *) calloc(sizeData, sizeof(sfloat))) == NULL)
 //			{
 //					sms_error("sms_analyze: error allocating memory for pWindow");
 //					return -1;
@@ -550,7 +550,7 @@ int sms_analyze (int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_An
 			int sizeData = MIN(pAnalParams->soundBuffer.sizeBuffer -
 				               (iSoundLoc - pAnalParams->soundBuffer.iMarker),
 				               sizeResidual);
-			if ((pFResidual = (sfloat *) calloc (sizeResidual, sizeof(float))) == NULL)
+			if ((pFResidual = (sfloat *) calloc (sizeResidual, sizeof(sfloat))) == NULL)
 			{
 				sms_error("sms_analyze: error allocating memory for pFResidual");
 				return -1;
@@ -558,7 +558,7 @@ int sms_analyze (int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_An
 			if (sizeWindowArray != sizeData)
 			{
 				if(sizeWindowArray != 0) free(pWindow);
-				if((pWindow = (sfloat *) calloc(sizeData, sizeof(float))) == NULL)
+				if((pWindow = (sfloat *) calloc(sizeData, sizeof(sfloat))) == NULL)
 				{
 					sms_error("sms_analyze: error allocating memory for pWindow");
 					return -1;

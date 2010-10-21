@@ -46,11 +46,11 @@ class IFFT : public SndObj {
   int m_halfsize; // 1/2 fftsize
   int *m_counter; // counter 
   rfftw_plan m_plan; // FFTW initialisation
-  float m_fund;
+  double m_fund;
 
   int m_frames;  // frame overlaps
-  float** m_sigframe; // signal frames
-  float* m_ffttmp; // tmp vector for fft transform
+  double** m_sigframe; // signal frames
+  double* m_ffttmp; // tmp vector for fft transform
   int m_cur;    // index into current frame 
 
   Table*  m_table; // window
@@ -60,7 +60,7 @@ class IFFT : public SndObj {
 
  private:
   // ifft wrapper method
-  void inline ifft(float* signal);
+  void inline ifft(double* signal);
 
 
 
@@ -68,7 +68,7 @@ class IFFT : public SndObj {
 
   IFFT();
   IFFT(Table* window, SndObj* input, int fftsize = DEF_FFTSIZE, 
-       int hopsize=DEF_VECSIZE, float sr=DEF_SR);
+       int hopsize=DEF_VECSIZE, double sr=DEF_SR);
   ~IFFT();
 
 
@@ -76,7 +76,7 @@ class IFFT : public SndObj {
   int GetHopSize() { return m_hopsize; }
   void SetWindow(Table* window){ m_table = window;}
   int Connect(char* mess, void* input);
-  int Set(char* mess, float value);
+  int Set(char* mess, double value);
   virtual void SetFFTSize(int fftsize);
   virtual void SetHopSize(int hopsize);
 

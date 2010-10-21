@@ -206,7 +206,7 @@ class SndObjSynthesis(simpl.Synthesis):
         self._synth.Set('max tracks', num_partials)
         self._max_partials = num_partials
         
-    def _synth_frame(self, peaks):
+    def synth_frame(self, peaks):
         "Synthesises a frame of audio, given a list of peaks from tracks"
         self._analysis.peaks = peaks
         if len(peaks) > self._max_partials:
@@ -214,34 +214,4 @@ class SndObjSynthesis(simpl.Synthesis):
         self._synth.DoProcess()
         self._synth.PopOut(self._current_frame)
         return self._current_frame
-
-    def synth(self, partials, original=None):
-        "Synthesise audio from the given partials"
-        # return an empty frame if there are no partials
-        if not partials:
-            return simpl.array([])
-        
-        audio_out = simpl.array([])
-        current_partials = []
-        num_frames = max([partial.get_last_frame() for partial in partials])
-
-        # for each frame of audio
-        for frame_number in range(num_frames):
-            # get all partials that start on this frame, append to list of continuing partials
-            current_partials.extend([partial.list_peaks() for partial in partials if partial.starting_frame == frame_number])    
-            # get all peaks to be synthesised for this frame
-            current_peaks = []
-            for partial_number, partial in enumerate(current_partials):
-                try:
-                    current_peaks.append(partial.next())
-                except StopIteration:
-                    # End of partial. Set this partial to None, remove it from the list later
-                    current_partials[partial_number] = None
-                    
-            # synth frame
-            audio_out = np.hstack((audio_out, self._synth_frame(current_peaks)))
-            # remove any finished partials
-            current_partials = [partial for partial in current_partials if partial]
-            
-        return audio_out
 

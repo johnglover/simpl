@@ -282,6 +282,8 @@ class SMSSynthesis(simpl.Synthesis):
         pysms.sms_init()
         self._synth_params = pysms.SMS_SynthParams() 
         self._synth_params.iDetSynthType = pysms.SMS_DET_SIN
+        # use the default simpl hop size instead of the default SMS hop size
+        self._synth_params.sizeHop = self._hop_size 
         pysms.sms_initSynth(self._synth_params)
         self._current_frame = simpl.zeros(self.hop_size)
         self._analysis_frame = pysms.SMS_Data()
@@ -295,8 +297,6 @@ class SMSSynthesis(simpl.Synthesis):
         SMSSynthesis._instances -= 1
         
     # properties
-    sampling_rate = property(lambda self: self.get_sampling_rate(),
-                             lambda self, x: self.set_sampling_rate(x))
     synthesis_type = property(lambda self: self.get_synthesis_type(),
                               lambda self, x: self.set_synthesis_type(x))
     num_stochastic_coeffs = property(lambda self: self.get_num_stochastic_coeffs(),
@@ -402,3 +402,4 @@ class SMSResidual(simpl.Residual):
         if pysms.sms_findResidual(synth, original, residual, self._analysis_params) == -1:
             raise Exception("Residual error: Synthesised audio and original audio have different lengths")
         return residual
+

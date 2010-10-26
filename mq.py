@@ -63,7 +63,7 @@ class MQPeakDetection(simpl.PeakDetection):
                 p = simpl.Peak()
                 p.amplitude = current_mag
                 p.frequency = (bin - 1) * self._fundamental
-                p.phase = np.angle(spectrum[bin-1])
+                p.phase = np.angle(f[bin-1])
                 current_peaks.append(p)
             prev_mag = current_mag
             current_mag = next_mag
@@ -147,7 +147,7 @@ class MQPartialTracking(simpl.PartialTracking):
         for peak in self._current_frame:
             if peak.is_start_of_partial():
                 partial = simpl.Partial()
-                partial.starting_frame = frame_number-1
+                partial.starting_frame = frame_number
                 partial.add_peak(peak)
                 self.partials.append(partial)
             match = self._find_closest_match(peak, frame)
@@ -179,7 +179,7 @@ class MQPartialTracking(simpl.PartialTracking):
                 # create a new track by adding a peak in the current frame, matched to p,
                 # with amplitude 0
                 partial = simpl.Partial()
-                partial.starting_frame = frame_number-1
+                partial.starting_frame = frame_number
                 new_peak = simpl.Peak()
                 new_peak.amplitude = 0
                 new_peak.frequency = p.frequency
@@ -188,4 +188,58 @@ class MQPartialTracking(simpl.PartialTracking):
                 self.partials.append(partial)
         self._current_frame = frame        
         return frame_partials
+
+
+class MQSynthesis(simpl.Synthesis):
+    def __init__(self):
+        simpl.Synthesis.__init__(self)
+        self._current_frame = simpl.zeros(self.frame_size)
+
+    def hz_to_radians(self, frequency):
+        if not frequency:
+            return 0.0
+        else:
+            return (frequency * 2.0 * np.pi) / self.sampling_rate
+    
+    def synth_frame(self, peaks):
+        "Synthesises a frame of audio, given a list of peaks from tracks"
+        self._current_frame *= 0.0
+
+        for p in peaks:
+            # get values for last amplitude, frequency and phase
+            # these are the initial values of the instantaneous amplitude/frequency/phase
+            current_freq = self.hz_to_radians(p.frequency)
+            if not p.previous_peak:
+                prev_amp = 0.0
+                prev_freq = current_freq 
+                prev_phase = p.phase - (current_freq * self.frame_size)
+                while prev_phase >= np.pi: prev_phase -= 2.0 * np.pi 
+                while prev_phase < -np.pi: prev_phase += 2.0 * np.pi
+            else:
+                prev_amp = p.previous_peak.amplitude
+                prev_freq = self.hz_to_radians(p.previous_peak.frequency)
+                prev_phase = p.previous_peak.phase
+
+            # amplitudes are linearly interpolated between frames
+            inst_amp = prev_amp
+            amp_inc = (p.amplitude - prev_amp) / self.frame_size
+
+            # freqs/phases are calculated by cubic interpolation
+            freq_diff = current_freq - prev_freq
+            x = ((prev_phase + (prev_freq * self.frame_size) - p.phase) +
+                 (freq_diff * (self.frame_size / 2.0)))
+            x /= (2.0 * np.pi)
+            m = int(np.round(x))
+            phase_diff = p.phase - prev_phase - (prev_freq * self.frame_size) + (2.0 * np.pi * m)
+            alpha = ((3.0 / (self.frame_size**2)) * phase_diff) - (freq_diff / self.frame_size)
+            beta = ((-2.0 / (self.frame_size**3)) * phase_diff) + (freq_diff / (self.frame_size**2))
+
+            # calculate output samples
+            for i in range(self.frame_size):
+                inst_amp += amp_inc
+                inst_phase = prev_phase + (prev_freq * i) + (alpha * (i**2)) + (beta * (i**3))
+                #print inst_phase
+                self._current_frame[i] += (2.0 * inst_amp) * np.cos(inst_phase)
+
+        return self._current_frame
 

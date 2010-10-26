@@ -18,10 +18,10 @@ from basetypes import Peak, PeakDetection, Partial, PartialTracking, Synthesis, 
 from basetypes import compare_peak_amps, compare_peak_freqs
 from sndobj import SndObjPeakDetection, SndObjPartialTracking, SndObjSynthesis
 from sms import SMSPeakDetection, SMSPartialTracking, SMSSynthesis, SMSResidual
-from mq import MQPeakDetection, MQPartialTracking
+from mq import MQPeakDetection, MQPartialTracking, MQSynthesis
+from plot import plot_peaks, plot_partials
 
 import numpy
-#float = numpy.float64
 
 def array (n, type=float):
     return(numpy.array(n, dtype=type))

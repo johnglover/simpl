@@ -267,15 +267,29 @@ class PartialTracking(object):
 class Synthesis(object):
     "Synthesise audio from spectral analysis data"
     def __init__(self):
+        self._frame_size = 512
         self._hop_size = 512
         self._max_partials = 100
+        self._sampling_rate = 44100
         
     # properties
+    frame_size = property(lambda self: self.get_frame_size(),
+                          lambda self, x: self.set_frame_size(x))
     hop_size = property(lambda self: self.get_hop_size(),
                         lambda self, x: self.set_hop_size(x))
     max_partials = property(lambda self: self.get_max_partials(),
                             lambda self, x: self.set_max_partials(x))
+    max_partials = property(lambda self: self.get_max_partials(),
+                            lambda self, x: self.set_max_partials(x))
+    sampling_rate = property(lambda self: self.get_sampling_rate(),
+                             lambda self, x: self.set_sampling_rate(x))
         
+    def get_frame_size(self):
+        return self._frame_size
+    
+    def set_frame_size(self, frame_size):
+        self._frame_size = frame_size
+
     def get_hop_size(self):
         return self._hop_size
     
@@ -288,6 +302,12 @@ class Synthesis(object):
     def set_max_partials(self, num_partials):
         self._max_partials = num_partials
         
+    def get_sampling_rate(self):
+        return self._sampling_rate
+    
+    def set_sampling_rate(self, sampling_rate):
+        self._sampling_rate = sampling_rate
+
     def synth_frame(self, partials):
         "Synthesises a frame of audio, given a list of peaks from tracks"
         raise Exception("NotYetImplemented")
@@ -336,3 +356,4 @@ class Residual(object):
     def synth(self, synth, original):
         "Calculate and return a synthesised residual signal"
         raise Exception("NotYetImplemented")
+

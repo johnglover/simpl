@@ -59,7 +59,7 @@ static void SinePhaSynth (sfloat fFreq, sfloat fMag, sfloat fPhase,
             (pLastFrame->pFSinFreq[iTrack] * sizeBuffer);
     fPhase = fTmp - floor(fTmp / TWO_PI) * TWO_PI;
   }
-  
+
   /* caculate the instantaneous amplitude */
   fMagIncr = (fMag - pLastFrame->pFSinAmp[iTrack]) / sizeBuffer;
   fInstMag = pLastFrame->pFSinAmp[iTrack];

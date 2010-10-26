@@ -117,3 +117,4 @@ mq:
 - fix peak detection module
 - window size should change depending on detected pitch. No pitch detection algorithm described in the
   original paper, so can use the SMS algorithm for now.
+

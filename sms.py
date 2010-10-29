@@ -46,9 +46,8 @@ class SMSPeakDetection(simpl.PeakDetection):
         # By default, SMS will change the size of the frames being read depending on the
         # detected fundamental frequency (if any) of the input sound. To prevent this 
         # behaviour (useful when comparing different analysis algorithms), set the
-        # static_frame_size variable to True
-        self.static_frame_size = False
-        #self.static_frame_size = True
+        # _static_frame_size variable to True
+        self._static_frame_size = False
         # set default hop and frame sizes to match those in the parent class
         self._analysis_params.iFrameRate = self.sampling_rate / self._hop_size
         pysms.sms_changeHopSize(self._hop_size, self._analysis_params)
@@ -142,6 +141,9 @@ class SMSPeakDetection(simpl.PeakDetection):
     def set_window_size(self, window_size):
         self._window_size = window_size
         self._analysis_params.iDefaultSizeWindow = window_size
+
+    def get_next_frame_size(self):
+        return self._analysis_params.sizeNextRead
         
     def find_peaks_in_frame(self, frame):
         "Find and return all spectral peaks in a given frame of audio"
@@ -168,22 +170,8 @@ class SMSPeakDetection(simpl.PeakDetection):
         """Find and return all spectral peaks in a given audio signal.
         If the signal contains more than 1 frame worth of audio, it will be broken
         up into separate frames, with a list of peaks returned for each frame."""
-        self.peaks = []
-        pos = 0
         self._analysis_params.iSizeSound = len(audio)
-        while pos < len(audio):
-            # change frame size based on sizeNextRead
-            if not self.static_frame_size:
-                if pos + self.frame_size < len(audio):
-                    self.frame_size = self._analysis_params.sizeNextRead
-                else:
-                    self.frame_size = len(audio) - pos
-            # get the next frame
-            frame = audio[pos:pos+self.frame_size]
-            # find peaks
-            self.peaks.append(self.find_peaks_in_frame(frame))
-            pos += self.hop_size
-        return self.peaks
+        return simpl.PeakDetection.find_peaks(self, audio)
     
 
 class SMSPartialTracking(simpl.PartialTracking):

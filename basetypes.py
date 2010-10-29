@@ -120,6 +120,7 @@ class PeakDetection(object):
     def __init__(self):
         self._sampling_rate = 44100
         self._frame_size = 2048
+        self._static_frame_size = True
         self._hop_size = 512
         self._max_peaks = 100
         self._window_type = "hamming"
@@ -177,6 +178,9 @@ class PeakDetection(object):
     def set_window_size(self, window_size):
         self._window_size = window_size
         
+    def get_next_frame_size(self):
+        return self._frame_size
+
     def find_peaks_in_frame(self, frame):
         "Find and return all spectral peaks in a given frame of audio"
         current_peaks = []
@@ -189,6 +193,9 @@ class PeakDetection(object):
         self.peaks = []
         pos = 0
         while pos < len(audio):
+            # get the next frame size
+            if not self._static_frame_size:
+                self.frame_size = self.get_next_frame_size()
             # get the next frame
             frame = audio[pos:pos+self.frame_size]
             # pad if necessary

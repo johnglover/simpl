@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 Introduction
 ------------
 
-Simpl is an open source library for sinusoidal modelling written in the Python
-programming language and making use of Scientific Python (SciPy). The aim of this
+Simpl is an open source library for sinusoidal modelling written in C/C++ and Python,
+and making use of Scientific Python (SciPy). The aim of this
 project is to tie together many of the existing sinusoidal modelling implementations
 into a single unified system with a consistent API, as well as providing implementations
 of some recently published sinusoidal modelling algorithms, many of which have yet
@@ -79,7 +79,7 @@ See the main project page at http://mtg.upf.edu/static/libsms for more informati
 
 The MQ algorithm is based on the following paper:
 R. McAulay, T. Quatieri, "Speech Analysis/Synthesis Based on a Sinusoidal Representation", 
-IEEE Transaction on Acoustics, Speech and Signal Processing, vol. 34, no. 4, pp. 744Ð754, 1986.
+IEEE Transaction on Acoustics, Speech and Signal Processing, vol. 34, no. 4, pp. 744-754, 1986.
 
 
 To Do
@@ -114,7 +114,6 @@ sms:
 - include stochastic residual synthesis in SMSResidual
 
 mq:
-- fix peak detection module
 - window size should change depending on detected pitch. No pitch detection algorithm described in the
   original paper, so can use the SMS algorithm for now.
 

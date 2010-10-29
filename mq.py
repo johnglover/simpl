@@ -16,6 +16,70 @@
 
 import simpl
 import numpy as np
+import operator as op
+
+def best_match(f, candidates):
+    best_diff = 44100.0
+    best_freq = 0.0
+    pos = 0
+    for i, c in enumerate(candidates):
+        if abs(f - c) < best_diff:
+            best_diff = abs(f - c)
+            best_freq = c
+            pos = i
+    return pos
+
+def TWM(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
+    # TWM parameters
+    p = 0.5
+    q = 1.4
+    r = 0.5
+    rho = 0.33
+    N = 8
+    Err = {}
+
+    max_amp = max([x.amplitude for x in peaks])
+
+    # remove all peaks with amplitude of less than 10% of max
+    # note: this is not in the paper, found that it improved accuracy however
+    peaks = [x for x in peaks if x.amplitude >= (max_amp * 0.1)]
+
+    # get the max frequency of the remaining peaks
+    max_freq = max([x.frequency for x in peaks])
+    if max_freq < f_max:
+        f_max = max_freq
+
+    f_current = f_min
+    while f_current < f_max:
+        Err_pm = 0.0
+        Err_mp = 0.0
+        harmonics = np.arange(f_current, f_max, f_current)
+        if len(harmonics) > N:
+            harmonics = harmonics[0:N]
+
+        # calculate mismatch between predicted and actual peaks
+        for h in harmonics:
+            k = best_match(f_current, [x.frequency for x in peaks])
+            f = peaks[k].frequency
+            a = peaks[k].amplitude
+            Err_pm += abs(h-f) * (h**-p) + (a / max_amp) * ((q * (abs(h-f)) * (h**-p) -r))
+
+        # calculate the mismatch between actual and predicted peaks
+        for x in peaks:
+            k = best_match(x.frequency, harmonics)
+            f = harmonics[k]
+            xf = x.frequency
+            a = x.amplitude # TODO: is this value for 'a' correct?
+            Err_mp += abs(xf-f) * (xf**-p) + (a / max_amp) * ((q * (abs(xf-f)) * (xf**-p) -r))
+
+        # calculate the total error for f_current as a fundamental frequency
+        Err[f_current] = (Err_pm / len(harmonics)) + (rho * Err_mp / len(peaks))
+        f_current += f_step
+    
+    # return the value with the minimum total error
+    print min(Err.iteritems(), key=op.itemgetter(1))[0]
+    return min(Err.iteritems(), key=op.itemgetter(1))[0]
+
 
 class MQPeakDetection(simpl.PeakDetection):
     """Peak detection, based on the McAulay and Quatieri (MQ) algorithm.
@@ -32,10 +96,13 @@ class MQPeakDetection(simpl.PeakDetection):
         self._window = simpl.zeros(self._window_size)
         self._create_analysis_window()
         self._fundamental = float(self._sampling_rate) / self._window_size
+        self._static_frame_size = False
+        self._current_peaks = []
         
     def set_window_size(self, window_size):
         self._window_size = window_size
         self._fundamental = float(self._sampling_rate) / window_size
+        self._create_analysis_window()
         
     def _create_analysis_window(self):
         "Creates the analysis window, a normalised hamming window"
@@ -44,11 +111,19 @@ class MQPeakDetection(simpl.PeakDetection):
         for i in range(self._window_size):
             s += self._window[i]
         self._window /= s
+
+    def get_next_frame_size(self):
+        if not len(self._current_peaks):
+            return self._frame_size
+
+        TWM(self._current_peaks, f_min=self._fundamental, f_step=self._fundamental)
+
+        return self._frame_size
         
     def find_peaks_in_frame(self, frame):
         """Selects the highest peaks from the given spectral frame, up to a maximum of 
         self._max_peaks peaks."""
-        current_peaks = []        
+        self._current_peaks = []        
         # fft of frame
         f = np.fft.rfft(frame * self._window)
         spectrum = abs(f)
@@ -64,17 +139,17 @@ class MQPeakDetection(simpl.PeakDetection):
                 p.amplitude = current_mag
                 p.frequency = (bin - 1) * self._fundamental
                 p.phase = np.angle(f[bin-1])
-                current_peaks.append(p)
+                self._current_peaks.append(p)
             prev_mag = current_mag
             current_mag = next_mag
         # sort peaks, largest amplitude first, and up to a max of self.num_peaks peaks        
-        current_peaks.sort(cmp=simpl.compare_peak_amps)   
-        current_peaks.reverse()
-        if len(current_peaks) > self._max_peaks:
-            current_peaks = current_peaks[0:self._max_peaks]
+        self._current_peaks.sort(cmp=simpl.compare_peak_amps)   
+        self._current_peaks.reverse()
+        if len(self._current_peaks) > self._max_peaks:
+            self._current_peaks = self._current_peaks[0:self._max_peaks]
         # put back into ascending frequency order
-        current_peaks.sort(cmp=simpl.compare_peak_freqs)
-        return current_peaks
+        self._current_peaks.sort(cmp=simpl.compare_peak_freqs)
+        return self._current_peaks
 
 
 class MQPartialTracking(simpl.PartialTracking):
@@ -238,7 +313,6 @@ class MQSynthesis(simpl.Synthesis):
             for i in range(self.frame_size):
                 inst_amp += amp_inc
                 inst_phase = prev_phase + (prev_freq * i) + (alpha * (i**2)) + (beta * (i**3))
-                #print inst_phase
                 self._current_frame[i] += (2.0 * inst_amp) * np.cos(inst_phase)
 
         return self._current_frame

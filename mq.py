@@ -19,7 +19,7 @@ import numpy as np
 import operator as op
 
 def best_match(f, candidates):
-    best_diff = 44100.0
+    best_diff = 22050.0
     best_freq = 0.0
     pos = 0
     for i, c in enumerate(candidates):
@@ -77,7 +77,6 @@ def TWM(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
         f_current += f_step
     
     # return the value with the minimum total error
-    print min(Err.iteritems(), key=op.itemgetter(1))[0]
     return min(Err.iteritems(), key=op.itemgetter(1))[0]
 
 
@@ -98,6 +97,13 @@ class MQPeakDetection(simpl.PeakDetection):
         self._fundamental = float(self._sampling_rate) / self._window_size
         self._static_frame_size = False
         self._current_peaks = []
+        self._freq_estimates = []
+        # no. frames to use to estimate the average pitch (1/4 second window)
+        self._avg_freq_frames = int(0.25 * self.sampling_rate / self.frame_size)
+
+    def set_frame_size(self, frame_size):
+        self._frame_size = frame_size
+        self.window_size = frame_size
         
     def set_window_size(self, window_size):
         self._window_size = window_size
@@ -116,9 +122,22 @@ class MQPeakDetection(simpl.PeakDetection):
         if not len(self._current_peaks):
             return self._frame_size
 
-        TWM(self._current_peaks, f_min=self._fundamental, f_step=self._fundamental)
+        # frame size must be at least 2.5 times the average pitch period,
+        # where the average is taken over 1/4 second.
+        # TODO: average should not include frames corresponding to unvoiced speech,
+        # ie noisy frames
+        self._freq_estimates.append(TWM(self._current_peaks, f_min=self._fundamental, 
+                                        f_step=self._fundamental))
+        if len(self._freq_estimates) > self._avg_freq_frames:
+            self._freq_estimates.pop(0)
 
-        return self._frame_size
+        avg_freq = sum(self._freq_estimates) / len(self._freq_estimates)
+        pitch_period = float(self.sampling_rate) / avg_freq
+
+        if self._frame_size < (2.5 * pitch_period):
+            return int(2.5 * pitch_period)
+        else:
+            return self._frame_size
         
     def find_peaks_in_frame(self, frame):
         """Selects the highest peaks from the given spectral frame, up to a maximum of 

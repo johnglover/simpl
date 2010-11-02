@@ -111,7 +111,3 @@ sms:
 - improve synthesis accuracy beyond 3 decimal places
 - include stochastic residual synthesis in SMSResidual
 
-mq:
-- window size should change depending on detected pitch. No pitch detection algorithm described in the
-  original paper, so can use the SMS algorithm for now.
-

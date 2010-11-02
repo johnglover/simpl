@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import simpl
-import simpl.plot
+import matplotlib.pyplot as plt
 from scipy.io.wavfile import read
 
 input_file = '../tests/audio/flute.wav'
@@ -31,4 +31,5 @@ pd.max_peaks = 20
 peaks = pd.find_peaks(audio)
 # plot peaks using matplotlib
 simpl.plot.plot_peaks(peaks)
-simpl.plot.show()
+plt.show()
+

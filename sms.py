@@ -24,7 +24,7 @@ class SMSPeakDetection(simpl.PeakDetection):
     def __init__(self):
         # limit this to only 1 instance at a time as calls to libsms are not independent,
         # some static C variables are used. These should really be addressed in libsms.
-        # todo: silently treat this as a Singleton object rather than raising an exception?
+        # TODO: silently treat this as a Singleton object rather than raising an exception?
         SMSPeakDetection._instances += 1
         if SMSPeakDetection._instances > 1:
             raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")

@@ -37,3 +37,4 @@ sndobj_synth = simpl.SndObjSynthesis()
 audio_out = sndobj_synth.synth(partials)
 audio_out = np.asarray(audio_out * 32768, np.int16)
 write(output_file, 44100, audio_out)
+

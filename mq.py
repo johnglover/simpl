@@ -41,7 +41,7 @@ def TWM(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
     max_amp = max([x.amplitude for x in peaks])
 
     # remove all peaks with amplitude of less than 10% of max
-    # note: this is not in the paper, found that it improved accuracy however
+    # note: this is not in the TWM paper, found that it improved accuracy however
     peaks = [x for x in peaks if x.amplitude >= (max_amp * 0.1)]
 
     # get the max frequency of the remaining peaks

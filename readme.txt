@@ -88,8 +88,6 @@ To Do
 general:
 - include new RT Audio code
 - tidy up code for HMM/LP partial tracking and Loris integration
-- label axes on plots
-- provide way to specify title and colours on plots
 - include binaries for Mac OS X and Windows so compilation from source is not needed
 - performance issues: MQ, LP and HMM algorithms need to be coded in C/C++ really,
   Python is just too slow, particularly for real-time use. The pure Python implementations

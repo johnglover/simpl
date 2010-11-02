@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import simpl
-import simpl.plot
+import matplotlib.pyplot as plt
 from scipy.io.wavfile import read
 
 input_file = '../tests/audio/flute.wav'
@@ -26,12 +26,12 @@ sample_rate = audio_in_data[0]
 # take just the first few frames
 audio = audio_in[0:4096]
 # Peak detection and partial tracking using SMS
-pd = simpl.SMSPeakDetection()
-pd.max_peaks = 20
-pd.hop_size = 147
+pd = simpl.SndObjPeakDetection()
+pd.max_peaks = 60
 peaks = pd.find_peaks(audio)
 pt = simpl.MQPartialTracking()
-pt.max_partials = 20
+pt.max_partials = 60
 partials = pt.find_partials(peaks)
 simpl.plot.plot_partials(partials)
-simpl.plot.show()
+plt.show()
+

@@ -28,31 +28,30 @@ const char *pChResidualFile = "residual.aiff";
 
 /*! \brief fill the sound buffer
  *
- * \param sizeWaveform        size of input data
- * \param pWaveform           input data
- * \param pAnalParams        pointer to structure of analysis parameters
+ * \param sizeWaveform   size of input data
+ * \param pWaveform     input data
+ * \param pAnalParams   pointer to structure of analysis parameters
  */
-void sms_fillSoundBuffer (int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalParams)
+void sms_fillSoundBuffer(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalParams)
 {
-	int i;
-    long sizeNewData = (long) sizeWaveform;
+    int i;
+    long sizeNewData = (long)sizeWaveform;
 
-	/* leave space for new data */
-	memcpy(pAnalParams->soundBuffer.pFBuffer,  pAnalParams->soundBuffer.pFBuffer+sizeNewData,
+    /* leave space for new data */
+    memcpy(pAnalParams->soundBuffer.pFBuffer, pAnalParams->soundBuffer.pFBuffer+sizeNewData,
            sizeof(sfloat) * (pAnalParams->soundBuffer.sizeBuffer - sizeNewData));
 
-	pAnalParams->soundBuffer.iFirstGood =
-		MAX(0, pAnalParams->soundBuffer.iFirstGood - sizeNewData);
-	pAnalParams->soundBuffer.iMarker += sizeNewData;
+    pAnalParams->soundBuffer.iFirstGood = MAX(0, pAnalParams->soundBuffer.iFirstGood - sizeNewData);
+    pAnalParams->soundBuffer.iMarker += sizeNewData;
 
-	/* put the new data in, and do some pre-emphasis */
-	if (pAnalParams->iAnalysisDirection == SMS_DIR_REV)
-		for (i=0; i<sizeNewData; i++)
-			pAnalParams->soundBuffer.pFBuffer[pAnalParams->soundBuffer.sizeBuffer - sizeNewData + i] =
-				sms_preEmphasis(pWaveform[sizeNewData - (1+ i)], pAnalParams);
-	else
-		for (i=0; i<sizeNewData; i++)
-			pAnalParams->soundBuffer.pFBuffer[pAnalParams->soundBuffer.sizeBuffer - sizeNewData + i] =
-				sms_preEmphasis(pWaveform[i], pAnalParams);
+    /* put the new data in, and do some pre-emphasis */
+    if (pAnalParams->iAnalysisDirection == SMS_DIR_REV)
+        for (i=0; i<sizeNewData; i++)
+            pAnalParams->soundBuffer.pFBuffer[pAnalParams->soundBuffer.sizeBuffer - sizeNewData + i] =
+                sms_preEmphasis(pWaveform[sizeNewData - (1+ i)], pAnalParams);
+    else
+        for (i=0; i<sizeNewData; i++)
+            pAnalParams->soundBuffer.pFBuffer[pAnalParams->soundBuffer.sizeBuffer - sizeNewData + i] =
+                sms_preEmphasis(pWaveform[i], pAnalParams);
 }
 

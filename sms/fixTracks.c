@@ -151,7 +151,7 @@ static void DeleteShortTrack (int iCurrentFrame, int iTrack, int *pIState,
  * \param iCurrentFrame     current frame number
  * \param pAnalParams      pointer to analysis parameters
  */
-void sms_cleanTracks (int iCurrentFrame, SMS_AnalParams *pAnalParams)
+void sms_cleanTracks(int iCurrentFrame, SMS_AnalParams *pAnalParams)
 {
 	int iTrack, iLength, iFrame;
 	static int *pIState = NULL;

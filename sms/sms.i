@@ -83,19 +83,19 @@
 					  fLambda, iSamplingRate);
 	}
 	int simplsms_detectPeaks(int sizeMag, sfloat *pMag, int sizePhase, sfloat *pPhase, 
-						  SMS_SpectralPeaks *pPeakStruct, SMS_PeakParams *pPeakParams)
+						     SMS_SpectralPeaks *pPeakStruct, SMS_AnalParams *pAnalParams)
 	{
 		if(sizeMag != sizePhase)
 		{ 
 			sms_error("sizeMag != sizePhase");
 			return 0;
 		}
-		if(pPeakStruct->nPeaks < pPeakParams->iMaxPeaks)
+		if(pPeakStruct->nPeaks < pAnalParams->maxPeaks)
 		{ 
-			sms_error("nPeaks in SMS_SpectralPeaks is not large enough (less than SMS_PeakParams.iMaxPeaks)");
+			sms_error("nPeaks in SMS_SpectralPeaks is not large enough (less than SMS_AnalParams.maxPeaks)");
 			return 0;
 		}
-		pPeakStruct->nPeaksFound = sms_detectPeaks(sizeMag, pMag, pPhase, pPeakStruct->pSpectralPeaks, pPeakParams);
+		pPeakStruct->nPeaksFound = sms_detectPeaks(sizeMag, pMag, pPhase, pPeakStruct->pSpectralPeaks, pAnalParams);
 		return pPeakStruct->nPeaksFound;	
 	}
 	int simplsms_spectrum( int sizeWaveform, sfloat *pWaveform, int sizeWindow, sfloat *pWindow,

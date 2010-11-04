@@ -31,21 +31,20 @@
 /*! \brief  maximum size for magnitude spectrum */
 #define SMS_MAX_SPEC 8192  
 
-void printPeakParams(SMS_PeakParams* params)
+void printAnalysisParams(SMS_AnalParams* params)
 {
 	printf("fLowestFreq:            %f\n"
 		   "fHighestFreq:           %f\n"
 		   "fMinPeakMag:            %f\n"
 		   "iSamplingRate:          %d\n"
 		   "iMaxPeaks:              %d\n"
-		   "nPeaksFound:            %d\n"
 		   "fHighestFundamental:    %f\n"
 		   "iRefHarmonic:           %d\n"
 		   "fMinRefHarmMag:         %f\n"
 		   "fRefHarmMagDiffFromMax: %f\n"
 		   "iSoundType:             %d\n",
 			params->fLowestFreq, params->fHighestFreq, params->fMinPeakMag, params->iSamplingRate,
-			params->iMaxPeaks, params->nPeaksFound, params->fHighestFundamental, params->iRefHarmonic,
+			params->maxPeaks, params->fHighestFundamental, params->iRefHarmonic,
 			params->fMinRefHarmMag, params->fRefHarmMagDiffFromMax, params->iSoundType);
 }
 
@@ -91,7 +90,7 @@ void sms_analyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, sfloat fRe
 											pFMagSpectrum,
                                             pFPhaSpectrum,
                                             pCurrentFrame->pSpectralPeaks,
-                                            &pAnalParams->peakParams);
+                                            pAnalParams);
 
 	/* find a reference harmonic */
 	if (pCurrentFrame->nPeaks > 0 &&
@@ -115,10 +114,10 @@ void sms_analyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, sfloat fRe
  */
 static int ReAnalyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams)
 {
-        sfloat fFund, fLastFund, fDev;
+    sfloat fFund, fLastFund, fDev;
 	int iNewFrameSize, i;
 	sfloat fAvgDeviation = sms_fundDeviation(pAnalParams, iCurrentFrame);
-        int iFirstFrame = iCurrentFrame - pAnalParams->minGoodFrames;
+    int iFirstFrame = iCurrentFrame - pAnalParams->minGoodFrames;
 
 	/*! \todo mae this a < 0 check, but first make sure sms_fundDeviation does not
 	  return values below zero */
@@ -218,16 +217,17 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
 		pAnalParams->sizeNextRead = MAX(0, (pAnalParams->windowSize+1)/2 - iExtraSamples);
 		ReAnalyzeFrame(iCurrentFrame, pAnalParams);
 
-		/* return peaks */
+		/* save peaks */
 		pSpectralPeaks->nPeaksFound = pAnalParams->ppFrames[iCurrentFrame]->nPeaks;
-		pSpectralPeaks->nPeaks = pAnalParams->peakParams.iMaxPeaks;
+		pSpectralPeaks->nPeaks = pAnalParams->maxPeaks;
 		pSpectralPeaks->pSpectralPeaks = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks;
+
         /* convert peak amps to linear */
         for(i = 0; i < pSpectralPeaks->nPeaksFound; i++)
         {
-            pSpectralPeaks->pSpectralPeaks[i].fMag = sms_dBToMag(pSpectralPeaks->pSpectralPeaks[i].fMag);
+            pSpectralPeaks->pSpectralPeaks[i].fMag = pow(10.0, 0.05*(pSpectralPeaks->pSpectralPeaks[i].fMag));
         }
-		return pSpectralPeaks->nPeaksFound;
+		return pSpectralPeaks->nPeaks;
 	}
 	else
 	{

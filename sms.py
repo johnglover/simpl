@@ -33,14 +33,17 @@ class SMSPeakDetection(simpl.PeakDetection):
         # analysis parameters
         self._analysis_params = pysms.SMS_AnalParams()
         self._analysis_params.iSamplingRate = self.sampling_rate
+        # set default hop and frame sizes to match those in the parent class
+        self._analysis_params.iFrameRate = self.sampling_rate / self._hop_size
         self._analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
         self._analysis_params.fHighestFreq = 20000
-        #self._analysis_params.fLowestFundamental = 50
-        #self._analysis_params.fDefaultFundamental = 100
-        self._analysis_params.iMaxDelayFrames = 4
+        self._analysis_params.iMaxDelayFrames = 21#4
         self._analysis_params.analDelay = 0
         self._analysis_params.minGoodFrames = 1
+        self._analysis_params.iCleanTracks = 0
         self._analysis_params.iFormat = pysms.SMS_FORMAT_HP
+        self._analysis_params.nTracks = self._max_peaks
+        self._analysis_params.maxPeaks = self._max_peaks
         pysms.sms_initAnalysis(self._analysis_params)
         self._peaks = pysms.SMS_SpectralPeaks(self.max_peaks)
         # By default, SMS will change the size of the frames being read depending on the
@@ -48,12 +51,6 @@ class SMSPeakDetection(simpl.PeakDetection):
         # behaviour (useful when comparing different analysis algorithms), set the
         # _static_frame_size variable to True
         self._static_frame_size = False
-        # set default hop and frame sizes to match those in the parent class
-        self._analysis_params.iFrameRate = self.sampling_rate / self._hop_size
-        pysms.sms_changeHopSize(self._hop_size, self._analysis_params)
-        self._analysis_params.fDefaultFundamental = float(self.sampling_rate)/self.frame_size
-        self._analysis_params.fLowestFundamental = self._analysis_params.fDefaultFundamental
-
         
     def __del__(self):
         pysms.sms_freeAnalysis(self._analysis_params)
@@ -81,7 +78,6 @@ class SMSPeakDetection(simpl.PeakDetection):
     
     def set_max_frequency(self, max_frequency):
         self._analysis_params.fHighestFreq = max_frequency
-        self._analysis_params.peakParams.fHighestFreq = max_frequency
         
     def get_default_fundamental(self):
         return self._analysis_params.fDefaultFundamental
@@ -112,26 +108,26 @@ class SMSPeakDetection(simpl.PeakDetection):
     
     def set_min_frequency(self, min_frequency):
         self._analysis_params.fLowestFundamental = min_frequency
-        self._analysis_params.peakParams.fLowestFreq = min_frequency
+        self._analysis_params.fLowestFreq = min_frequency
         
     def get_min_peak_amp(self):
         return self._analysis_params.fMinPeakMag
     
     def set_min_peak_amp(self, min_peak_amp):
         self._analysis_params.fMinPeakMag = min_peak_amp
-        self._analysis_params.peakParams.fMinPeakMag = min_peak_amp
     
     def get_hop_size(self):
         return self._analysis_params.sizeHop
      
     def set_hop_size(self, hop_size):
-        self._analysis_params.iFrameRate = self.sampling_rate / hop_size
+        #self._analysis_params.iFrameRate = self.sampling_rate / hop_size
         pysms.sms_changeHopSize(hop_size, self._analysis_params)
         
     def set_max_peaks(self, max_peaks):
         # todo: compare to SMS_MAX_NPEAKS?
         self._max_peaks = max_peaks
-        self._analysis_params.peakParams.iMaxPeaks = max_peaks
+        self._analysis_params.nTracks = max_peaks
+        self._analysis_params.maxPeaks = max_peaks
         self._peaks = pysms.SMS_SpectralPeaks(max_peaks)
     
     def set_sampling_rate(self, sampling_rate):

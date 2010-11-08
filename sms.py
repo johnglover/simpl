@@ -37,13 +37,14 @@ class SMSPeakDetection(simpl.PeakDetection):
         self._analysis_params.iFrameRate = self.sampling_rate / self._hop_size
         self._analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
         self._analysis_params.fHighestFreq = 20000
-        self._analysis_params.iMaxDelayFrames = 21#4
+        self._analysis_params.iMaxDelayFrames = 4
         self._analysis_params.analDelay = 0
         self._analysis_params.minGoodFrames = 1
         self._analysis_params.iCleanTracks = 0
         self._analysis_params.iFormat = pysms.SMS_FORMAT_HP
         self._analysis_params.nTracks = self._max_peaks
         self._analysis_params.maxPeaks = self._max_peaks
+        #self._analysis_params.nGuides = self._max_peaks
         pysms.sms_initAnalysis(self._analysis_params)
         self._peaks = pysms.SMS_SpectralPeaks(self.max_peaks)
         # By default, SMS will change the size of the frames being read depending on the
@@ -185,11 +186,10 @@ class SMSPartialTracking(simpl.PartialTracking):
         self._analysis_params = pysms.SMS_AnalParams()
         self._analysis_params.iSamplingRate = self.sampling_rate
         self._analysis_params.fHighestFreq = 20000
-        self._analysis_params.fLowestFundamental = 50
-        self._analysis_params.fDefaultFundamental = 100
-        self._analysis_params.iMaxDelayFrames = 3 # minimum frame delay with libsms
+        self._analysis_params.iMaxDelayFrames = 4 # minimum frame delay with libsms
         self._analysis_params.analDelay = 0
         self._analysis_params.minGoodFrames = 1
+        self._analysis_params.iCleanTracks = 0
         self._analysis_params.iFormat = pysms.SMS_FORMAT_HP
         self._analysis_params.nTracks = self.max_partials
         self._analysis_params.nGuides = self.max_partials

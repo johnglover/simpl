@@ -20,6 +20,7 @@ from sndobj import SndObjPeakDetection, SndObjPartialTracking, SndObjSynthesis
 from sms import SMSPeakDetection, SMSPartialTracking, SMSSynthesis, SMSResidual
 from mq import MQPeakDetection, MQPartialTracking, MQSynthesis
 from plot import plot_peaks, plot_partials
+from audio import read_wav
 
 import numpy
 

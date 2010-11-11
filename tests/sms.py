@@ -22,11 +22,11 @@ from scipy.io.wavfile import read
 import unittest
 
 class TestSimplSMS(unittest.TestCase):
-    FLOAT_PRECISION = 5 # number of decimal places to check for accuracy
+    FLOAT_PRECISION = 3 # number of decimal places to check for accuracy
     input_file = 'audio/flute.wav'
     frame_size = 2048
     hop_size = 512
-    num_frames = 20
+    num_frames = 9 
     num_samples = frame_size + ((num_frames - 1) * hop_size)
     max_peaks = 10
     max_partials = 3
@@ -50,12 +50,14 @@ class TestSimplSMS(unittest.TestCase):
         analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
         analysis_params.fDefaultFundamental = 100
         analysis_params.fHighestFreq = 20000
+        analysis_params.iFormat = pysms.SMS_FORMAT_HP
         analysis_params.nTracks = max_peaks
-        analysis_params.maxPeaks = max_peaks
-        analysis_params.iMaxDelayFrames = num_frames + 1
+        #analysis_params.nGuides = max_peaks
+        analysis_params.iMaxDelayFrames = 4
         analysis_params.analDelay = 0
         analysis_params.minGoodFrames = 1
         analysis_params.iCleanTracks = 0
+        analysis_params.iStochasticType = pysms.SMS_STOC_NONE
         pysms.sms_initAnalysis(analysis_params, snd_header)
         sms_header.nStochasticCoeff = 128
         pysms.sms_fillHeader(sms_header, analysis_params, "pysms")
@@ -70,18 +72,21 @@ class TestSimplSMS(unittest.TestCase):
         analysis_params.iWindowType = simplsms.SMS_WIN_HAMMING
         analysis_params.fDefaultFundamental = 100
         analysis_params.fHighestFreq = 20000
-        analysis_params.iMaxDelayFrames = num_frames + 1
+        analysis_params.iFormat = simplsms.SMS_FORMAT_HP
+        analysis_params.nTracks = max_peaks
+        analysis_params.maxPeaks = max_peaks
+        #analysis_params.nGuides = max_peaks
+        analysis_params.resetGuides = 1
+        analysis_params.iMaxDelayFrames = 4
         analysis_params.analDelay = 0
         analysis_params.minGoodFrames = 1
         analysis_params.iCleanTracks = 0
-        analysis_params.iFormat = pysms.SMS_FORMAT_HP
-        analysis_params.nTracks = max_peaks
-        analysis_params.maxPeaks = max_peaks
+        analysis_params.iStochasticType = simplsms.SMS_STOC_NONE
         simplsms.sms_initAnalysis(analysis_params)
         sms_header.nStochasticCoeff = 128
         simplsms.sms_fillHeader(sms_header, analysis_params, "simplsms")
         return analysis_params, sms_header
-       
+
     def test_size_next_read(self):
         """test_size_next_read
         Make sure pysms PeakDetection is calculating 
@@ -90,11 +95,14 @@ class TestSimplSMS(unittest.TestCase):
         analysis_params, sms_header, snd_header = self.pysms_params(sampling_rate,
                                                                     self.max_peaks,
                                                                     self.num_frames)
+        analysis_params.iMaxDelayFrames = self.num_frames + 1
+        pysms.sms_initAnalysis(analysis_params, snd_header)
+
         sample_offset = 0
         pysms_size_new_data = 0
         current_frame = 0
         sms_next_read_sizes = []
-        
+
         while current_frame < self.num_frames:
             sms_next_read_sizes.append(analysis_params.sizeNextRead)
             sample_offset += pysms_size_new_data
@@ -117,19 +125,19 @@ class TestSimplSMS(unittest.TestCase):
         pysms.sms_freeAnalysis(analysis_params)
         pysms.sms_closeSF()
         pysms.sms_free()
-        
+
         pd = simpl.SMSPeakDetection()
         pd.hop_size = self.hop_size
         current_frame = 0
         sample_offset = 0
-        
+
         while current_frame < self.num_frames:
             pd.frame_size = pd.get_next_frame_size()
             self.assertEquals(sms_next_read_sizes[current_frame], pd.frame_size)
             pd.find_peaks_in_frame(audio[sample_offset:sample_offset + pd.frame_size])
             sample_offset += pd.frame_size
             current_frame += 1
-            
+
     def test_peak_detection(self): 
         """test_peak_detection
         Compare simplsms Peaks with SMS peaks. Exact peak
@@ -145,11 +153,14 @@ class TestSimplSMS(unittest.TestCase):
         analysis_params, sms_header = self.simplsms_params(sampling_rate,
                                                            self.max_peaks,
                                                            self.num_frames)
+        analysis_params.iMaxDelayFrames = self.num_frames + 1
+        simplsms.sms_initAnalysis(analysis_params)
+
         sample_offset = 0
         size_new_data = 0
         current_frame = 0
         sms_peaks = []
- 
+
         while current_frame < self.num_frames:
             sample_offset += size_new_data
             size_new_data = analysis_params.sizeNextRead
@@ -194,11 +205,11 @@ class TestSimplSMS(unittest.TestCase):
         while current_frame < self.num_frames:
             pd.frame_size = pd.get_next_frame_size()
             simpl_peaks.append(
-                pd.find_peaks_in_frame(audio[sample_offset:sample_offset + pd.frame_size]))
+                    pd.find_peaks_in_frame(audio[sample_offset:sample_offset + pd.frame_size]))
             sample_offset += pd.frame_size
             #print current_frame, self.num_samples, pd.frame_size, sample_offset
             current_frame += 1
-            
+
         # make sure we have the same number of frames
         self.assertEquals(len(sms_peaks), len(simpl_peaks))
 
@@ -214,120 +225,307 @@ class TestSimplSMS(unittest.TestCase):
                 sms_peak = sms_frame[peak_number]
                 simpl_peak = simpl_frame[peak_number]
                 self.assertAlmostEquals(sms_peak.amplitude, simpl_peak.amplitude,
-                                       places=self.FLOAT_PRECISION)
+                                        places=self.FLOAT_PRECISION)
                 self.assertAlmostEquals(sms_peak.frequency, simpl_peak.frequency,
-                                       places=self.FLOAT_PRECISION)
+                                        places=self.FLOAT_PRECISION)
                 self.assertAlmostEquals(sms_peak.phase, simpl_peak.phase,
-                                       places=self.FLOAT_PRECISION)  
+                                        places=self.FLOAT_PRECISION)  
 
-    #def test_partial_tracking(self):
-    #    """test_partial_tracking
-    #    Compare pysms Partials with SMS partials.""" 
-    #    pysms.sms_init()
-    #    sms_header = pysms.SMS_Header()
-    #    snd_header = pysms.SMS_SndHeader()
-    #    # Try to open the input file to fill snd_header
-    #    if(pysms.sms_openSF(input_file, snd_header)):
-    #        raise NameError("error opening sound file: " + pysms.sms_errorString())
-    #    analysis_params = pysms.SMS_AnalParams()
-    #    analysis_params.iSamplingRate = sampling_rate
-    #    analysis_params.iFrameRate = sampling_rate / hop_size
-    #    sms_header.nStochasticCoeff = 128
-    #    analysis_params.fDefaultFundamental = 100
-    #    analysis_params.fHighestFreq = 20000
-    #    analysis_params.iMaxDelayFrames = 3
-    #    analysis_params.analDelay = 0
-    #    analysis_params.minGoodFrames = 1
-    #    analysis_params.iFormat = pysms.SMS_FORMAT_HP
-    #    analysis_params.nTracks = max_partials
-    #    analysis_params.nGuides = max_partials
-    #    analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
-    #    pysms.sms_initAnalysis(analysis_params, snd_header)
-    #    analysis_params.nFrames = num_samples / hop_size
-    #    analysis_params.iSizeSound = num_samples
-    #    analysis_params.peakParams.iMaxPeaks = max_peaks
-    #    analysis_params.iStochasticType = pysms.SMS_STOC_NONE
-    #    pysms.sms_fillHeader(sms_header, analysis_params, "pysms")
+    def test_sms_analyze(self):
+        """test_sms_analyze
+        Make sure that the simplsms.sms_analyze function does the same thing
+        as the sms_analyze function from libsms."""
+        audio, sampling_rate = self.get_audio()
+        analysis_params, sms_header, snd_header = self.pysms_params(sampling_rate,
+                                                                    self.max_peaks,
+                                                                    self.num_frames)
+        analysis_params.nFrames = self.num_frames
+        analysis_params.iSizeSound = self.num_samples
+        analysis_params.peakParams.iMaxPeaks = self.max_peaks
 
-    #    sample_offset = 0
-    #    size_new_data = 0
-    #    current_frame = 0
-    #    sms_partials = []
-    #    live_partials = [None for i in range(max_partials)]
-    #    do_analysis = True
+        sample_offset = 0
+        size_new_data = 0
+        current_frame = 0
+        sms_partials = []
+        live_partials = [None for i in range(self.max_peaks)]
+        do_analysis = True
 
-    #    while do_analysis and (current_frame < num_frames):
-    #        sample_offset += size_new_data
-    #        if((sample_offset + analysis_params.sizeNextRead) < num_samples):
-    #            size_new_data = analysis_params.sizeNextRead
-    #        else:
-    #            size_new_data = num_samples - sample_offset
-    #        frame = audio[sample_offset:sample_offset + size_new_data]
-    #        analysis_data = pysms.SMS_Data()
-    #        pysms.sms_allocFrameH(sms_header, analysis_data)
-    #        status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
-            
-    #        if status == 1:
-    #            num_partials = analysis_data.nTracks
-    #            pysms_freqs = simpl.zeros(num_partials)
-    #            pysms_amps = simpl.zeros(num_partials)
-    #            pysms_phases = simpl.zeros(num_partials)
-    #            analysis_data.getSinFreq(pysms_freqs)
-    #            analysis_data.getSinAmp(pysms_amps)
-    #            analysis_data.getSinPhase(pysms_phases)
-    #            # make partial objects
-    #            for i in range(num_partials):
-    #                # for each partial, if the mag is > 0, this partial is alive
-    #                if pysms_amps[i] > 0:
-    #                    # create a peak object
-    #                    p = simpl.Peak()
-    #                    p.amplitude = pysms_amps[i]
-    #                    p.frequency = pysms_freqs[i]
-    #                    p.phase = pysms_phases[i]
-    #                    # add this peak to the appropriate partial
-    #                    if not live_partials[i]:
-    #                        live_partials[i] = simpl.Partial()
-    #                        live_partials[i].starting_frame = current_frame
-    #                        sms_partials.append(live_partials[i])
-    #                    live_partials[i].add_peak(p)
-    #                # if the mag is 0 and this partial was alive, kill it
-    #                else:
-    #                    if live_partials[i]:
-    #                        live_partials[i] = None
-    #        elif status == -1:
-    #            do_analysis = False
-    #        current_frame += 1
+        while do_analysis and (current_frame < self.num_frames):
+            sample_offset += size_new_data
+            size_new_data = analysis_params.sizeNextRead
+            # convert frame to floats for libsms
+            frame = audio[sample_offset:sample_offset + size_new_data]
+            frame = np.array(frame, dtype=np.float32)
+            analysis_data = pysms.SMS_Data()
+            pysms.sms_allocFrameH(sms_header, analysis_data)
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+
+            if status == 1:
+                num_partials = analysis_data.nTracks
+                sms_freqs = np.zeros(num_partials, dtype=np.float32)
+                sms_amps = np.zeros(num_partials, dtype=np.float32)
+                sms_phases = np.zeros(num_partials, dtype=np.float32)
+                analysis_data.getSinFreq(sms_freqs)
+                analysis_data.getSinAmp(sms_amps)
+                analysis_data.getSinPhase(sms_phases)
+                # make partial objects
+                for i in range(num_partials):
+                    # for each partial, if the mag is > 0, this partial is alive
+                    if sms_amps[i] > 0:
+                        # create a peak object
+                        p = simpl.Peak()
+                        p.amplitude = sms_amps[i]
+                        p.frequency = sms_freqs[i]
+                        p.phase = sms_phases[i]
+                        # add this peak to the appropriate partial
+                        if not live_partials[i]:
+                            live_partials[i] = simpl.Partial()
+                            live_partials[i].starting_frame = current_frame
+                            sms_partials.append(live_partials[i])
+                        live_partials[i].add_peak(p)
+                    # if the mag is 0 and this partial was alive, kill it
+                else:
+                    if live_partials[i]:
+                        live_partials[i] = None
+            elif status == -1:
+                do_analysis = False
+            current_frame += 1
+
+        pysms.sms_freeAnalysis(analysis_params)
+        pysms.sms_closeSF()
+        pysms.sms_free()
+
+        return
+        simpl_analysis_params, simpl_sms_header = self.simplsms_params(sampling_rate,
+                                                                       self.max_peaks,
+                                                                       self.num_frames)
+        simpl_analysis_params.nFrames = self.num_frames
+        simpl_analysis_params.iSizeSound = self.num_samples
+
+        sample_offset = 0
+        size_new_data = 0
+        current_frame = 0
+        simplsms_partials = []
+        live_partials = [None for i in range(self.max_peaks)]
+        do_analysis = True
+
+        while do_analysis and (current_frame < self.num_frames):
+            sample_offset += size_new_data
+            size_new_data = simpl_analysis_params.sizeNextRead
+            frame = audio[sample_offset:sample_offset + size_new_data]
+            analysis_data = simplsms.SMS_Data()
+            simplsms.sms_allocFrameH(simpl_sms_header, analysis_data)
+            status = simplsms.sms_analyze(frame, analysis_data, simpl_analysis_params)  
+
+            if status == 1:
+                num_partials = analysis_data.nTracks
+                freqs = simpl.zeros(num_partials)
+                amps = simpl.zeros(num_partials)
+                phases = simpl.zeros(num_partials)
+                analysis_data.getSinFreq(freqs)
+                analysis_data.getSinAmp(amps)
+                analysis_data.getSinPhase(phases)
+                # make partial objects
+                for i in range(num_partials):
+                    # for each partial, if the mag is > 0, this partial is alive
+                    if amps[i] > 0:
+                        # create a peak object
+                        p = simpl.Peak()
+                        p.amplitude = amps[i]
+                        p.frequency = freqs[i]
+                        p.phase = phases[i]
+                        # add this peak to the appropriate partial
+                        if not live_partials[i]:
+                            live_partials[i] = simpl.Partial()
+                            live_partials[i].starting_frame = current_frame
+                            simplsms_partials.append(live_partials[i])
+                        live_partials[i].add_peak(p)
+                    # if the mag is 0 and this partial was alive, kill it
+                else:
+                    if live_partials[i]:
+                        live_partials[i] = None
+            elif status == -1:
+                do_analysis = False
+            current_frame += 1
+
+        simplsms.sms_freeAnalysis(simpl_analysis_params)
+        simplsms.sms_free()
+
+        return
+
+        # make sure both have the same number of partials
+        self.assertEquals(len(sms_partials), len(partials))
+
+        # make sure each partial is the same
+        for i in range(len(sms_partials)):
+            self.assertEquals(sms_partials[i].get_length(), partials[i].get_length())
+            for peak_number in range(sms_partials[i].get_length()):
+                self.assertAlmostEquals(sms_partials[i].peaks[peak_number].amplitude,
+                                        partials[i].peaks[peak_number].amplitude,
+                                        places = self.FLOAT_PRECISION)
+                self.assertAlmostEquals(sms_partials[i].peaks[peak_number].frequency,
+                                        partials[i].peaks[peak_number].frequency,
+                                        places = self.FLOAT_PRECISION)
+                self.assertAlmostEquals(sms_partials[i].peaks[peak_number].phase,
+                                        partials[i].peaks[peak_number].phase,
+                                        places = self.FLOAT_PRECISION)
+
+    def test_partial_tracking(self):
+        """test_partial_tracking
+        Compare pysms Partials with SMS partials.""" 
+        audio, sampling_rate = self.get_audio()
+        analysis_params, sms_header, snd_header = self.pysms_params(sampling_rate,
+                                                                    self.max_peaks,
+                                                                    self.num_frames)
+        analysis_params.nFrames = self.num_frames
+        analysis_params.iSizeSound = self.num_samples
+        analysis_params.peakParams.iMaxPeaks = self.max_peaks
+
+        sample_offset = 0
+        size_new_data = 0
+        current_frame = 0
+        sms_partials = []
+        live_partials = [None for i in range(self.max_peaks)]
+        do_analysis = True
+
+        while do_analysis and (current_frame < self.num_frames):
+            sample_offset += size_new_data
+            size_new_data = analysis_params.sizeNextRead
+            # convert frame to floats for libsms
+            frame = audio[sample_offset:sample_offset + size_new_data]
+            frame = np.array(frame, dtype=np.float32)
+            analysis_data = pysms.SMS_Data()
+            pysms.sms_allocFrameH(sms_header, analysis_data)
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+
+            if status == 1:
+                num_partials = analysis_data.nTracks
+                sms_freqs = np.zeros(num_partials, dtype=np.float32)
+                sms_amps = np.zeros(num_partials, dtype=np.float32)
+                sms_phases = np.zeros(num_partials, dtype=np.float32)
+                analysis_data.getSinFreq(sms_freqs)
+                analysis_data.getSinAmp(sms_amps)
+                analysis_data.getSinPhase(sms_phases)
+                # make partial objects
+                for i in range(num_partials):
+                    # for each partial, if the mag is > 0, this partial is alive
+                    if sms_amps[i] > 0:
+                        # create a peak object
+                        p = simpl.Peak()
+                        p.amplitude = sms_amps[i]
+                        p.frequency = sms_freqs[i]
+                        p.phase = sms_phases[i]
+                        # add this peak to the appropriate partial
+                        if not live_partials[i]:
+                            live_partials[i] = simpl.Partial()
+                            live_partials[i].starting_frame = current_frame
+                            sms_partials.append(live_partials[i])
+                        live_partials[i].add_peak(p)
+                    # if the mag is 0 and this partial was alive, kill it
+                else:
+                    if live_partials[i]:
+                        live_partials[i] = None
+            elif status == -1:
+                do_analysis = False
+            current_frame += 1
+
+        pysms.sms_freeAnalysis(analysis_params)
+        pysms.sms_closeSF()
+        pysms.sms_free()
+
+        import debug
         
-    #    pysms.sms_freeAnalysis(analysis_params)
-    #    pysms.sms_closeSF()
-    #    pysms.sms_free()
+        debug.print_partials(sms_partials)
+        print
 
-    #    pd = simpl.SMSPeakDetection()
-    #    pd.max_peaks = max_peaks
-    #    pd.hop_size = hop_size 
-    #    peaks = pd.find_peaks(audio)
-    #    pt = simpl.SMSPartialTracking()
-    #    pt.max_partials = max_partials
-    #    partials = pt.find_partials(peaks[0:num_frames])
-               
-    #    # make sure both have the same number of partials
-    #    self.assertEquals(len(sms_partials), len(partials))
+        analysis_params, sms_header = self.simplsms_params(sampling_rate,
+                                                           self.max_peaks,
+                                                           self.num_frames)
+        analysis_params.nFrames = self.num_frames
+        analysis_params.iSizeSound = self.num_samples
 
-    #    # make sure each partial is the same
-    #    for i in range(len(sms_partials)):
-    #        self.assertEquals(sms_partials[i].get_length(), partials[i].get_length())
-    #        for peak_number in range(sms_partials[i].get_length()):
-    #            self.assertAlmostEquals(sms_partials[i].peaks[peak_number].amplitude,
-    #                                    partials[i].peaks[peak_number].amplitude,
-    #                                    places = FLOAT_PRECISION)
-    #            self.assertAlmostEquals(sms_partials[i].peaks[peak_number].frequency,
-    #                                    partials[i].peaks[peak_number].frequency,
-    #                                    places = FLOAT_PRECISION)
-    #            self.assertAlmostEquals(sms_partials[i].peaks[peak_number].phase,
-    #                                    partials[i].peaks[peak_number].phase,
-    #                                    places = FLOAT_PRECISION)
-                
-    #def test_interpolate_frames(self):
+        sample_offset = 0
+        size_new_data = 0
+        current_frame = 0
+        sms_partials = []
+        live_partials = [None for i in range(self.max_peaks)]
+        do_analysis = True
+
+        while do_analysis and (current_frame < self.num_frames):
+            sample_offset += size_new_data
+            size_new_data = analysis_params.sizeNextRead
+            frame = audio[sample_offset:sample_offset + size_new_data]
+            analysis_data = simplsms.SMS_Data()
+            simplsms.sms_allocFrameH(sms_header, analysis_data)
+            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)  
+
+            if status == 1:
+                num_partials = analysis_data.nTracks
+                sms_freqs = np.zeros(num_partials, dtype=np.float64)
+                sms_amps = np.zeros(num_partials, dtype=np.float64)
+                sms_phases = np.zeros(num_partials, dtype=np.float64)
+                analysis_data.getSinFreq(sms_freqs)
+                analysis_data.getSinAmp(sms_amps)
+                analysis_data.getSinPhase(sms_phases)
+                # make partial objects
+                for i in range(num_partials):
+                    # for each partial, if the mag is > 0, this partial is alive
+                    if sms_amps[i] > 0:
+                        # create a peak object
+                        p = simpl.Peak()
+                        p.amplitude = sms_amps[i]
+                        p.frequency = sms_freqs[i]
+                        p.phase = sms_phases[i]
+                        # add this peak to the appropriate partial
+                        if not live_partials[i]:
+                            live_partials[i] = simpl.Partial()
+                            live_partials[i].starting_frame = current_frame
+                            sms_partials.append(live_partials[i])
+                        live_partials[i].add_peak(p)
+                    # if the mag is 0 and this partial was alive, kill it
+                else:
+                    if live_partials[i]:
+                        live_partials[i] = None
+            elif status == -1:
+                do_analysis = False
+            current_frame += 1
+
+        simplsms.sms_freeAnalysis(analysis_params)
+        simplsms.sms_free()
+
+        debug.print_partials(sms_partials)
+        return
+
+        #pd = simpl.SMSPeakDetection()
+        #pd.max_peaks = self.max_peaks
+        #pd.hop_size = self.hop_size 
+        #peaks = pd.find_peaks(audio)
+        #pt = simpl.SMSPartialTracking()
+        #pt.max_partials = self.max_peaks
+        #partials = pt.find_partials(peaks[0:self.num_frames])
+
+        #from pylab import show
+        #simpl.plot.plot_partials(sms_partials)
+        #show()
+
+        # make sure both have the same number of partials
+        self.assertEquals(len(sms_partials), len(partials))
+
+        # make sure each partial is the same
+        for i in range(len(sms_partials)):
+            self.assertEquals(sms_partials[i].get_length(), partials[i].get_length())
+            for peak_number in range(sms_partials[i].get_length()):
+                self.assertAlmostEquals(sms_partials[i].peaks[peak_number].amplitude,
+                                        partials[i].peaks[peak_number].amplitude,
+                                        places = self.FLOAT_PRECISION)
+                self.assertAlmostEquals(sms_partials[i].peaks[peak_number].frequency,
+                                        partials[i].peaks[peak_number].frequency,
+                                        places = self.FLOAT_PRECISION)
+                self.assertAlmostEquals(sms_partials[i].peaks[peak_number].phase,
+                                        partials[i].peaks[peak_number].phase,
+                                        places = self.FLOAT_PRECISION)
+
+               #def test_interpolate_frames(self):
     #    """test_interpolate_frames
     #    Make sure that pysms.sms_interpolateFrames returns the expected values
     #    with interpolation factors of 0 and 1."""
@@ -424,10 +622,10 @@ class TestSimplSMS(unittest.TestCase):
     #        elif status == -1:
     #            raise Exception("AnalysisStoppedEarly")
     #        current_frame += 1
-        
+
     #    pysms.sms_freeAnalysis(analysis_params)
     #    pysms.sms_closeSF()
-        
+
     #def test_harmonic_synthesis(self):
     #    """test_harmonic_synthesis
     #    Compare pysms synthesised harmonic component with SMS synthesised 
@@ -479,10 +677,10 @@ class TestSimplSMS(unittest.TestCase):
     #        if status == -1:
     #            do_analysis = False
     #        current_frame += 1
-        
+
     #    pysms.sms_freeAnalysis(analysis_params)
     #    pysms.sms_closeSF()
-        
+
     #    interp_frame = pysms.SMS_Data() 
     #    synth_params = pysms.SMS_SynthParams() 
     #    synth_params.iSynthesisType = pysms.SMS_STYPE_DET
@@ -504,10 +702,10 @@ class TestSimplSMS(unittest.TestCase):
     #        pysms_audio = np.hstack((pysms_audio, synth_samples))
     #        num_synth_samples += synth_params.sizeHop
     #        current_frame += 1
-              
+
     #    pysms.sms_freeSynth(synth_params)
     #    pysms.sms_free()     
-        
+
     #    pd = simpl.SMSPeakDetection()
     #    pd.max_peaks = max_peaks
     #    pd.hop_size = hop_size 
@@ -526,7 +724,7 @@ class TestSimplSMS(unittest.TestCase):
     #    for i in range(simpl_audio.size):
     #        self.assertAlmostEquals(pysms_audio[i], simpl_audio[i],
     #                                places = FLOAT_PRECISION)
-            
+
     #def test_residual_synthesis(self):
     #    """test_residual_synthesis
     #    Compare pysms residual signal with SMS residual""" 
@@ -577,11 +775,11 @@ class TestSimplSMS(unittest.TestCase):
     #        if status == -1:
     #            do_analysis = False
     #        current_frame += 1
-        
+
     #    pysms.sms_freeAnalysis(analysis_params)
     #    pysms.sms_closeSF()
     #    pysms.sms_free()
-        
+
     #    pd = simpl.SMSPeakDetection()
     #    pd.max_peaks = max_peaks
     #    pd.hop_size = hop_size
@@ -617,8 +815,9 @@ class TestSimplSMS(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(TestSimplSMS('test_size_next_read'))
-    suite.addTest(TestSimplSMS('test_peak_detection'))
-    #suite.addTest(TestSimplSMS('test_partial_tracking'))
+    #suite.addTest(TestSimplSMS('test_peak_detection'))
+    #suite.addTest(TestSimplSMS('test_sms_analyze'))
+    suite.addTest(TestSimplSMS('test_partial_tracking'))
     #suite.addTest(TestSimplSMS('test_interpolate_frames'))
     #suite.addTest(TestSimplSMS('test_harmonic_synthesis'))
     #suite.addTest(TestSimplSMS('test_residual_synthesis'))

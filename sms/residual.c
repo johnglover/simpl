@@ -32,109 +32,45 @@
  * \param pResidual        pointer to output residual waveform
  * \param pWindow    pointer to windowing array
  * \return residual percentage (0 if residual was not large enough)
-  \todo why is residual energy percentage computed this way? should be optional and in a seperate function
+ \todo why is residual energy percentage computed this way? should be optional and in a seperate function
  */
-int sms_residual (int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, sfloat *pResidual)
+int sms_residual(int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, sfloat *pResidual, sfloat *pWindow)
 {
-	static sfloat fResidualMag = 0.;
+    static sfloat fResidualMag = 0.;
     static sfloat fOriginalMag = 0.;
-	sfloat fScale = 1.;
-	sfloat fCurrentResidualMag = 0.;
-	sfloat fCurrentOriginalMag = 0.;
-	int i;
-   
-	/* get residual */
-	for (i=0; i<sizeWindow; i++)
-	{
-		pResidual[i] = pOriginal[i] - pSynthesis[i];
-	}
+    sfloat fScale = 1.;
+    sfloat fCurrentResidualMag = 0.;
+    sfloat fCurrentOriginalMag = 0.;
+    int i;
 
-	/* get energy of residual */
-	for (i=0; i<sizeWindow; i++)
-	{
-		fCurrentResidualMag += (pResidual[i] * pResidual[i]);
-	}
+    /* get residual */
+    for (i=0; i<sizeWindow; i++)
+        pResidual[i] = pOriginal[i] - pSynthesis[i];
 
-	/* if residual is big enough compute coefficients */
-	if (fCurrentResidualMag) //always compute
-	{
-		/* get energy of original */
-		for (i=0; i<sizeWindow; i++)
-		{
-			fCurrentOriginalMag += (pOriginal[i] * pOriginal[i]);
-		}
-		fOriginalMag = .5 * (fCurrentOriginalMag/sizeWindow + fOriginalMag);
-		fResidualMag = .5 * (fCurrentResidualMag/sizeWindow + fResidualMag);
+    /* get energy of residual */
+    for (i=0; i<sizeWindow; i++)
+        fCurrentResidualMag += (pResidual[i] * pResidual[i]);
 
-		/* scale residual if need to be */
-		if (fResidualMag > fOriginalMag)
-		{
-			fScale = fOriginalMag / fResidualMag;
-			for (i=0; i<sizeWindow; i++)
-			{
-				pResidual[i] *= fScale;
-			}
-		}
+    /* if residual is big enough compute coefficients */
+    if (fCurrentResidualMag)
+    {  
+        /* get energy of original */
+        for (i=0; i<sizeWindow; i++)
+            fCurrentOriginalMag += (pOriginal[i] * pOriginal[i]);
 
-		return fCurrentResidualMag / fCurrentOriginalMag;
-	}
-	return 0;
-}
+        fOriginalMag = .5 * (fCurrentOriginalMag/sizeWindow + fOriginalMag);
+        fResidualMag = .5 * (fCurrentResidualMag/sizeWindow + fResidualMag);
 
-/*! \brief get the residual waveform
- *
- * \param sizeWindow       size of buffers
- * \param pSynthesis       pointer to deterministic component
- * \param pOriginal          pointer to original waveform
- * \param pResidual        pointer to output residual waveform
- * \param pWindow    pointer to windowing array
- * \return  residual percentage
-  \todo why is residual energy percentage computed this way? should be optional and in a seperate function
- */
-int sms_residualOLD ( int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, sfloat *pResidual, sfloat *pWindow)
-{
-	static sfloat fResidualMag = 0, fOriginalMag = 0, *pFWindow = NULL;
-	sfloat fScale = 1, fCurrentResidualMag = 0, fCurrentOriginalMag = 0;
-	int i;
-   
-	/* get residual */
-	for (i=0; i<sizeWindow; i++)
-                pResidual[i] = pOriginal[i] - pSynthesis[i];
+        /* scale residual if need to be */
+        if (fResidualMag > fOriginalMag)
+        {
+            fScale = fOriginalMag / fResidualMag;
+            for (i=0; i<sizeWindow; i++)
+                pResidual[i] *= fScale;
+        }
 
-	/* get energy of residual */
-	for (i=0; i<sizeWindow; i++)
-		fCurrentResidualMag += fabsf( pResidual[i] * pWindow[i]);
-
-	/* if residual is big enough compute coefficients */
-//	if (fCurrentResidualMag/sizeWindow > .01)
-	if (fCurrentResidualMag) //always compute
-	{  
-/*                 printf(" fCurrentResidualMag: %f, sizeWindow: %d, ratio: %f\n", */
-/*                        fCurrentResidualMag, sizeWindow, fCurrentResidualMag/sizeWindow ); */
-                
-		/* get energy of original */
-		for (i=0; i<sizeWindow; i++)
-			fCurrentOriginalMag += fabs( pOriginal[i] * pWindow[i]);
-                
-		fOriginalMag = 
-			.5 * (fCurrentOriginalMag/sizeWindow + fOriginalMag);
-		fResidualMag = 
-			.5 * (fCurrentResidualMag/sizeWindow + fResidualMag);
-  
-		/* scale residual if need to be */
-		if (fResidualMag > fOriginalMag)
-		{
-			fScale = fOriginalMag / fResidualMag;
-			for (i=0; i<sizeWindow; i++)
-				pResidual[i] *= fScale;
-		}
-                
-                printf("risidual mag: %f, original mag: %f \n", fCurrentResidualMag , fCurrentOriginalMag);
-                return (fCurrentResidualMag / fCurrentOriginalMag);
-	}
-                else printf("whaaaat not big enough: fCurrentResidualMag: %f, sizeWindow: %d, ratio: %f\n",
-                            fCurrentResidualMag, sizeWindow, fCurrentResidualMag/sizeWindow );
-        
-	return (0);
+        return fCurrentResidualMag / fCurrentOriginalMag;
+    }
+    return 0;
 }
 

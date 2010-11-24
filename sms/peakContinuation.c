@@ -362,140 +362,120 @@ static int GetStartingPeak(int iGuide, SMS_Guide *pGuides, int nGuides,
  */
 int sms_peakContinuation(int iFrame, SMS_AnalParams *pAnalParams)
 {
-    int iGuide, iCurrentPeak = -1, iGoodPeak = -1;
-    sfloat fFund = pAnalParams->ppFrames[iFrame]->fFundamental;
-    sfloat fFreqDev = fFund * pAnalParams->fFreqDeviation, fCurrentMax = 1000;
-    static SMS_Guide *pGuides = NULL;
-    static int nGuides = 0;
+	int iGuide, iCurrentPeak = -1, iGoodPeak = -1;
+	sfloat fFund = pAnalParams->ppFrames[iFrame]->fFundamental,
+    fFreqDev = fFund * pAnalParams->fFreqDeviation, fCurrentMax = 1000;
 
-    if(pGuides == NULL || nGuides != pAnalParams->nGuides || pAnalParams->resetGuides == 1)
-    {
-        if((pGuides = (SMS_Guide *) calloc(pAnalParams->nGuides, sizeof(SMS_Guide))) 
-           == NULL)
-            return SMS_MALLOC;
-        if (pAnalParams->iFormat == SMS_FORMAT_H ||
-            pAnalParams->iFormat == SMS_FORMAT_HP)
-            for (iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
-                pGuides[iGuide].fFreq = pAnalParams->fDefaultFundamental * (iGuide + 1);
-        nGuides = pAnalParams->nGuides;
-        pAnalParams->resetGuides = 0;
-    }
+	/* update guides with fundamental contribution */
+	if(fFund > 0 && (pAnalParams->iFormat == SMS_FORMAT_H ||
+	                 pAnalParams->iFormat == SMS_FORMAT_HP))
+		for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
+			pAnalParams->guides[iGuide].fFreq = 
+				(1 - pAnalParams->fFundContToGuide) * pAnalParams->guides[iGuide].fFreq +        
+				pAnalParams->fFundContToGuide * fFund * (iGuide + 1);
 
-    /* update guides with fundamental contribution */
-    if(fFund > 0 &&
-       (pAnalParams->iFormat == SMS_FORMAT_H ||
-        pAnalParams->iFormat == SMS_FORMAT_HP))
-        for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
-            pGuides[iGuide].fFreq = 
-                (1 - pAnalParams->fFundContToGuide) * pGuides[iGuide].fFreq +        
-                 pAnalParams->fFundContToGuide * fFund * (iGuide + 1);
+	if(pAnalParams->iDebugMode == SMS_DBG_PEAK_CONT ||
+	   pAnalParams->iDebugMode == SMS_DBG_ALL)
+		fprintf(stdout, "Frame %d Peak Continuation: \n", 
+		        pAnalParams->ppFrames[iFrame]->iFrameNum);
 
-    if (pAnalParams->iDebugMode == SMS_DBG_PEAK_CONT ||
-            pAnalParams->iDebugMode == SMS_DBG_ALL)
-        fprintf(stdout, 
-                "Frame %d Peak Continuation: \n", 
-                pAnalParams->ppFrames[iFrame]->iFrameNum);
+	/* continue all guides */
+	for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
+	{
+		sfloat fPreviousFreq = pAnalParams->ppFrames[iFrame-1]->deterministic.pFSinFreq[iGuide];
+   
+		/* get the guide value by upgrading the previous guide */
+		if(fPreviousFreq > 0)
+			pAnalParams->guides[iGuide].fFreq =
+				(1 - pAnalParams->fPeakContToGuide) * pAnalParams->guides[iGuide].fFreq +
+				pAnalParams->fPeakContToGuide * fPreviousFreq;
+   
+		if(pAnalParams->iDebugMode == SMS_DBG_PEAK_CONT ||
+		   pAnalParams->iDebugMode == SMS_DBG_ALL)
+			fprintf(stdout, "Guide %d:  freq %f, mag %f\n", 
+			        iGuide, pAnalParams->guides[iGuide].fFreq, pAnalParams->guides[iGuide].fMag);
+      
+		if(pAnalParams->guides[iGuide].fFreq <= 0.0 ||
+		   pAnalParams->guides[iGuide].fFreq > pAnalParams->fHighestFreq)
+		{
+			pAnalParams->guides[iGuide].iStatus = GUIDE_DEAD;
+			pAnalParams->guides[iGuide].fFreq = 0;
+			continue;
+		}
+      
+		pAnalParams->guides[iGuide].iPeakChosen = -1;
+    
+		if(pAnalParams->iFormat == SMS_FORMAT_IH ||
+		   pAnalParams->iFormat == SMS_FORMAT_IHP)
+			fFreqDev = pAnalParams->guides[iGuide].fFreq * pAnalParams->fFreqDeviation;
+      
+		/* get the best peak for the guide */
+		iGoodPeak = 
+			GetBestPeak(pAnalParams->guides, iGuide, pAnalParams->ppFrames[iFrame]->pSpectralPeaks, 
+			            pAnalParams, fFreqDev);
+	}
+  
+	/* try to find good peaks for the GUIDE_DEAD guides */
+	if(pAnalParams->iFormat == SMS_FORMAT_IH ||
+	   pAnalParams->iFormat == SMS_FORMAT_IHP)
+		for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
+		{
+			if(pAnalParams->guides[iGuide].iStatus != GUIDE_DEAD)
+				continue; 
+	
+			if(GetStartingPeak(iGuide, pAnalParams->guides, pAnalParams->nGuides, 
+			                   pAnalParams->ppFrames[iFrame]->pSpectralPeaks,
+			                   &fCurrentMax) == -1)
+				break;
+		}
 
-    /* continue all guides */
-    for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
-    {
-        sfloat fPreviousFreq = 
-            pAnalParams->ppFrames[iFrame-1]->deterministic.pFSinFreq[iGuide];
+	/* save all the continuation values,
+	 * assume output tracks are already clear */
+	for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
+	{
+		if(pAnalParams->guides[iGuide].iStatus == GUIDE_DEAD)
+			continue; 
 
-        /* get the guide value by upgrading the previous guide */
-        if(fPreviousFreq > 0)
-            pGuides[iGuide].fFreq =
-                (1 - pAnalParams->fPeakContToGuide) * pGuides[iGuide].fFreq +
-                pAnalParams->fPeakContToGuide * fPreviousFreq;
+		if(pAnalParams->iFormat == SMS_FORMAT_IH ||
+		   pAnalParams->iFormat == SMS_FORMAT_IHP)
+		{
+			if(pAnalParams->guides[iGuide].iStatus > 0 &&
+			   pAnalParams->guides[iGuide].iPeakChosen == -1)
+			{ 
+				if(pAnalParams->guides[iGuide].iStatus++ > pAnalParams->iMaxSleepingTime)
+				{
+					pAnalParams->guides[iGuide].iStatus = GUIDE_DEAD;
+					pAnalParams->guides[iGuide].fFreq = 0;
+					pAnalParams->guides[iGuide].fMag = 0;
+					pAnalParams->guides[iGuide].iPeakChosen = -1;	  	  
+	 			}
+				else
+					pAnalParams->guides[iGuide].iStatus++;
+				continue;
+			}
+      
+			if(pAnalParams->guides[iGuide].iStatus == GUIDE_ACTIVE &&
+			    pAnalParams->guides[iGuide].iPeakChosen == -1)
+			{
+				pAnalParams->guides[iGuide].iStatus = 1;
+				continue;
+			}
+		}
 
-        if(pAnalParams->iDebugMode == SMS_DBG_PEAK_CONT ||
-           pAnalParams->iDebugMode == SMS_DBG_ALL)
-            fprintf(stdout, "Guide %d:  freq %f, mag %f\n", 
-                    iGuide, pGuides[iGuide].fFreq, pGuides[iGuide].fMag);
-
-        if(pGuides[iGuide].fFreq <= 0.0 ||
-           pGuides[iGuide].fFreq > pAnalParams->fHighestFreq)
-        {
-            pGuides[iGuide].iStatus = GUIDE_DEAD;
-            pGuides[iGuide].fFreq = 0;
-            continue;
-        }
-
-        pGuides[iGuide].iPeakChosen = -1;
-
-        if(pAnalParams->iFormat == SMS_FORMAT_IH ||
-           pAnalParams->iFormat == SMS_FORMAT_IHP)
-            fFreqDev = pGuides[iGuide].fFreq * pAnalParams->fFreqDeviation;
-
-        /* get the best peak for the guide */
-       GetBestPeak(pGuides, iGuide, pAnalParams->ppFrames[iFrame]->pSpectralPeaks, 
-                   pAnalParams, fFreqDev);
-    }
-
-    /* try to find good peaks for the GUIDE_DEAD guides */
-    if(pAnalParams->iFormat == SMS_FORMAT_IH ||
-       pAnalParams->iFormat == SMS_FORMAT_IHP)
-    {
-        for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
-        {
-            if(pGuides[iGuide].iStatus != GUIDE_DEAD)
-                continue; 
-
-            /* TODO: make this function use pAnalParams->maxPeaks instead
-             * of SMS_MAX_NPEAKS */
-            if(GetStartingPeak (iGuide, pGuides, pAnalParams->nGuides, 
-               pAnalParams->ppFrames[iFrame]->pSpectralPeaks,
-               &fCurrentMax) == -1)
-                break;
-        }
-    }
-
-    /* save all the continuation values,
-     * assume output tracks are already clear */
-    for(iGuide = 0; iGuide < pAnalParams->nGuides; iGuide++)
-    {
-        if(pGuides[iGuide].iStatus == GUIDE_DEAD)
-            continue; 
-
-        if(pAnalParams->iFormat == SMS_FORMAT_IH ||
-           pAnalParams->iFormat == SMS_FORMAT_IHP)
-        {
-            if(pGuides[iGuide].iStatus > 0 &&
-               pGuides[iGuide].iPeakChosen == -1)
-            { 
-                if(pGuides[iGuide].iStatus++ > pAnalParams->iMaxSleepingTime)
-                {
-                    pGuides[iGuide].iStatus = GUIDE_DEAD;
-                    pGuides[iGuide].fFreq = 0;
-                    pGuides[iGuide].fMag = 0;
-                    pGuides[iGuide].iPeakChosen = -1;         
-                }
-                else
-                    pGuides[iGuide].iStatus++;
-                continue;
-            }
-
-            if(pGuides[iGuide].iStatus == GUIDE_ACTIVE &&
-               pGuides[iGuide].iPeakChosen == -1)
-            {
-                pGuides[iGuide].iStatus = 1;
-                continue;
-            }
-        }
-
-        /* if good continuation peak found, save it */
-        if((iCurrentPeak = pGuides[iGuide].iPeakChosen) >= 0)
-        {
-            pAnalParams->ppFrames[iFrame]->deterministic.pFSinFreq[iGuide] = 
-                pAnalParams->ppFrames[iFrame]->pSpectralPeaks[iCurrentPeak].fFreq;
-            pAnalParams->ppFrames[iFrame]->deterministic.pFSinAmp[iGuide] =
-                pAnalParams->ppFrames[iFrame]->pSpectralPeaks[iCurrentPeak].fMag;
-            pAnalParams->ppFrames[iFrame]->deterministic.pFSinPha[iGuide] = 
-                pAnalParams->ppFrames[iFrame]->pSpectralPeaks[iCurrentPeak].fPhase;
-
-            pGuides[iGuide].iStatus = GUIDE_ACTIVE;
-            pGuides[iGuide].iPeakChosen = -1;
-        }
-    }
+		/* if good continuation peak found, save it */
+		if((iCurrentPeak = pAnalParams->guides[iGuide].iPeakChosen) >= 0)
+		{
+			pAnalParams->ppFrames[iFrame]->deterministic.pFSinFreq[iGuide] = 
+				pAnalParams->ppFrames[iFrame]->pSpectralPeaks[iCurrentPeak].fFreq;
+			pAnalParams->ppFrames[iFrame]->deterministic.pFSinAmp[iGuide] = 
+				pAnalParams->ppFrames[iFrame]->pSpectralPeaks[iCurrentPeak].fMag;
+			pAnalParams->ppFrames[iFrame]->deterministic.pFSinPha[iGuide] = 
+				pAnalParams->ppFrames[iFrame]->pSpectralPeaks[iCurrentPeak].fPhase;
+     
+			pAnalParams->guides[iGuide].iStatus = GUIDE_ACTIVE;
+			pAnalParams->guides[iGuide].iPeakChosen = -1;
+		}
+	}
     return SMS_OK;
 }
+

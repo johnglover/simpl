@@ -35,7 +35,6 @@ static sfloat inv_mag_thresh = 100000.; /*!< inv(.00001) */
 static int initIsDone = 0; /* \todo is this variable necessary? */ 
 
 #define SIZE_TABLES 4096
-
 #define HALF_MAX 1073741823.5  /*!< half the max of a 32-bit word */
 #define INV_HALF_MAX (1.0 / HALF_MAX)
 #define TWENTY_OVER_LOG10 (20. / LOG10)
@@ -50,36 +49,35 @@ static int initIsDone = 0; /* \todo is this variable necessary? */
  *
  * \return error code \see SMS_MALLOC or SMS_OK in SMS_ERRORS
  */
-int sms_init( void )
+int sms_init(void) 
 {
-    int iError;
     if (!initIsDone)
     {
         initIsDone = 1;
-        if(sms_prepSine (SIZE_TABLES))
+        if(sms_prepSine(SIZE_TABLES))
         {
             sms_error("cannot allocate memory for sine table");
-            return (-1);
+            return -1;
         }
-        if(sms_prepSinc (SIZE_TABLES))
+        if(sms_prepSinc(SIZE_TABLES))
         {
             sms_error("cannot allocate memory for sinc table");
-            return (-1);
+            return -1;
         }
-    }
 
 #ifdef MERSENNE_TWISTER
-    init_gen_rand(1234);
+        init_gen_rand(1234);
 #endif
+    }
 
-    return (0);
+    return 0;
 }
 
 /*! \brief free global data
  *
  * deallocates memory allocated to global arrays (windows and tables)
  */
-void sms_free( void )
+void sms_free()
 {
     initIsDone = 0;
     sms_clearSine();
@@ -101,6 +99,7 @@ void sms_free( void )
  */
 void sms_initAnalParams(SMS_AnalParams *pAnalParams)
 {
+    int i;
     pAnalParams->iDebugMode = 0;
     pAnalParams->iFormat = SMS_FORMAT_H;
     pAnalParams->iSoundType = SMS_SOUND_TYPE_MELODY;
@@ -141,8 +140,6 @@ void sms_initAnalParams(SMS_AnalParams *pAnalParams)
         (pAnalParams->minGoodFrames + pAnalParams->analDelay);
     pAnalParams->fResidualAccumPerc = 0.;
     pAnalParams->preEmphasisLastValue = 0.;
-    pAnalParams->resetGuides = 1;
-    pAnalParams->resetGuideStates = 1;
     /* spectral envelope params */
     pAnalParams->specEnvParams.iType = SMS_ENV_NONE; /* turn off enveloping */
     pAnalParams->specEnvParams.iOrder = 25; /* ... but set default params anyway */
@@ -150,6 +147,33 @@ void sms_initAnalParams(SMS_AnalParams *pAnalParams)
     pAnalParams->specEnvParams.iMaxFreq = 0;
     pAnalParams->specEnvParams.nCoeff = 0;
     pAnalParams->specEnvParams.iAnchor = 0; /* not yet implemented */
+    pAnalParams->pFrames = NULL;
+    /* fft */
+    for(i = 0; i < SMS_MAX_SPEC; i++)
+    {
+        pAnalParams->magSpectrum[i] = 0.0;
+        pAnalParams->phaseSpectrum[i] = 0.0;
+        pAnalParams->spectrumWindow[i] = 0.0;
+        pAnalParams->fftBuffer[i] = 0.0;
+        pAnalParams->fftBuffer[i+SMS_MAX_SPEC] = 0.0;
+    }
+    /* analysis frames */
+    pAnalParams->pFrames = NULL;
+    pAnalParams->ppFrames = NULL;
+    /* residual */
+    pAnalParams->sizeResidual = pAnalParams->sizeHop * 2;
+    pAnalParams->residual = NULL;
+    pAnalParams->residualWindow = NULL;
+    /* peak continuation */
+    pAnalParams->guideStates = NULL;
+    pAnalParams->guides = NULL;
+    /* audio input frame */
+    for(i = 0; i < SMS_MAX_FRAME_SIZE; i++)
+        pAnalParams->inputBuffer[i] = 0.0;
+    /* stochastic analysis */
+    pAnalParams->stocMagSpectrum = NULL;
+    pAnalParams->approxEnvelope = NULL;
+    pAnalParams->ppFrames = NULL;
 }
 
 /*! \brief initialize analysis data structure's arrays
@@ -170,16 +194,12 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
 
     /* define the hopsize for each record */
     pAnalParams->sizeHop = (int)(pAnalParams->iSamplingRate /
-            (sfloat) pAnalParams->iFrameRate);
-
-    /* define the number of frames and number of samples */
-    //  pAnalParams->nFrames = pSoundHeader->nSamples / (sfloat) pAnalParams->sizeHop;
-    //  pAnalParams->iSizeSound = pSoundHeader->nSamples;
+                                 (sfloat) pAnalParams->iFrameRate);
 
     /* set the default size window to an odd length */
     pAnalParams->iDefaultSizeWindow = 
         (int)((pAnalParams->iSamplingRate / pAnalParams->fDefaultFundamental) *
-                pAnalParams->fSizeWindow / 2) * 2 + 1;
+               pAnalParams->fSizeWindow / 2) * 2 + 1;
 
     int sizeBuffer = (pAnalParams->iMaxDelayFrames * pAnalParams->sizeHop) + SMS_MAX_WINDOW;
 
@@ -197,16 +217,16 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
         pAnalParams->specEnvParams.iMaxFreq = pAnalParams->fHighestFreq;
 
     /*\todo this probably doesn't need env coefficients - they aren't getting used */
-    sms_allocFrame (&pAnalParams->prevFrame, pAnalParams->nGuides,
-            pAnalParams->nStochasticCoeff, 1, pAnalParams->iStochasticType, 0);
+    sms_allocFrame(&pAnalParams->prevFrame, pAnalParams->nGuides,
+                  pAnalParams->nStochasticCoeff, 1, pAnalParams->iStochasticType, 0);
 
-    pAnalParams->sizeNextRead = (pAnalParams->iDefaultSizeWindow + 1) * 0.5; /* \todo REMOVE THIS from other files first */
+    pAnalParams->sizeNextRead = (pAnalParams->iDefaultSizeWindow + 1) * 0.5;
 
     /* sound buffer */
     if ((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(sfloat))) == NULL)
     {
         sms_error("could not allocate memory");
-        return(-1);
+        return -1;
     }
     pSoundBuf->iMarker = -sizeBuffer;
     pSoundBuf->iFirstGood = sizeBuffer;
@@ -222,74 +242,179 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
         pAnalParams->fDefaultFundamental = pAnalParams->fHighestFundamental;
     }
 
-    /* initialize peak detection/continuation parameters */
-    /*pAnalParams->peakParams.fLowestFreq = pAnalParams->fLowestFundamental;*/
-    /*pAnalParams->peakParams.fHighestFreq = pAnalParams->fHighestFreq;*/
-    /*pAnalParams->peakParams.fMinPeakMag = pAnalParams->fMinPeakMag;*/
-    /*pAnalParams->peakParams.iSamplingRate = pAnalParams->iSamplingRate;*/
-    /*pAnalParams->peakParams.iMaxPeaks = SMS_MAX_NPEAKS;*/
-    /*pAnalParams->peakParams.fHighestFundamental = pAnalParams->fHighestFundamental;*/
-    /*pAnalParams->peakParams.iRefHarmonic = pAnalParams->iRefHarmonic;*/
-    /*pAnalParams->peakParams.fMinRefHarmMag = pAnalParams->fMinRefHarmMag;*/
-    /*pAnalParams->peakParams.fRefHarmMagDiffFromMax = pAnalParams->fRefHarmMagDiffFromMax;*/
-    /*pAnalParams->peakParams.iSoundType = pAnalParams->iSoundType;*/
-
     /* deterministic synthesis buffer */
     pSynthBuf->sizeBuffer = pAnalParams->sizeHop << 1;
-    if((pSynthBuf->pFBuffer = (sfloat *)calloc(pSynthBuf->sizeBuffer, sizeof(sfloat))) == NULL)
+    pSynthBuf->pFBuffer = calloc(pSynthBuf->sizeBuffer, sizeof(sfloat));
+    if(pSynthBuf->pFBuffer == NULL)
     {
         sms_error("could not allocate memory");
-        return(-1);
+        return -1;
     }
-    pSynthBuf->iMarker = -sizeBuffer;
     pSynthBuf->iMarker = pSynthBuf->sizeBuffer;
-
     /* buffer of analysis frames */
-    if ((pAnalParams->pFrames = (SMS_AnalFrame *) calloc(pAnalParams->iMaxDelayFrames, sizeof(SMS_AnalFrame))) == NULL)
+    pAnalParams->pFrames = (SMS_AnalFrame *)malloc(pAnalParams->iMaxDelayFrames * sizeof(SMS_AnalFrame));
+    if(pAnalParams->pFrames == NULL)
     {
         sms_error("could not allocate memory for delay frames");
-        return(-1);
+        return -1;
     }
-    if ((pAnalParams->ppFrames = 
-                (SMS_AnalFrame **) calloc(pAnalParams->iMaxDelayFrames, sizeof(SMS_AnalFrame *))) == NULL)
+    pAnalParams->ppFrames = (SMS_AnalFrame **)malloc(pAnalParams->iMaxDelayFrames * sizeof(SMS_AnalFrame *));
+    if(pAnalParams->ppFrames == NULL)
     {
         sms_error("could not allocate memory for pointers to delay frames");
-        return(-1);
+        return -1;
     }
 
     /* initialize the frame pointers and allocate memory */
-    for (i = 0; i < pAnalParams->iMaxDelayFrames; i++)
+    for(i = 0; i < pAnalParams->iMaxDelayFrames; i++)
     {
         pAnalParams->pFrames[i].iStatus = SMS_FRAME_EMPTY;
-        if (((pAnalParams->pFrames[i]).pSpectralPeaks =
-                    (SMS_Peak *)calloc (pAnalParams->maxPeaks, sizeof(SMS_Peak))) == NULL)
+        pAnalParams->pFrames[i].iFrameSample = 0;
+        pAnalParams->pFrames[i].iFrameSize = 0;
+        pAnalParams->pFrames[i].iFrameNum = 0;
+        pAnalParams->pFrames[i].pSpectralPeaks = 
+            (SMS_Peak *)malloc(pAnalParams->maxPeaks * sizeof(SMS_Peak));
+        if((pAnalParams->pFrames[i]).pSpectralPeaks == NULL)
         {
             sms_error("could not allocate memory for spectral peaks");
-            return(-1);
+            return -1;
         }
         (pAnalParams->pFrames[i].deterministic).nTracks = pAnalParams->nGuides;
-        if (((pAnalParams->pFrames[i].deterministic).pFSinFreq =
-                    (sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)
+
+        (pAnalParams->pFrames[i].deterministic).pFSinFreq = 
+            (sfloat *)calloc(pAnalParams->nGuides, sizeof(sfloat));
+        if((pAnalParams->pFrames[i].deterministic).pFSinFreq == NULL)
         {
             sms_error("could not allocate memory");
-            return(-1);
+            return -1;
         }
-        if (((pAnalParams->pFrames[i].deterministic).pFSinAmp =
-                    (sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)
+
+        (pAnalParams->pFrames[i].deterministic).pFSinAmp =
+            (sfloat *)calloc(pAnalParams->nGuides, sizeof(sfloat));
+        if((pAnalParams->pFrames[i].deterministic).pFSinAmp == NULL)
         {
             sms_error("could not allocate memory");
-            return(-1);
+            return -1;
         }
-        if (((pAnalParams->pFrames[i].deterministic).pFSinPha =
-                    (sfloat *) calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)
+
+        (pAnalParams->pFrames[i].deterministic).pFSinPha =
+            (sfloat *)calloc(pAnalParams->nGuides, sizeof(sfloat));
+        if((pAnalParams->pFrames[i].deterministic).pFSinPha == NULL)
         {
             sms_error("could not allocate memory");
-            return(-1);
+            return -1;
         }
         pAnalParams->ppFrames[i] = &pAnalParams->pFrames[i];
     }
 
+    /* memory for residual */
+    pAnalParams->sizeResidual = pAnalParams->sizeHop * 2;
+    pAnalParams->residual = (sfloat *)calloc(pAnalParams->sizeResidual, sizeof(sfloat));
+    if(pAnalParams->residual == NULL)
+    {
+        sms_error("Could not allocate memory for residual");
+        return -1;
+    }
+    pAnalParams->residualWindow = (sfloat *)calloc(pAnalParams->sizeResidual, sizeof(sfloat));
+    if(pAnalParams->residualWindow == NULL)
+    {
+        sms_error("Could not allocate memory for residualWindow");
+        return -1;
+    }
+    sms_getWindow(pAnalParams->sizeResidual, pAnalParams->residualWindow, SMS_WIN_HAMMING);
+    sms_scaleWindow(pAnalParams->sizeResidual, pAnalParams->residualWindow);
+
+    /* memory for guide states */
+    pAnalParams->guideStates = (int *)calloc(pAnalParams->nGuides, sizeof(int));
+    if(pAnalParams->guideStates == NULL)
+    {
+        sms_error("Could not allocate memory for guide states");
+        return -1;
+    }
+
+    /* memory for guides */
+    pAnalParams->guides = (SMS_Guide *)malloc(pAnalParams->nGuides * sizeof(SMS_Guide));
+    if(pAnalParams->guides == NULL)
+    {
+        sms_error("Could not allocate memory for guides");
+        return -1;
+    }
+    /* initial guide values */
+    if(pAnalParams->iFormat == SMS_FORMAT_H ||
+       pAnalParams->iFormat == SMS_FORMAT_HP)
+    {
+        for (i = 0; i < pAnalParams->nGuides; i++)
+        {
+            pAnalParams->guides[i].fFreq = pAnalParams->fDefaultFundamental * (i + 1);
+        }
+    }
+
+    /* stochastic analysis */
+    pAnalParams->sizeStocMagSpectrum = sms_power2(pAnalParams->sizeResidual) >> 1;
+    pAnalParams->stocMagSpectrum = (sfloat *)calloc(pAnalParams->sizeStocMagSpectrum, sizeof(sfloat));
+    if(pAnalParams->stocMagSpectrum == NULL)
+    {
+        sms_error("Could not allocate memory for stochastic magnitude spectrum");
+        return -1;
+    }
+    pAnalParams->approxEnvelope = (sfloat *)calloc(pAnalParams->nStochasticCoeff, sizeof(sfloat));
+    if(pAnalParams->approxEnvelope == NULL)
+    {
+        sms_error("Could not allocate memory for spectral approximation envelope");
+        return -1;
+    }
+
     return 0;
+
+    /*[> buffer of analysis frames <]*/
+    /*pAnalParams->pFrames = (SMS_AnalFrame *) malloc(pAnalParams->iMaxDelayFrames * sizeof(SMS_AnalFrame)); */
+    /*if(pAnalParams->pFrames == NULL)*/
+    /*{*/
+    /*    sms_error("could not allocate memory for delay frames");*/
+    /*    return -1;*/
+    /*}*/
+
+    /*pAnalParams->ppFrames = (SMS_AnalFrame **) malloc(pAnalParams->iMaxDelayFrames * sizeof(SMS_AnalFrame *));*/
+    /*if(pAnalParams->ppFrames == NULL)*/
+    /*{*/
+    /*    sms_error("could not allocate memory for pointers to delay frames");*/
+    /*    return -1;*/
+    /*}*/
+
+    /*[> initialize the frame pointers and allocate memory <]*/
+    /*for (i = 0; i < pAnalParams->iMaxDelayFrames; i++)*/
+    /*{*/
+    /*    pAnalParams->pFrames[i].iStatus = SMS_FRAME_EMPTY;*/
+    /*    pAnalParams->pFrames[i].pSpectralPeaks =*/
+    /*       (SMS_Peak *)malloc(pAnalParams->maxPeaks * sizeof(SMS_Peak));*/
+    /*    if (pAnalParams->pFrames[i].pSpectralPeaks == NULL)*/
+    /*    {*/
+    /*       sms_error("could not allocate memory for spectral peaks");*/
+    /*       return -1;*/
+    /*    }*/
+    /*    (pAnalParams->pFrames[i].deterministic).nTracks = pAnalParams->nGuides;*/
+    /*    if (((pAnalParams->pFrames[i].deterministic).pFSinFreq =*/
+    /*        (sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)*/
+    /*    {*/
+    /*       sms_error("could not allocate memory");*/
+    /*       return -1;*/
+    /*    }*/
+    /*    if (((pAnalParams->pFrames[i].deterministic).pFSinAmp =*/
+    /*        (sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)*/
+    /*    {*/
+    /*       sms_error("could not allocate memory");*/
+    /*       return -1;*/
+    /*    }*/
+    /*    if (((pAnalParams->pFrames[i].deterministic).pFSinPha =*/
+    /*        (sfloat *) calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)*/
+    /*    {*/
+    /*       sms_error("could not allocate memory");*/
+    /*       return -1;*/
+    /*    }*/
+    /*    pAnalParams->ppFrames[i] = &pAnalParams->pFrames[i];*/
+    /*}*/
+
+    /*return 0;*/
 }
 
 void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams)
@@ -297,15 +422,17 @@ void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams)
     pAnalParams->sizeHop = hopSize;
     pAnalParams->iFrameRate = pAnalParams->iSamplingRate / hopSize;
     int sizeBuffer = (pAnalParams->iMaxDelayFrames * pAnalParams->sizeHop) + SMS_MAX_WINDOW;
-    SMS_SndBuffer *pSynthBuf = &pAnalParams->synthBuffer;
-    SMS_SndBuffer *pSoundBuf = &pAnalParams->soundBuffer;
 
     /* if storing residual phases, restrict number of stochastic coefficients to the size of the spectrum (sizeHop = 1/2 sizeFft)*/
     if(pAnalParams->iStochasticType == SMS_STOC_IFFT)
         pAnalParams->nStochasticCoeff = sms_power2(pAnalParams->sizeHop);
 
     /* sound buffer */
-    if ((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(sfloat))) == NULL)
+    SMS_SndBuffer *pSoundBuf = &pAnalParams->soundBuffer;
+
+    free(pSoundBuf->pFBuffer);
+    pSoundBuf->pFBuffer = calloc(sizeBuffer, sizeof(sfloat));
+    if(pSoundBuf->pFBuffer == NULL)
     {
         sms_error("could not allocate memory");
         return;
@@ -315,13 +442,16 @@ void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams)
     pSoundBuf->sizeBuffer = sizeBuffer;
 
     /* deterministic synthesis buffer */
+    SMS_SndBuffer *pSynthBuf = &pAnalParams->synthBuffer;
     pSynthBuf->sizeBuffer = pAnalParams->sizeHop << 1;
-    if((pSynthBuf->pFBuffer = (sfloat *)calloc(pSynthBuf->sizeBuffer, sizeof(sfloat))) == NULL)
+
+    free(pSynthBuf->pFBuffer);
+    pSynthBuf->pFBuffer = calloc(sizeBuffer, sizeof(sfloat));
+    if(pSynthBuf->pFBuffer == NULL)
     {
         sms_error("could not allocate memory");
         return;
     }
-    pSynthBuf->iMarker = -sizeBuffer;
     pSynthBuf->iMarker = pSynthBuf->sizeBuffer;
 }
 
@@ -344,7 +474,14 @@ void sms_initSynthParams(SMS_SynthParams *synthParams)
     synthParams->nTracks = 60;
     synthParams->iStochasticType = SMS_STOC_APPROX;
     synthParams->nStochasticCoeff = 128;
-    synthParams->deemphasisLastValue = 0;
+    synthParams->pFDetWindow = NULL;
+    synthParams->pFStocWindow = NULL;
+    synthParams->pSynthBuff = NULL;
+    synthParams->pMagBuff = NULL;
+    synthParams->pPhaseBuff = NULL;
+    synthParams->pSpectra = NULL;
+    synthParams->approxEnvelope = NULL;
+    synthParams->deEmphasisLastValue = 0;
 }
 
 /*! \brief initialize synthesis data structure's arrays
@@ -364,12 +501,6 @@ void sms_initSynthParams(SMS_SynthParams *synthParams)
 int sms_initSynth(SMS_SynthParams *pSynthParams)
 {
     int sizeHop, sizeFft, err;
-    /* set synthesis parameters from arguments and header */
-    //  pSynthParams->iOriginalSRate = pSmsHeader->iSamplingRate;
-    //  pSynthParams->origSizeHop = pSynthParams->iOriginalSRate / pSmsHeader->iFrameRate;
-    //  pSynthParams->iStochasticType = pSmsHeader->iStochasticType;
-    //  if(pSynthParams->iSamplingRate <= 0)
-    //          pSynthParams->iSamplingRate = pSynthParams->iOriginalSRate;
 
     /* make sure sizeHop is something to the power of 2 */
     sizeHop = sms_power2(pSynthParams->sizeHop);
@@ -382,29 +513,34 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
     sizeFft = sizeHop * 2;
 
     pSynthParams->pFStocWindow =(sfloat *) calloc(sizeFft, sizeof(sfloat));
-    sms_getWindow( sizeFft, pSynthParams->pFStocWindow, SMS_WIN_HANNING );
+    sms_getWindow(sizeFft, pSynthParams->pFStocWindow, SMS_WIN_HANNING);
     pSynthParams->pFDetWindow = (sfloat *) calloc(sizeFft, sizeof(sfloat));
-    sms_getWindow( sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT );
+    sms_getWindow(sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT);
 
     /* allocate memory for analysis data - size of original hopsize */
     /* previous frame to interpolate from */
     /* \todo why is stoch coeff + 1? */
     sms_allocFrame(&pSynthParams->prevFrame, pSynthParams->nTracks,
-            pSynthParams->nStochasticCoeff + 1, 1,
-            pSynthParams->iStochasticType, 0);
+                   pSynthParams->nStochasticCoeff + 1, 1,
+                   pSynthParams->iStochasticType, 0);
 
     pSynthParams->pSynthBuff = (sfloat *) calloc(sizeFft, sizeof(sfloat));
     pSynthParams->pMagBuff = (sfloat *) calloc(sizeHop, sizeof(sfloat));
     pSynthParams->pPhaseBuff = (sfloat *) calloc(sizeHop, sizeof(sfloat));
     pSynthParams->pSpectra = (sfloat *) calloc(sizeFft, sizeof(sfloat));
 
-    /* set/check modification parameters */
-    //  pSynthParams->modParams.maxFreq = pSmsHeader->iMaxFreq;
+    /* approximation envelope */
+    pSynthParams->approxEnvelope = (sfloat *)calloc(pSynthParams->nStochasticCoeff, sizeof(sfloat));
+    if(pSynthParams->approxEnvelope == NULL)
+    {
+        sms_error("Could not allocate memory for spectral approximation envelope");
+        return -1;
+    }
 
     return SMS_OK;
 }
 
-int sms_changeSynthHop( SMS_SynthParams *pSynthParams, int sizeHop)
+int sms_changeSynthHop(SMS_SynthParams *pSynthParams, int sizeHop)
 {
     int sizeFft = sizeHop * 2;
 
@@ -417,7 +553,7 @@ int sms_changeSynthHop( SMS_SynthParams *pSynthParams, int sizeHop)
     sms_getWindow( sizeFft, pSynthParams->pFStocWindow, SMS_WIN_HANNING );
     pSynthParams->pFDetWindow =
         (sfloat *) realloc(pSynthParams->pFDetWindow, sizeFft * sizeof(sfloat));
-    sms_getWindow( sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT );
+    sms_getWindow(sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT);
 
     pSynthParams->sizeHop = sizeHop;
 
@@ -431,24 +567,44 @@ int sms_changeSynthHop( SMS_SynthParams *pSynthParams, int sizeHop)
  *
  * \param pAnalParams    pointer to analysis data structure
  */
-void sms_freeAnalysis( SMS_AnalParams *pAnalParams )
+void sms_freeAnalysis(SMS_AnalParams *pAnalParams)
 {
-    int i;
-    for (i = 0; i < pAnalParams->iMaxDelayFrames; i++)
+    if(pAnalParams->pFrames)
     {
-        free((pAnalParams->pFrames[i]).pSpectralPeaks);
-        free((pAnalParams->pFrames[i].deterministic).pFSinFreq);
-        free((pAnalParams->pFrames[i].deterministic).pFSinAmp);
-        free((pAnalParams->pFrames[i].deterministic).pFSinPha);
+        int i;
+        for(i = 0; i < pAnalParams->iMaxDelayFrames; i++)
+        {
+            if((pAnalParams->pFrames[i]).pSpectralPeaks)
+                free((pAnalParams->pFrames[i]).pSpectralPeaks);
+            if((pAnalParams->pFrames[i].deterministic).pFSinFreq)
+               free((pAnalParams->pFrames[i].deterministic).pFSinFreq);
+            if((pAnalParams->pFrames[i].deterministic).pFSinAmp)
+               free((pAnalParams->pFrames[i].deterministic).pFSinAmp);
+            if((pAnalParams->pFrames[i].deterministic).pFSinPha)
+               free((pAnalParams->pFrames[i].deterministic).pFSinPha);
+        }
+        free(pAnalParams->pFrames);
     }
 
     sms_freeFrame(&pAnalParams->prevFrame);
-    //        free(pAnalParams->soundBuffer.pFBuffer);
-    free(pAnalParams->synthBuffer.pFBuffer);
-    free(pAnalParams->pFrames);
-    free(pAnalParams->ppFrames);
-    //        free(pAnalParams->pFSpectrumWindow);
-
+    if(pAnalParams->soundBuffer.pFBuffer)
+        free(pAnalParams->soundBuffer.pFBuffer);
+    if((pAnalParams->synthBuffer).pFBuffer)
+        free((pAnalParams->synthBuffer).pFBuffer);
+    if(pAnalParams->ppFrames)
+        free(pAnalParams->ppFrames);
+    if(pAnalParams->residual)
+        free(pAnalParams->residual);
+    if(pAnalParams->residualWindow)
+        free(pAnalParams->residualWindow);
+    if(pAnalParams->guideStates)
+        free(pAnalParams->guideStates);
+    if(pAnalParams->guides)
+        free(pAnalParams->guides);
+    if(pAnalParams->stocMagSpectrum)
+        free(pAnalParams->stocMagSpectrum);
+    if(pAnalParams->approxEnvelope)
+        free(pAnalParams->approxEnvelope);
 }
 
 /*! \brief free analysis data
@@ -460,16 +616,24 @@ void sms_freeAnalysis( SMS_AnalParams *pAnalParams )
  * already? as it is, it crashes if this is called without one
  * \param pSynthParams    pointer to synthesis data structure
  */
-void sms_freeSynth( SMS_SynthParams *pSynthParams )
+void sms_freeSynth(SMS_SynthParams *pSynthParams)
 {
-    free(pSynthParams->pFStocWindow);        
-    free(pSynthParams->pFDetWindow);
-    free (pSynthParams->pSynthBuff);
-    free (pSynthParams->pSpectra);
-    free (pSynthParams->pMagBuff);
-    free (pSynthParams->pPhaseBuff);
-    sms_freeFrame(&pSynthParams->prevFrame);
+    if(pSynthParams->pFStocWindow)
+        free(pSynthParams->pFStocWindow);        
+    if(pSynthParams->pFDetWindow)
+        free(pSynthParams->pFDetWindow);
+    if(pSynthParams->pSynthBuff)
+        free(pSynthParams->pSynthBuff);
+    if(pSynthParams->pSpectra)
+        free(pSynthParams->pSpectra);
+    if(pSynthParams->pMagBuff)
+        free(pSynthParams->pMagBuff);
+    if(pSynthParams->pPhaseBuff)
+        free(pSynthParams->pPhaseBuff);
+    if(pSynthParams->approxEnvelope)
+        free(pSynthParams->approxEnvelope);
 
+    sms_freeFrame(&pSynthParams->prevFrame);
 }
 
 /*! \brief set window size for next frame 
@@ -481,23 +645,23 @@ void sms_freeSynth( SMS_SynthParams *pSynthParams )
  * \param pAnalParams          analysis parameters
  * \return the size of the next window in samples
  */
-int sms_sizeNextWindow (int iCurrentFrame, SMS_AnalParams *pAnalParams)
+int sms_sizeNextWindow(int iCurrentFrame, SMS_AnalParams *pAnalParams)
 {
     sfloat fFund = pAnalParams->ppFrames[iCurrentFrame]->fFundamental;
     sfloat fPrevFund = pAnalParams->ppFrames[iCurrentFrame-1]->fFundamental;
     int sizeWindow;
 
     /* if the previous fundamental was stable use it to set the window size */
-    if (fPrevFund > 0 && fabs(fPrevFund - fFund) / fFund <= .2)
-        sizeWindow = (int) ((pAnalParams->iSamplingRate / fFund) *
-                pAnalParams->fSizeWindow * .5) * 2 + 1;
+    if(fPrevFund > 0 && fabs(fPrevFund - fFund) / fFund <= .2)
+        sizeWindow = (int)((pAnalParams->iSamplingRate / fFund) *
+                           pAnalParams->fSizeWindow * .5) * 2 + 1;
     /* otherwise use the default size window */
     else
         sizeWindow = pAnalParams->iDefaultSizeWindow;
 
-    if (sizeWindow > SMS_MAX_WINDOW)
+    if(sizeWindow > SMS_MAX_WINDOW)
     {
-        fprintf (stderr, "sms_sizeNextWindow error: sizeWindow (%d) too big, set to %d\n", sizeWindow, 
+        fprintf(stderr, "sms_sizeNextWindow error: sizeWindow (%d) too big, set to %d\n", sizeWindow, 
                 SMS_MAX_WINDOW);
         sizeWindow = SMS_MAX_WINDOW;
     }
@@ -519,22 +683,22 @@ int sms_sizeNextWindow (int iCurrentFrame, SMS_AnalParams *pAnalParams)
 int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow)
 {
     /* clear deterministic data */
-    memset ((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinFreq, 0, 
-            sizeof(sfloat) * pAnalParams->nGuides);
-    memset ((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp, 0, 
-            sizeof(sfloat) * pAnalParams->nGuides);
-    memset ((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinPha, 0, 
-            sizeof(sfloat) * pAnalParams->nGuides);
+    memset((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinFreq, 0, 
+           sizeof(sfloat) * pAnalParams->nGuides);
+    memset((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp, 0, 
+           sizeof(sfloat) * pAnalParams->nGuides);
+    memset((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinPha, 0, 
+           sizeof(sfloat) * pAnalParams->nGuides);
 
     /* clear peaks */
-    memset ((void *) pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks, 0,
-            sizeof (SMS_Peak) * pAnalParams->maxPeaks);
+    memset((void *) pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks, 0,
+           sizeof (SMS_Peak) * pAnalParams->maxPeaks);
 
     pAnalParams->ppFrames[iCurrentFrame]->nPeaks = 0;
     pAnalParams->ppFrames[iCurrentFrame]->fFundamental = 0;
 
     pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  
-        pAnalParams->ppFrames[iCurrentFrame - 1]->iFrameNum + 1;
+    pAnalParams->ppFrames[iCurrentFrame - 1]->iFrameNum + 1;
     pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = sizeWindow;
 
     /* if first frame set center of data around 0 */
@@ -548,7 +712,7 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
 
     /* check for end of sound */
     if ((pAnalParams->ppFrames[iCurrentFrame]->iFrameSample + (sizeWindow+1)/2) >= pAnalParams->iSizeSound
-            && pAnalParams->iSizeSound > 0)
+         && pAnalParams->iSizeSound > 0)
     {
         pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  -1;
         pAnalParams->ppFrames[iCurrentFrame]->iFrameSize =  0;
@@ -574,11 +738,11 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
     int i;
 
     /* get the sum of the past few fundamentals */
-    for (i = 0; i < pAnalParams->minGoodFrames; i++)
+    for(i = 0; i < pAnalParams->minGoodFrames; i++)
     {
         fFund = pAnalParams->ppFrames[iCurrentFrame-i]->fFundamental;
         if(fFund <= 0)
-            return(-1);
+            return -1;
         else
             fSum += fFund;
     }
@@ -587,11 +751,11 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
     fAverage = fSum / pAnalParams->minGoodFrames;
 
     /* get the deviation from the average */
-    for (i = 0; i < pAnalParams->minGoodFrames; i++)
+    for(i = 0; i < pAnalParams->minGoodFrames; i++)
         fDeviation += fabs(pAnalParams->ppFrames[iCurrentFrame-i]->fFundamental - fAverage);
 
     /* return the deviation from the average */
-    return (fDeviation / (pAnalParams->minGoodFrames * fAverage));
+    return fDeviation / (pAnalParams->minGoodFrames * fAverage);
 }
 
 
@@ -600,14 +764,14 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
  * \param pAnalParams             pointer to analysis params
  * \return error value \see SMS_ERRORS 
  */
-int sms_createDebugFile (SMS_AnalParams *pAnalParams)
+int sms_createDebugFile(SMS_AnalParams *pAnalParams)
 {
-    if ((pDebug = fopen(pChDebugFile, "w+")) == NULL) 
+    if((pDebug = fopen(pChDebugFile, "w+")) == NULL) 
     {
         fprintf(stderr, "Cannot open debugfile: %s\n", pChDebugFile);
-        return(SMS_WRERR);
+        return SMS_WRERR;
     }
-    else return(SMS_OK);
+    return SMS_OK;
 }
 
 /*! \brief  function to write to the debug file
@@ -621,16 +785,15 @@ int sms_createDebugFile (SMS_AnalParams *pAnalParams)
  * \param pFBuffer3 pointer to array 3
  * \param sizeBuffer the size of the buffers
  */
-void sms_writeDebugData (sfloat *pFBuffer1, sfloat *pFBuffer2, 
-        sfloat *pFBuffer3, int sizeBuffer)
+void sms_writeDebugData(sfloat *pFBuffer1, sfloat *pFBuffer2, 
+                        sfloat *pFBuffer3, int sizeBuffer)
 {
     int i;
     static int counter = 0;
 
-    for (i = 0; i < sizeBuffer; i++)
-        fprintf (pDebug, "%d %d %d %d\n", counter++, (int)pFBuffer1[i],
-                (int)pFBuffer2[i], (int)pFBuffer3[i]);
-
+    for(i = 0; i < sizeBuffer; i++)
+        fprintf(pDebug, "%d %d %d %d\n", counter++, (int)pFBuffer1[i],
+               (int)pFBuffer2[i], (int)pFBuffer3[i]);
 }
 
 /*! \brief  function to write the residual sound file to disk
@@ -639,7 +802,7 @@ void sms_writeDebugData (sfloat *pFBuffer1, sfloat *pFBuffer2,
  */
 void sms_writeDebugFile ()
 {
-    fclose (pDebug);
+    fclose(pDebug);
 }
 
 /*! \brief convert from magnitude to decibel
@@ -647,7 +810,7 @@ void sms_writeDebugFile ()
  * \param x      magnitude (0:1)
  * \return         decibel (0: -100)
  */
-sfloat sms_magToDB( sfloat x)
+sfloat sms_magToDB(sfloat x)
 {
     if(x < mag_thresh)
         return 0.0;
@@ -662,7 +825,7 @@ sfloat sms_magToDB( sfloat x)
  * \param x     decibel (0-100)
  * \return        magnitude (0-1)
  */
-sfloat sms_dBToMag( sfloat x)
+sfloat sms_dBToMag(sfloat x)
 {
     if(x < 0.00001)
         return 0.0;
@@ -680,10 +843,10 @@ sfloat sms_dBToMag( sfloat x)
  * \param sizeArray     size of array
  * \param pArray pointer to array
  */
-void sms_arrayMagToDB( int sizeArray, sfloat *pArray)
+void sms_arrayMagToDB(int sizeArray, sfloat *pArray)
 {
     int i;
-    for( i = 0; i < sizeArray; i++)
+    for(i = 0; i < sizeArray; i++)
         pArray[i] = sms_magToDB(pArray[i]);
 }
 
@@ -695,10 +858,10 @@ void sms_arrayMagToDB( int sizeArray, sfloat *pArray)
  * \param sizeArray     size of array
  * \param pArray pointer to array
  */
-void sms_arrayDBToMag( int sizeArray, sfloat *pArray)
+void sms_arrayDBToMag(int sizeArray, sfloat *pArray)
 {
     int i;
-    for( i = 0; i < sizeArray; i++)
+    for(i = 0; i < sizeArray; i++)
         pArray[i] = sms_dBToMag(pArray[i]);
 }
 /*! \brief set the linear magnitude threshold
@@ -708,7 +871,7 @@ void sms_arrayDBToMag( int sizeArray, sfloat *pArray)
  *
  * \param x  threshold value
  */
-void sms_setMagThresh( sfloat x)
+void sms_setMagThresh(sfloat x)
 {
     /* limit threshold to -100db */
     if(x < 0.00001) 
@@ -722,7 +885,8 @@ void sms_setMagThresh( sfloat x)
  *
  * \param pErrorMessage pointer to error message string
  */
-void sms_error(char *pErrorMessage) {
+void sms_error(char *pErrorMessage) 
+{
     strncpy(error_message, pErrorMessage, 256);
     error_status = -1;
 }
@@ -733,7 +897,7 @@ void sms_error(char *pErrorMessage) {
  */
 int sms_errorCheck() 
 {
-    return(error_status);
+    return error_status;
 }
 
 /*! \brief get a string containing information about the last error 
@@ -747,7 +911,7 @@ char* sms_errorString()
         error_status = 0;
         return error_message;
     }
-    else return NULL;
+    return NULL;
 }
 
 /*! \brief random number genorator
@@ -757,9 +921,9 @@ char* sms_errorString()
 sfloat sms_random()
 {
 #ifdef MERSENNE_TWISTER
-    return(genrand_real1()); 
+    return genrand_real1(); 
 #else
-    return((sfloat)(random() * 2 * INV_HALF_MAX));
+    return (sfloat)(random() * 2 * INV_HALF_MAX);
 #endif
 }
 
@@ -771,17 +935,17 @@ sfloat sms_rms(int sizeArray, sfloat *pArray)
 {
     int i;
     sfloat mean_squared = 0.;
-    for( i = 0; i < sizeArray; i++)
+    for(i = 0; i < sizeArray; i++)
         mean_squared += pArray[i] * pArray[i];
 
-    return(sqrtf(mean_squared / sizeArray));
+    return sqrtf(mean_squared / sizeArray);
 }
 
 /*! \brief make sure a number is a power of 2
  *
  * \return a power of two integer >= input value
  */
-int sms_power2( int n)
+int sms_power2(int n)
 {
     int p = -1;
     int N = n;
@@ -793,12 +957,12 @@ int sms_power2( int n)
 
     if(1<<p == N) /* n was a power of 2 */
     {
-        return(N); 
+        return N; 
     }
     else  /* make the new value larger than n */
     {
         p++;
-        return(1<<p);
+        return 1<<p;
     }
 }
 
@@ -807,9 +971,9 @@ int sms_power2( int n)
  * \param x linear frequency value
  * \return (1.059...)^x, where 1.059 is the 12th root of 2 precomputed
  */
-sfloat sms_scalarTempered( sfloat x)
+sfloat sms_scalarTempered(sfloat x)
 {
-    return(powf(1.0594630943592953, x));
+    return powf(1.0594630943592953, x);
 }
 
 /*! \brief scale an array of linear frequencies to the well-tempered scale
@@ -817,9 +981,9 @@ sfloat sms_scalarTempered( sfloat x)
  * \param sizeArray size of the array
  * \param pArray pointer to array of frequencies
  */
-void sms_arrayScalarTempered( int sizeArray, sfloat *pArray)
+void sms_arrayScalarTempered(int sizeArray, sfloat *pArray)
 {
     int i;
-    for( i = 0; i < sizeArray; i++)
+    for(i = 0; i < sizeArray; i++)
         pArray[i] = sms_scalarTempered(pArray[i]);
 }

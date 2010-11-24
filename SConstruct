@@ -58,6 +58,7 @@ vars.AddVariables(
     ("prefix", "Installation directory", default_install_dir),
     ("libpath", "Additional directory to search for libraries", ""),
     ("cpath", "Additional directory to search for C header files", ""),
+    BoolVariable('debug', 'Compile extension modules with debug symbols', False),
     BoolVariable('sndobj', 'Build and install the SndObj module', True),
     BoolVariable('sms', 'Build and install the SMS module', True),
     BoolVariable('loris', 'Build and install the loris module', True),
@@ -130,6 +131,10 @@ except ImportError:
     print "Numpy was not found. Cannot build simpl.\n"
     exit(1)
 env.Append(CPPPATH = numpy_include)
+
+# check if we need debug symbols
+if env['debug']:
+    env.Append(CCFLAGS = "-g")
     
 env = conf.Finish()
 
@@ -160,19 +165,19 @@ if env["sndobj"]:
     sndobj_sources.append(python_wrapper)
     
     # copy the generated .py file to the root directory
-    Command("pysndobj.py", "sndobj/pysndobj.py", Copy("$TARGET", "$SOURCE"))
+    Command("simplsndobj.py", "sndobj/simplsndobj.py", Copy("$TARGET", "$SOURCE"))
 
     # build the module
     if get_platform() == "win32":
         sndobj_env.Append(LIBS = [python_lib])
-        sndobj_env.SharedLibrary("pysndobj", sndobj_sources, SHLIBPREFIX="_", SHLIBSUFFIX=".pyd")
+        sndobj_env.SharedLibrary("simplsndobj", sndobj_sources, SHLIBPREFIX="_", SHLIBSUFFIX=".pyd")
     elif get_platform() == "darwin":
         sndobj_env.Append(LIBS = ["python" + get_version()])
         sndobj_env.Prepend(LINKFLAGS=["-framework", "python"])
-        sndobj_env.LoadableModule("_pysndobj.so", sndobj_sources)
+        sndobj_env.LoadableModule("_simplsndobj.so", sndobj_sources)
     else: # linux
         sndobj_env.Append(LIBS = ["python" + get_version()])
-        sndobj_env.SharedLibrary("pysndobj", sndobj_sources, SHLIBPREFIX="_")       
+        sndobj_env.SharedLibrary("simplsndobj", sndobj_sources, SHLIBPREFIX="_")       
 
 # sms module
 if env["sms"]:
@@ -214,8 +219,9 @@ if env["sms"]:
         sms_env.Append(CPPPATH = inc_path)
     sms_env.Append(CPPPATH = "sms")
     sms_env.Append(CPPPATH = "sms/SFMT")
-    sms_env.Append(CCFLAGS = "-O2 -funroll-loops -fomit-frame-pointer -Wall -W")
-    sms_env.Append(CCFLAGS = "-Wno-unused -Wno-parentheses -Wno-switch -fno-strict-aliasing")
+    if not env['debug']:
+        sms_env.Append(CCFLAGS = "-O2 -funroll-loops -fomit-frame-pointer -Wall -W")
+        sms_env.Append(CCFLAGS = "-Wno-unused -Wno-parentheses -Wno-switch -fno-strict-aliasing")
     sms_env.Append(CCFLAGS = "-DMERSENNE_TWISTER")
     
     # get sources
@@ -229,19 +235,19 @@ if env["sms"]:
     sms_sources.append(python_wrapper)
     
     # copy the generated .py file to the simpl directory
-    Command("pysms.py", "sms/pysms.py", Copy("$TARGET", "$SOURCE")) 
+    Command("simplsms.py", "sms/simplsms.py", Copy("$TARGET", "$SOURCE")) 
       
     # build the module
     if get_platform() == "win32":
         sms_env.Append(LIBS = [python_lib])
-        sms_env.SharedLibrary("pysms", sms_sources, SHLIBPREFIX="_", SHLIBSUFFIX=".pyd")
+        sms_env.SharedLibrary("simplsms", sms_sources, SHLIBPREFIX="_", SHLIBSUFFIX=".pyd")
     elif get_platform() == "darwin":
         sms_env.Append(LIBS = ["python" + get_version()])
         sms_env.Prepend(LINKFLAGS=["-framework", "python"])
-        sms_env.LoadableModule("_pysms.so", sms_sources)         
+        sms_env.LoadableModule("_simplsms.so", sms_sources)         
     else: # linux
         sms_env.Append(LIBS = ["python" + get_version()])
-        sms_env.SharedLibrary("pysms", sms_sources, SHLIBPREFIX="_") 
+        sms_env.SharedLibrary("simplsms", sms_sources, SHLIBPREFIX="_") 
         
 # install the python modules
 python_modules = Glob("*.py", strings=True)
@@ -253,3 +259,4 @@ modules.extend(python_modules)
 
 for module in modules:
     env.InstallAs(os.path.join(python_install_dir, module), module)
+

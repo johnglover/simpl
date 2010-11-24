@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import simpl
-import simpl.pysms as pysms
+from simpl import simplsms
 
 class SMSPeakDetection(simpl.PeakDetection):
     "Sinusoidal peak detection using SMS"
@@ -29,24 +29,26 @@ class SMSPeakDetection(simpl.PeakDetection):
         if SMSPeakDetection._instances > 1:
             raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")
         simpl.PeakDetection.__init__(self)
-        pysms.sms_init()
+        simplsms.sms_init()
         # analysis parameters
-        self._analysis_params = pysms.SMS_AnalParams()
+        self._analysis_params = simplsms.SMS_AnalParams()
+        simplsms.sms_initAnalParams(self._analysis_params)
         self._analysis_params.iSamplingRate = self.sampling_rate
         # set default hop and frame sizes to match those in the parent class
         self._analysis_params.iFrameRate = self.sampling_rate / self._hop_size
-        self._analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
+        self._analysis_params.iWindowType = simplsms.SMS_WIN_HAMMING
         self._analysis_params.fHighestFreq = 20000
         self._analysis_params.iMaxDelayFrames = 4
         self._analysis_params.analDelay = 0
         self._analysis_params.minGoodFrames = 1
         self._analysis_params.iCleanTracks = 0
-        self._analysis_params.iFormat = pysms.SMS_FORMAT_HP
+        self._analysis_params.iFormat = simplsms.SMS_FORMAT_HP
         self._analysis_params.nTracks = self._max_peaks
         self._analysis_params.maxPeaks = self._max_peaks
         #self._analysis_params.nGuides = self._max_peaks
-        pysms.sms_initAnalysis(self._analysis_params)
-        self._peaks = pysms.SMS_SpectralPeaks(self.max_peaks)
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+        self._peaks = simplsms.SMS_SpectralPeaks(self.max_peaks)
         # By default, SMS will change the size of the frames being read depending on the
         # detected fundamental frequency (if any) of the input sound. To prevent this 
         # behaviour (useful when comparing different analysis algorithms), set the
@@ -54,8 +56,8 @@ class SMSPeakDetection(simpl.PeakDetection):
         self._static_frame_size = False
         
     def __del__(self):
-        pysms.sms_freeAnalysis(self._analysis_params)
-        pysms.sms_free()
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        simplsms.sms_free()
         SMSPeakDetection._instances -= 1
         
     # properties
@@ -122,14 +124,15 @@ class SMSPeakDetection(simpl.PeakDetection):
      
     def set_hop_size(self, hop_size):
         #self._analysis_params.iFrameRate = self.sampling_rate / hop_size
-        pysms.sms_changeHopSize(hop_size, self._analysis_params)
+        #simplsms.sms_changeHopSize(hop_size, self._analysis_params)
+        print 'todo: change hop size to', hop_size
         
     def set_max_peaks(self, max_peaks):
         # todo: compare to SMS_MAX_NPEAKS?
         self._max_peaks = max_peaks
         self._analysis_params.nTracks = max_peaks
         self._analysis_params.maxPeaks = max_peaks
-        self._peaks = pysms.SMS_SpectralPeaks(max_peaks)
+        self._peaks = simplsms.SMS_SpectralPeaks(max_peaks)
     
     def set_sampling_rate(self, sampling_rate):
         self._sampling_rate = sampling_rate
@@ -145,7 +148,7 @@ class SMSPeakDetection(simpl.PeakDetection):
     def find_peaks_in_frame(self, frame):
         "Find and return all spectral peaks in a given frame of audio"
         current_peaks = []
-        num_peaks = pysms.sms_findPeaks(frame, 
+        num_peaks = simplsms.sms_findPeaks(frame, 
                                         self._analysis_params, 
                                         self._peaks)
         if num_peaks > 0:
@@ -182,24 +185,26 @@ class SMSPartialTracking(simpl.PartialTracking):
         if SMSPartialTracking._instances > 1:
             raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")
         simpl.PartialTracking.__init__(self)
-        pysms.sms_init()
-        self._analysis_params = pysms.SMS_AnalParams()
+        simplsms.sms_init()
+        self._analysis_params = simplsms.SMS_AnalParams()
+        simplsms.sms_initAnalParams(self._analysis_params)
         self._analysis_params.iSamplingRate = self.sampling_rate
         self._analysis_params.fHighestFreq = 20000
         self._analysis_params.iMaxDelayFrames = 4 # minimum frame delay with libsms
         self._analysis_params.analDelay = 0
         self._analysis_params.minGoodFrames = 1
         self._analysis_params.iCleanTracks = 0
-        self._analysis_params.iFormat = pysms.SMS_FORMAT_HP
+        self._analysis_params.iFormat = simplsms.SMS_FORMAT_HP
         self._analysis_params.nTracks = self.max_partials
         self._analysis_params.nGuides = self.max_partials
-        pysms.sms_initAnalysis(self._analysis_params)
-        self._analysis_frame = pysms.SMS_Data()
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+        self._analysis_frame = simplsms.SMS_Data()
         self.live_partials = [None for i in range(self.max_partials)]
         
     def __del__(self):
-        pysms.sms_freeAnalysis(self._analysis_params)
-        pysms.sms_free()
+        #simplsms.sms_freeAnalysis(self._analysis_params)
+        simplsms.sms_free()
         SMSPartialTracking._instances -= 1
         
     def set_max_partials(self, max_partials):
@@ -221,9 +226,9 @@ class SMSPartialTracking(simpl.PartialTracking):
             freqs[i] = peak.frequency
             phases[i] = peak.phase
         # set peaks in SMS_AnalParams structure
-        pysms.sms_setPeaks(self._analysis_params, amps, freqs, phases)
+        simplsms.sms_setPeaks(self._analysis_params, amps, freqs, phases)
         # SMS partial tracking
-        pysms.sms_findPartials(self._analysis_frame, self._analysis_params)
+        simplsms.sms_findPartials(self._analysis_frame, self._analysis_params)
         # read values back into amps, freqs, phases
         num_partials = self._analysis_frame.nTracks
         amps = simpl.zeros(num_partials)
@@ -263,21 +268,21 @@ class SMSSynthesis(simpl.Synthesis):
         if SMSSynthesis._instances > 1:
             raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")   
         simpl.Synthesis.__init__(self)
-        pysms.sms_init()
-        self._synth_params = pysms.SMS_SynthParams() 
-        self._synth_params.iDetSynthType = pysms.SMS_DET_SIN
+        simplsms.sms_init()
+        self._synth_params = simplsms.SMS_SynthParams() 
+        self._synth_params.iDetSynthType = simplsms.SMS_DET_SIN
         # use the default simpl hop size instead of the default SMS hop size
         self._synth_params.sizeHop = self._hop_size 
-        pysms.sms_initSynth(self._synth_params)
+        simplsms.sms_initSynth(self._synth_params)
         self._current_frame = simpl.zeros(self.hop_size)
-        self._analysis_frame = pysms.SMS_Data()
-        pysms.sms_allocFrame(self._analysis_frame, self.max_partials, 
+        self._analysis_frame = simplsms.SMS_Data()
+        simplsms.sms_allocFrame(self._analysis_frame, self.max_partials, 
                              self.num_stochastic_coeffs, 1, self.stochastic_type, 0)
 
     def __del__(self):
-        pysms.sms_freeFrame(self._analysis_frame)
-        pysms.sms_freeSynth(self._synth_params)
-        pysms.sms_free()
+        simplsms.sms_freeFrame(self._analysis_frame)
+        simplsms.sms_freeSynth(self._synth_params)
+        simplsms.sms_free()
         SMSSynthesis._instances -= 1
         
     # properties
@@ -304,7 +309,7 @@ class SMSSynthesis(simpl.Synthesis):
         
     def set_max_partials(self, max_partials):
         self._synth_params.nTracks = max_partials
-        pysms.sms_allocFrame(self._analysis_frame, max_partials, 
+        simplsms.sms_allocFrame(self._analysis_frame, max_partials, 
                              self.num_stochastic_coeffs, 1, self.stochastic_type, 0)
     
     def get_sampling_rate(self):
@@ -324,7 +329,7 @@ class SMSSynthesis(simpl.Synthesis):
     
     def set_num_stochastic_coeffs(self, num_stochastic_coeffs):
         self._synth_params.nStochasticCoeff = num_stochastic_coeffs
-        pysms.sms_allocFrame(self._analysis_frame, self.max_partials, 
+        simplsms.sms_allocFrame(self._analysis_frame, self.max_partials, 
                              num_stochastic_coeffs, 1, self.stochastic_type, 0)
     
     def get_stochastic_type(self):
@@ -332,7 +337,7 @@ class SMSSynthesis(simpl.Synthesis):
     
     def set_stochastic_type(self, stochastic_type):
         self._synth_params.iStochasticType = stochastic_type
-        pysms.sms_allocFrame(self._analysis_frame, self.max_partials, 
+        simplsms.sms_allocFrame(self._analysis_frame, self.max_partials, 
                              self.num_stochastic_coeffs, 1, stochastic_type, 0)
         
     def get_original_sampling_rate(self):
@@ -360,7 +365,7 @@ class SMSSynthesis(simpl.Synthesis):
         self._analysis_frame.setSinAmp(amps)
         self._analysis_frame.setSinFreq(freqs)
         self._analysis_frame.setSinPha(phases)
-        pysms.sms_synthesize(self._analysis_frame, self._current_frame, self._synth_params)
+        simplsms.sms_synthesize(self._analysis_frame, self._current_frame, self._synth_params)
         return self._current_frame
     
 
@@ -372,18 +377,18 @@ class SMSResidual(simpl.Residual):
         if SMSResidual._instances > 1:
             raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")
         simpl.Residual.__init__(self)
-        pysms.sms_init()
-        self._analysis_params = pysms.SMS_AnalParams()
-        pysms.sms_initAnalysis(self._analysis_params)
+        simplsms.sms_init()
+        self._analysis_params = simplsms.SMS_AnalParams()
+        simplsms.sms_initAnalysis(self._analysis_params)
         
     def __del__(self):
-        pysms.sms_free()
+        simplsms.sms_free()
         SMSSynthesis._instances -= 1
         
     def find_residual(self, synth, original):
         "Calculate and return the residual signal"
         residual = simpl.zeros(synth.size)
-        if pysms.sms_findResidual(synth, original, residual, self._analysis_params) == -1:
+        if simplsms.sms_findResidual(synth, original, residual, self._analysis_params) == -1:
             raise Exception("Residual error: Synthesised audio and original audio have different lengths")
         return residual
 

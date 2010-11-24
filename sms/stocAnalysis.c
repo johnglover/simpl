@@ -26,53 +26,35 @@
 #define ENV_THRESHOLD     .01 /* \todo was this value for type shorts?? */
 
 /*! \brief main function for the stochastic analysis
- * \param sizeWindow         size of buffer
- * \param pResidual      pointer to residual signal
+ * \param sizeWindow   size of buffer
+ * \param pResidual    pointer to residual signal
  * \param pWindow      pointer to windowing array
- * \param pSmsData        pointer to output SMS data
+ * \param pSmsData     pointer to output SMS data
+ * \param pAnalParams  point to analysis parameters
  * \return 0 on success, -1 on error
  */
-int sms_stocAnalysis ( int sizeWindow, sfloat *pResidual, sfloat *pWindow, SMS_Data *pSmsData)
+int sms_stocAnalysis(int sizeWindow, sfloat *pResidual, sfloat *pWindow, 
+                     SMS_Data *pSmsData, SMS_AnalParams* pAnalParams)
 {
-        int i;
-        sfloat fMag = 0.0;
-        sfloat fStocNorm;
+    int i;
+    sfloat fMag = 0.0;
+    sfloat fStocNorm;
 
-        static sfloat *pMagSpectrum;
-        static int sizeWindowStatic = 0;
-        static int sizeFft = 0;
-        static int sizeMag = 0;
-        /* update array sizes if sizeWindow is new */
-        if (sizeWindowStatic != sizeWindow)
-        {
-                if(sizeWindowStatic != 0) free(pMagSpectrum);
-                sizeWindowStatic = sizeWindow;
-                sizeFft = sms_power2(sizeWindow);
-                sizeMag = sizeFft >> 1;
-                if((pMagSpectrum = (sfloat *) calloc(sizeMag, sizeof(sfloat))) == NULL)
-                {
-                        sms_error("sms_stocAnalysis: error allocating memory for pMagSpectrum");
-                        return -1;
-                }
-        }
-        
-        sms_spectrumMag (sizeWindow, pResidual, pWindow, sizeMag, pMagSpectrum);
- 
-        sms_spectralApprox (pMagSpectrum, sizeMag, sizeMag, pSmsData->pFStocCoeff, 
-                            pSmsData->nCoeff, pSmsData->nCoeff);
-  
-        /* get energy of spectrum  */
-        for (i = 0; i < sizeMag; i++)
-                fMag += (pMagSpectrum[i] * pMagSpectrum[i]);
-        *pSmsData->pFStocGain = fMag / sizeMag;
-        fStocNorm = 1. / *pSmsData->pFStocGain;
+    sms_spectrumMag(sizeWindow, pResidual, pWindow, pAnalParams->sizeStocMagSpectrum,
+                    pAnalParams->stocMagSpectrum, pAnalParams->fftBuffer);
 
-        /* normalize envelope */
-        /* \todo what good is this scaling, it is only being undone in resynthesis */
-/*         for (i = 0; i <  pSmsData->nCoeff; i++) */
-/*                 pSmsData->pFStocCoeff[i] *= fStocNorm; */
-    
-        // *pSmsData->pFStocGain = sms_magToDB(*pSmsData->pFStocGain);
-	return(0);
+    sms_spectralApprox(pAnalParams->stocMagSpectrum, pAnalParams->sizeStocMagSpectrum, 
+                       pAnalParams->sizeStocMagSpectrum, pSmsData->pFStocCoeff, 
+                       pSmsData->nCoeff, pSmsData->nCoeff,
+                       pAnalParams->approxEnvelope);
+
+    /* get energy of spectrum  */
+    for(i = 0; i < pAnalParams->sizeStocMagSpectrum; i++)
+        fMag += (pAnalParams->stocMagSpectrum[i] * pAnalParams->stocMagSpectrum[i]);
+
+    *pSmsData->pFStocGain = fMag / pAnalParams->sizeStocMagSpectrum;
+    fStocNorm = 1. / *pSmsData->pFStocGain;
+
+    return 0;
 }
 

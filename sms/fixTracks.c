@@ -153,79 +153,70 @@ static void DeleteShortTrack (int iCurrentFrame, int iTrack, int *pIState,
  */
 void sms_cleanTracks(int iCurrentFrame, SMS_AnalParams *pAnalParams)
 {
-	int iTrack, iLength, iFrame;
-	static int *pIState = NULL;
-	static int nStates = 0;
+    int iTrack, iLength, iFrame;
 
-	if (pIState == NULL || nStates != pAnalParams->nGuides || pAnalParams->resetGuideStates == 1)
-	{
-		 /* \todo shouldn't this memory allocation be checked? */
-		pIState = (int *) calloc (pAnalParams->nGuides, sizeof(int));
-		nStates = pAnalParams->nGuides;
-		pAnalParams->resetGuideStates = 0;
-	}
-  
-	/* if fundamental and first partial are short, delete everything */
-	if ((pAnalParams->iFormat == SMS_FORMAT_H ||
-	     pAnalParams->iFormat == SMS_FORMAT_HP) &&
-	     pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp[0] == 0 &&
-	     pIState[0] > 0 &&
-	     pIState[0] < pAnalParams->iMinTrackLength &&
-	     pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp[1] == 0 &&
-	     pIState[1] > 0 &&
-	     pIState[1] < pAnalParams->iMinTrackLength)
-	{
-		iLength = pIState[0];
-		for (iTrack = 0; iTrack < pAnalParams->nGuides; iTrack++)
-		{
-			for (iFrame = 1; iFrame <= iLength; iFrame++)
-			{
-				if((iCurrentFrame - iFrame) >= 0)
-				{
-					pAnalParams->ppFrames[iCurrentFrame -
-						iFrame]->deterministic.pFSinAmp[iTrack] = 0;
-					pAnalParams->ppFrames[iCurrentFrame -
-						iFrame]->deterministic.pFSinFreq[iTrack] = 0;
-					pAnalParams->ppFrames[iCurrentFrame -
-						iFrame]->deterministic.pFSinPha[iTrack] = 0;
-				}
-			}
-			pIState[iTrack] = -pAnalParams->iMaxSleepingTime;
-		}
-		if (pAnalParams->iDebugMode == SMS_DBG_CLEAN_TRAJ || 
-		    pAnalParams->iDebugMode == SMS_DBG_ALL)
+    /* if fundamental and first partial are short, delete everything */
+    if((pAnalParams->iFormat == SMS_FORMAT_H || pAnalParams->iFormat == SMS_FORMAT_HP) &&
+       pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp[0] == 0 &&
+       pAnalParams->guideStates[0] > 0 &&
+       pAnalParams->guideStates[0] < pAnalParams->iMinTrackLength &&
+       pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp[1] == 0 &&
+       pAnalParams->guideStates[1] > 0 &&
+       pAnalParams->guideStates[1] < pAnalParams->iMinTrackLength)
+    {
+        iLength = pAnalParams->guideStates[0];
+        for(iTrack = 0; iTrack < pAnalParams->nGuides; iTrack++)
+        {
+            for(iFrame = 1; iFrame <= iLength; iFrame++)
+            {
+                if((iCurrentFrame - iFrame) >= 0)
                 {
-			fprintf(stdout, "cleanTrack: frame %d to frame %d deleted\n",
-			        pAnalParams->ppFrames[iCurrentFrame-iLength]->iFrameNum, 
-			        pAnalParams->ppFrames[iCurrentFrame-1]->iFrameNum);
+                    pAnalParams->ppFrames[iCurrentFrame - 
+                        iFrame]->deterministic.pFSinAmp[iTrack] = 0;
+                    pAnalParams->ppFrames[iCurrentFrame - 
+                        iFrame]->deterministic.pFSinFreq[iTrack] = 0;
+                    pAnalParams->ppFrames[iCurrentFrame - 
+                        iFrame]->deterministic.pFSinPha[iTrack] = 0;
                 }
+            }
+            pAnalParams->guideStates[iTrack] = -pAnalParams->iMaxSleepingTime;
+        }
+        if(pAnalParams->iDebugMode == SMS_DBG_CLEAN_TRAJ || 
+           pAnalParams->iDebugMode == SMS_DBG_ALL)
+        {
+            fprintf(stdout, "cleanTrack: frame %d to frame %d deleted\n",
+                    pAnalParams->ppFrames[iCurrentFrame-iLength]->iFrameNum, 
+                    pAnalParams->ppFrames[iCurrentFrame-1]->iFrameNum);
+        }
 
-		return;
-	}
-  
-	/* check every partial individually */
-	for (iTrack = 0; iTrack < pAnalParams->nGuides; iTrack++)
-	{
-		/* track after gap */
-		if(pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp[iTrack] != 0)
-		{ 
-			if(pIState[iTrack] < 0 && 
-			   pIState[iTrack] > -pAnalParams->iMaxSleepingTime)
-				FillGap (iCurrentFrame, iTrack, pIState, pAnalParams);
-			else
-				pIState[iTrack] = (pIState[iTrack]<0) ? 1 : pIState[iTrack]+1;
-		}
-		/* gap after track */
-		else
-		{	   
-			if(pIState[iTrack] > 0 &&  
-			   pIState[iTrack] < pAnalParams->iMinTrackLength)
-				DeleteShortTrack (iCurrentFrame, iTrack, pIState, pAnalParams);
-			else 
-				pIState[iTrack] = (pIState[iTrack]>0) ? -1 : pIState[iTrack]-1;
-		}
-	}
-	return;
+        return;
+    }
+
+    /* check every partial individually */
+    for(iTrack = 0; iTrack < pAnalParams->nGuides; iTrack++)
+    {
+        /* track after gap */
+        if(pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp[iTrack] != 0)
+        { 
+            if(pAnalParams->guideStates[iTrack] < 0 && 
+               pAnalParams->guideStates[iTrack] > -pAnalParams->iMaxSleepingTime)
+                FillGap (iCurrentFrame, iTrack, pAnalParams->guideStates, pAnalParams);
+            else
+                pAnalParams->guideStates[iTrack] = 
+                    (pAnalParams->guideStates[iTrack]<0) ? 1 : pAnalParams->guideStates[iTrack]+1;
+        }
+        /* gap after track */
+        else
+        {      
+            if(pAnalParams->guideStates[iTrack] > 0 &&  
+               pAnalParams->guideStates[iTrack] < pAnalParams->iMinTrackLength)
+                DeleteShortTrack (iCurrentFrame, iTrack, pAnalParams->guideStates, pAnalParams);
+            else 
+                pAnalParams->guideStates[iTrack] =
+                    (pAnalParams->guideStates[iTrack]>0) ? -1 : pAnalParams->guideStates[iTrack]-1;
+        }
+    }
+    return;
 }
 
 /*! \brief scale deterministic magnitude if synthesis is larger than original 
@@ -236,15 +227,15 @@ void sms_cleanTracks(int iCurrentFrame, SMS_AnalParams *pAnalParams)
  * \param pAnalParams      pointer to analysis parameters
  * \param nTrack                    number of tracks
  */
-void  sms_scaleDet (sfloat *pFSynthBuffer, sfloat *pFOriginalBuffer, 
-                          sfloat *pFSinAmp, SMS_AnalParams *pAnalParams, int nTrack)
+void  sms_scaleDet(sfloat *pFSynthBuffer, sfloat *pFOriginalBuffer, 
+                   sfloat *pFSinAmp, SMS_AnalParams *pAnalParams, int nTrack)
 {
 	sfloat fOriginalMag = 0, fSynthesisMag = 0;
 	sfloat fCosScaleFactor;
 	int iTrack, i;
   
 	/* get sound energy */
-	for (i = 0; i < pAnalParams->sizeHop; i++)
+	for(i = 0; i < pAnalParams->sizeHop; i++)
 	{
 		fOriginalMag += fabs((double) pFOriginalBuffer[i]); 
 		fSynthesisMag += fabs((double) pFSynthBuffer[i]);
@@ -252,18 +243,18 @@ void  sms_scaleDet (sfloat *pFSynthBuffer, sfloat *pFOriginalBuffer,
   
 	/* if total energy of deterministic sound is larger than original,
 	   scale deterministic representation */
-	if (fSynthesisMag > (1.5 * fOriginalMag))
+	if(fSynthesisMag > (1.5 * fOriginalMag))
 	{
 		fCosScaleFactor = fOriginalMag / fSynthesisMag;
       
 		if(pAnalParams->iDebugMode == SMS_DBG_CLEAN_TRAJ || 
 		   pAnalParams->iDebugMode == SMS_DBG_ALL)
-			fprintf (stdout, "Frame %d: magnitude scaled by %f\n",
-			         pAnalParams->ppFrames[0]->iFrameNum, fCosScaleFactor);
+			fprintf(stdout, "Frame %d: magnitude scaled by %f\n",
+			        pAnalParams->ppFrames[0]->iFrameNum, fCosScaleFactor);
       
-		for (iTrack = 0; iTrack < nTrack; iTrack++)
-			if (pFSinAmp[iTrack] > 0)
-				pFSinAmp[iTrack] = 
-					sms_magToDB (sms_dBToMag (pFSinAmp[iTrack]) * fCosScaleFactor);
+		for(iTrack = 0; iTrack < nTrack; iTrack++)
+			if(pFSinAmp[iTrack] > 0)
+				pFSinAmp[iTrack] = sms_magToDB (sms_dBToMag (pFSinAmp[iTrack]) * fCosScaleFactor);
 	}
 }
+

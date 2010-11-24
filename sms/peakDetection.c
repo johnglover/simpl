@@ -165,31 +165,20 @@ static sfloat GetPhaseVal (sfloat *pPhaseSpectrum, sfloat fPeakLoc)
 int sms_detectPeaks(int sizeSpec, sfloat *pMag, sfloat *pPhase,
                     SMS_Peak *pSpectralPeaks, SMS_AnalParams *pAnalParams)
 {
-    static int iFirstBin, iHighestBin, sizeFft;
-    static sfloat  fInvSizeFft;
-    static int sizeSpecStatic = 0;
-
-    /* allocate memory if sizeSpec has changed or this is the first run */
-    if(sizeSpecStatic != sizeSpec)
-    {
-        sizeSpecStatic = sizeSpec;
-        sizeFft = sizeSpec << 1;
-        fInvSizeFft = 1.0 / sizeFft;
-        /* make sure to start on the 2nd bin so interpolation is possible QUESTION: why not allow a peak in bin 1 or 0? */
-        /* rte: changed the first argument of MAX from 2 to 1 */
-        iFirstBin = MAX(1, sizeFft * pAnalParams->fLowestFreq / pAnalParams->iSamplingRate);
-        iHighestBin = MIN(sizeSpec-1, sizeFft * pAnalParams->fHighestFreq / pAnalParams->iSamplingRate);
-    }
+    int sizeFft = sizeSpec << 1;
+    sfloat fInvSizeFft = 1.0 / sizeFft;
+    int iFirstBin = MAX(1, sizeFft * pAnalParams->fLowestFreq / pAnalParams->iSamplingRate);
+    int iHighestBin = MIN(sizeSpec-1, sizeFft * pAnalParams->fHighestFreq / pAnalParams->iSamplingRate);
 
     /* clear peak structure */
     memset(pSpectralPeaks, 0, pAnalParams->maxPeaks * sizeof(SMS_Peak));
 
     /* set starting search values */
     int iCurrentLoc = iFirstBin;
-    int iPeak = 0;      /* index for spectral search */
-    sfloat fPeakMag = 0.0;      /* magnitude of peak */
-    sfloat fPeakLoc = 0.0;      /* location of peak */
-  
+    int iPeak = 0;          /* index for spectral search */
+    sfloat fPeakMag = 0.0;  /* magnitude of peak */
+    sfloat fPeakLoc = 0.0;  /* location of peak */
+
     /* find peaks */
     while((iPeak < pAnalParams->maxPeaks) &&
           (FindNextPeak(pMag, iHighestBin, &iCurrentLoc, &fPeakMag, 

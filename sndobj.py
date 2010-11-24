@@ -15,20 +15,20 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import simpl
-import pysndobj
+from simpl import simplsndobj
 import numpy as np
 
 class SndObjPeakDetection(simpl.PeakDetection):
     "Sinusoidal peak detection using the SndObj library (Instantaneous Frequency)"
     def __init__(self):
         simpl.PeakDetection.__init__(self)
-        self._input = pysndobj.SndObj()
+        self._input = simplsndobj.SndObj()
         self._input.SetVectorSize(self.frame_size)
-        self._window = pysndobj.HammingTable(self.frame_size, 0.5)
-        self._ifgram = pysndobj.IFGram(self._window, self._input, 1, 
+        self._window = simplsndobj.HammingTable(self.frame_size, 0.5)
+        self._ifgram = simplsndobj.IFGram(self._window, self._input, 1, 
                                          self.frame_size, self.hop_size)
         self._threshold = 0.003
-        self._analysis = pysndobj.SinAnal(self._ifgram, self._threshold,
+        self._analysis = simplsndobj.SinAnal(self._ifgram, self._threshold,
                                              self.max_peaks)
         
     # properties
@@ -39,9 +39,9 @@ class SndObjPeakDetection(simpl.PeakDetection):
         "Set the analysis frame size"
         self._input.SetVectorSize(frame_size)
         if self.window_type == "hamming":
-            self._window = pysndobj.HammingTable(frame_size, 0.5)
+            self._window = simplsndobj.HammingTable(frame_size, 0.5)
         elif self.window_type >=0 and self.window_type <= 1:
-            self._window = pysndobj.HammingTable(frame_size, self.window_type)
+            self._window = simplsndobj.HammingTable(frame_size, self.window_type)
         self._ifgram.Connect("window", self._window)  
         self._ifgram.Set("fft size", frame_size)
         self._frame_size = frame_size
@@ -58,9 +58,9 @@ class SndObjPeakDetection(simpl.PeakDetection):
     def set_window_type(self, window_type):
         "Set the analysis window type"
         if window_type == "hamming":
-            self._window = pysndobj.HammingTable(self.frame_size, 0.5)
+            self._window = simplsndobj.HammingTable(self.frame_size, 0.5)
         elif window_type >=0 and window_type <= 1:
-            self._window = pysndobj.HammingTable(self.frame_size, window_type)
+            self._window = simplsndobj.HammingTable(self.frame_size, window_type)
         else:
             raise Exception("UnknownWindowType")
         self._ifgram.Connect("window", self._window)     
@@ -104,7 +104,7 @@ class SndObjPartialTracking(simpl.PartialTracking):
         simpl.PartialTracking.__init__(self)
         self._threshold = 0.003 # todo: property
         self._num_bins = 1025 # todo: property
-        self._analysis = pysndobj.SinAnal(pysndobj.SndObj(), self._num_bins,
+        self._analysis = simplsndobj.SinAnal(simplsndobj.SndObj(), self._num_bins,
                                              self._threshold, self.max_partials)
         
     def set_max_partials(self, num_partials):
@@ -149,11 +149,11 @@ class SndObjPartialTracking(simpl.PartialTracking):
         return frame_partials
     
                 
-class SimplSndObjAnalysisWrapper(pysndobj.SinAnal):
+class SimplSndObjAnalysisWrapper(simplsndobj.SinAnal):
     """An object that takes simpl Peaks and presents them as SndObj analysis 
     data to the SndObj synthesis objects."""
     def __init__(self):
-        pysndobj.SinAnal.__init__(self)
+        simplsndobj.SinAnal.__init__(self)
         self.peaks = []
         
     def GetTracks(self):
@@ -186,12 +186,12 @@ class SndObjSynthesis(simpl.Synthesis):
     def __init__(self, synthesis_type='adsyn'):
         simpl.Synthesis.__init__(self)
         self._analysis = SimplSndObjAnalysisWrapper()
-        self._table = pysndobj.HarmTable(10000, 1, 1, 0.25)
+        self._table = simplsndobj.HarmTable(10000, 1, 1, 0.25)
         if synthesis_type == 'adsyn':
-            self._synth = pysndobj.AdSyn(self._analysis, self.max_partials,
+            self._synth = simplsndobj.AdSyn(self._analysis, self.max_partials,
                                             self._table, 1, 1, self.hop_size)
         elif synthesis_type == 'sinsyn':
-            self._synth = pysndobj.SinSyn(self._analysis, self.max_partials,
+            self._synth = simplsndobj.SinSyn(self._analysis, self.max_partials,
                                           self._table, 1, self.hop_size)
         else:
             raise Exception("UnknownSynthesisType")

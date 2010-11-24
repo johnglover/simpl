@@ -35,121 +35,118 @@
  * \param sizeSpec2      size of output envelope
  * \param nCoefficients  number of coefficients to use in approximation
  * \return error code \see SMS_ERRORS (or -1 if the algorithm just messes up, 
-               it will print an error of its own.
+ *         it will print an error of its own.
  */
-int sms_spectralApprox (sfloat *pFSpec1, int sizeSpec1, int sizeSpec1Used,
-                    sfloat *pFSpec2, int sizeSpec2, int nCoefficients)
+int sms_spectralApprox(sfloat *pFSpec1, int sizeSpec1, int sizeSpec1Used,
+                       sfloat *pFSpec2, int sizeSpec2, int nCoefficients,
+                       sfloat *envelope)
 {
-	sfloat fHopSize, fCurrentLoc = 0, fLeft = 0, fRight = 0, fValue = 0, 
-		fLastLocation, fSizeX, fSpec2Acum=0, fNextHop, fDeltaY, *pFEnvelope;
-	int iFirstGood = 0, iLastSample = 0, i, j;
+    sfloat fHopSize, fCurrentLoc = 0, fLeft = 0, fRight = 0, fValue = 0, 
+           fLastLocation, fSizeX, fSpec2Acum=0, fNextHop, fDeltaY;
+    int iFirstGood = 0, iLastSample = 0, i, j;
 
-  	/* when number of coefficients is smaller than 2 do not approximate */
-	if (nCoefficients < 2)
-	{
-		for (i = 0; i < sizeSpec2; i++)
-			pFSpec2[i] = 1;
-		return(SMS_OK);
-	}
-
-	if ((pFEnvelope = (sfloat *) calloc(nCoefficients, sizeof(sfloat))) == NULL)
-		return(SMS_MALLOC);
- 
-	/* calculate the hop size */
-	if (sizeSpec1 != sizeSpec1Used)
-                fHopSize = (sfloat) sizeSpec1Used / nCoefficients;
-	else //why is this here, would be the same as sizeSpec1Used / nCoefficients
-		fHopSize = (sfloat) sizeSpec1 / nCoefficients;
-        if(nCoefficients > sizeSpec1)
-                nCoefficients = sizeSpec1;
-
-        fHopSize = (sfloat) sizeSpec1Used / nCoefficients;
-        
-	/* approximate by linear interpolation */
-	if (fHopSize > 1)
-	{
-		iFirstGood = 0;
-		for (i = 0; i < nCoefficients; i++)
-		{
-			iLastSample = fLastLocation = fCurrentLoc + fHopSize;
-			iLastSample = MIN (sizeSpec1-1, iLastSample);
-			if (iLastSample < sizeSpec1-1)
-				fRight = pFSpec1[iLastSample] +
-					(pFSpec1[iLastSample+1] - pFSpec1[iLastSample]) * 
-					(fLastLocation - iLastSample);
-			else
-				fRight = pFSpec1[iLastSample];
-			fValue = 0;
-			for (j = iFirstGood; j <= iLastSample; j++)
-				fValue = MAX (fValue, pFSpec1[j]);
-			fValue = MAX (fValue, MAX (fRight, fLeft));
-			pFEnvelope[i] = fValue;
-			fLeft = fRight;
-			fCurrentLoc = fLastLocation;
-			iFirstGood = (int) (1+ fCurrentLoc);
-		}
-	}
-	else if (fHopSize == 1)
-	{
-		for (i = 0; i < nCoefficients; i++)
-			pFEnvelope[i] = pFSpec1[i];
-	}
-	else
-	{
-		free (pFEnvelope);
-		//printf ("SpectralApprox: sizeSpec1 has too many nCoefficients\n"); /* \todo need to increase the frequency? */
-		sms_error ("SpectralApprox: sizeSpec1 has too many nCoefficients\n"); /* \todo need to increase the frequency? */
-		return -1;
-	}
-
-	/* Creates Spec2 from Envelope */
-	if (nCoefficients < sizeSpec2)
-	{
-		fSizeX = (sfloat) (sizeSpec2-1) / nCoefficients;
-
-		/* the first step */
-		fNextHop = fSizeX / 2;
-		fDeltaY = pFEnvelope[0] / fNextHop;
-		fSpec2Acum=pFSpec2[j=0]=0;
-		while (++j < fNextHop)  
-			pFSpec2[j] = (fSpec2Acum += fDeltaY);
-     
-		/* middle values */
-		for (i = 0; i <= nCoefficients-2; ++i) 
-		{
-			fDeltaY = (pFEnvelope[i+1] - pFEnvelope[i]) / fSizeX;
-			/* first point of a segment */
-			pFSpec2[j] = (fSpec2Acum = (pFEnvelope[i]+(fDeltaY*(j-fNextHop))));
-			++j;
-			/* remaining points */
-			fNextHop += fSizeX;
-			while (j < fNextHop)  
-				pFSpec2[j++] = (fSpec2Acum += fDeltaY);
-    	}
-
-		/* last step */
-		fDeltaY = -pFEnvelope[i] * 2 / fSizeX;
-		/* first point of the last segment */
-		pFSpec2[j] = (fSpec2Acum = (pFEnvelope[i]+(fDeltaY*(j-fNextHop))));
-		++j;
-		fNextHop += fSizeX / 2;
-		while (j < sizeSpec2-1)  
-			pFSpec2[j++]=(fSpec2Acum += fDeltaY);
-		/* last should be exactly zero */
-		pFSpec2[sizeSpec2-1] = .0;	
+    /* when number of coefficients is smaller than 2 do not approximate */
+    if(nCoefficients < 2)
+    {
+        for (i = 0; i < sizeSpec2; i++)
+            pFSpec2[i] = 1;
+        return SMS_OK;
     }
-	else if (nCoefficients == sizeSpec2)
-	{
-		for (i = 0; i < nCoefficients; i++)
-			pFSpec2[i] = pFEnvelope[i];
-	}
-	else
-	{
-		free (pFEnvelope);
-		//printf ("SpectralApprox: sizeSpec2 has too many nCoefficients\n");
-		sms_error ("SpectralApprox: sizeSpec2 has too many nCoefficients\n");
-		return -1;
-	}
-	free (pFEnvelope); /* \todo make this a static array */
-	return (SMS_OK);
+
+    /* calculate the hop size */
+    if(sizeSpec1 != sizeSpec1Used)
+        fHopSize = (sfloat) sizeSpec1Used / nCoefficients;
+    else //why is this here, would be the same as sizeSpec1Used / nCoefficients
+        fHopSize = (sfloat) sizeSpec1 / nCoefficients;
+
+    if(nCoefficients > sizeSpec1)
+        nCoefficients = sizeSpec1;
+
+    fHopSize = (sfloat) sizeSpec1Used / nCoefficients;
+
+    /* approximate by linear interpolation */
+    if (fHopSize > 1)
+    {
+        iFirstGood = 0;
+        for(i = 0; i < nCoefficients; i++)
+        {
+            iLastSample = fLastLocation = fCurrentLoc + fHopSize;
+            iLastSample = MIN (sizeSpec1-1, iLastSample);
+            if(iLastSample < sizeSpec1-1)
+                fRight = pFSpec1[iLastSample] +
+                    (pFSpec1[iLastSample+1] - pFSpec1[iLastSample]) * 
+                    (fLastLocation - iLastSample);
+            else
+                fRight = pFSpec1[iLastSample];
+            fValue = 0;
+            for(j = iFirstGood; j <= iLastSample; j++)
+                fValue = MAX (fValue, pFSpec1[j]);
+            fValue = MAX (fValue, MAX (fRight, fLeft));
+            envelope[i] = fValue;
+            fLeft = fRight;
+            fCurrentLoc = fLastLocation;
+            iFirstGood = (int) (1+ fCurrentLoc);
+        }
+    }
+    else if(fHopSize == 1)
+    {
+        for(i = 0; i < nCoefficients; i++)
+            envelope[i] = pFSpec1[i];
+    }
+    else
+    {
+        sms_error("SpectralApprox: sizeSpec1 has too many nCoefficients\n"); /* \todo need to increase the frequency? */
+        return -1;
+    }
+
+    /* Creates Spec2 from Envelope */
+    if(nCoefficients < sizeSpec2)
+    {
+        fSizeX = (sfloat) (sizeSpec2-1) / nCoefficients;
+
+        /* the first step */
+        fNextHop = fSizeX / 2;
+        fDeltaY = envelope[0] / fNextHop;
+        fSpec2Acum=pFSpec2[j=0]=0;
+        while(++j < fNextHop)  
+            pFSpec2[j] = (fSpec2Acum += fDeltaY);
+
+        /* middle values */
+        for(i = 0; i <= nCoefficients-2; ++i) 
+        {
+            fDeltaY = (envelope[i+1] - envelope[i]) / fSizeX;
+            /* first point of a segment */
+            pFSpec2[j] = (fSpec2Acum = (envelope[i]+(fDeltaY*(j-fNextHop))));
+            ++j;
+            /* remaining points */
+            fNextHop += fSizeX;
+            while(j < fNextHop)  
+                pFSpec2[j++] = (fSpec2Acum += fDeltaY);
+        }
+
+        /* last step */
+        fDeltaY = -envelope[i] * 2 / fSizeX;
+        /* first point of the last segment */
+        pFSpec2[j] = (fSpec2Acum = (envelope[i]+(fDeltaY*(j-fNextHop))));
+        ++j;
+        fNextHop += fSizeX / 2;
+        while(j < sizeSpec2-1)  
+            pFSpec2[j++]=(fSpec2Acum += fDeltaY);
+        /* last should be exactly zero */
+        pFSpec2[sizeSpec2-1] = .0;  
+    }
+    else if(nCoefficients == sizeSpec2)
+    {
+        for(i = 0; i < nCoefficients; i++)
+            pFSpec2[i] = envelope[i];
+    }
+    else
+    {
+        sms_error("SpectralApprox: sizeSpec2 has too many nCoefficients\n");
+        return -1;
+    }
+
+    return SMS_OK;
 }
+
+

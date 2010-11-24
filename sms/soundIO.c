@@ -23,9 +23,6 @@
 */
 #include "sms.h"
 
-const char *pChResidualFile = "residual.aiff";
-#define MAX_SAMPLES 10000
-
 /*! \brief fill the sound buffer
  *
  * \param sizeWaveform   size of input data

@@ -1,4 +1,4 @@
-%module(directors="1") pysndobj
+%module(directors="1") simplsndobj
 %{
 	#include "SndObj.h"
 	#include "SndIO.h"

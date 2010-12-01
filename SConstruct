@@ -134,7 +134,7 @@ env.Append(CPPPATH = numpy_include)
 
 # check if we need debug symbols
 if env['debug']:
-    env.Append(CCFLAGS = "-g")
+    env.Append(CCFLAGS = "-g -O0")
     
 env = conf.Finish()
 

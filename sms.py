@@ -45,7 +45,7 @@ class SMSPeakDetection(simpl.PeakDetection):
         self._analysis_params.iFormat = simplsms.SMS_FORMAT_HP
         self._analysis_params.nTracks = self._max_peaks
         self._analysis_params.maxPeaks = self._max_peaks
-        #self._analysis_params.nGuides = self._max_peaks
+        self._analysis_params.nGuides = self._max_peaks
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
         self._peaks = simplsms.SMS_SpectralPeaks(self.max_peaks)
@@ -128,10 +128,15 @@ class SMSPeakDetection(simpl.PeakDetection):
         print 'todo: change hop size to', hop_size
         
     def set_max_peaks(self, max_peaks):
-        # todo: compare to SMS_MAX_NPEAKS?
+        # TODO: compare to SMS_MAX_NPEAKS
+        #       also, if > current max_peaks, need to reallocate memory in
+        #       analysis_params
         self._max_peaks = max_peaks
         self._analysis_params.nTracks = max_peaks
         self._analysis_params.maxPeaks = max_peaks
+        self._analysis_params.nGuides = max_peaks
+        # TODO: create function to deallocate old peaks memory and call that
+        #       before creating the new peak list below
         self._peaks = simplsms.SMS_SpectralPeaks(max_peaks)
     
     def set_sampling_rate(self, sampling_rate):
@@ -149,8 +154,8 @@ class SMSPeakDetection(simpl.PeakDetection):
         "Find and return all spectral peaks in a given frame of audio"
         current_peaks = []
         num_peaks = simplsms.sms_findPeaks(frame, 
-                                        self._analysis_params, 
-                                        self._peaks)
+                                           self._analysis_params, 
+                                           self._peaks)
         if num_peaks > 0:
             amps = simpl.zeros(num_peaks)
             freqs = simpl.zeros(num_peaks)
@@ -170,8 +175,22 @@ class SMSPeakDetection(simpl.PeakDetection):
         """Find and return all spectral peaks in a given audio signal.
         If the signal contains more than 1 frame worth of audio, it will be broken
         up into separate frames, with a list of peaks returned for each frame."""
+        # TODO: This hops by frame size rather than hop size in order to
+        #       make sure the results are the same as with libsms. Make sure
+        #       we have the same number of frames as the other algorithms.
         self._analysis_params.iSizeSound = len(audio)
-        return simpl.PeakDetection.find_peaks(self, audio)
+        self.peaks = []
+        pos = 0
+        while pos < len(audio):
+            # get the next frame size
+            if not self._static_frame_size:
+                self.frame_size = self.get_next_frame_size()
+            # get the next frame
+            frame = audio[pos:pos+self.frame_size]
+            # find peaks
+            self.peaks.append(self.find_peaks_in_frame(frame))
+            pos += self.frame_size
+        return self.peaks
     
 
 class SMSPartialTracking(simpl.PartialTracking):
@@ -199,16 +218,21 @@ class SMSPartialTracking(simpl.PartialTracking):
         self._analysis_params.nGuides = self.max_partials
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
+        self._sms_header = simplsms.SMS_Header()
+        simplsms.sms_fillHeader(self._sms_header, self._analysis_params, "simpl")
         self._analysis_frame = simplsms.SMS_Data()
+        simplsms.sms_allocFrameH(self._sms_header, self._analysis_frame)
         self.live_partials = [None for i in range(self.max_partials)]
         
     def __del__(self):
-        #simplsms.sms_freeAnalysis(self._analysis_params)
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_free()
         SMSPartialTracking._instances -= 1
         
     def set_max_partials(self, max_partials):
         self._max_partials = max_partials
+        self._analysis_params.maxPeaks = max_partials
         self._analysis_params.nTracks = max_partials
         self._analysis_params.nGuides = max_partials
         
@@ -220,6 +244,9 @@ class SMSPartialTracking(simpl.PartialTracking):
         amps = simpl.zeros(num_peaks)
         freqs = simpl.zeros(num_peaks)
         phases = simpl.zeros(num_peaks)
+        #amps = simpl.zeros(self.max_partials)
+        #freqs = simpl.zeros(self.max_partials)
+        #phases = simpl.zeros(self.max_partials)
         for i in range(num_peaks):
             peak = frame[i]
             amps[i] = peak.amplitude

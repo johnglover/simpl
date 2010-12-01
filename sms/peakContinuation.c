@@ -67,7 +67,7 @@ int GetNextClosestPeak(sfloat fGuideFreq, sfloat *pFFreqDistance,
     else
     {
         while(floor(fLowDistance) >= floor(*pFFreqDistance) &&
-                iInitialPeak < pAnalParams->maxPeaks)
+              iInitialPeak < pAnalParams->maxPeaks)
         {
             iInitialPeak++; 
             /* TODO: is this really the correct behaviour? Will ignore
@@ -297,13 +297,14 @@ int GetBestPeak(SMS_Guide *pGuides, int iGuide, SMS_Peak *pSpectralPeaks,
  * \param pFCurrentMax      last peak maximum
  * \return the number of the maximum peak
  */
-static int GetNextMax (SMS_Peak *pSpectralPeaks, sfloat *pFCurrentMax)
+static int GetNextMax(SMS_Peak *pSpectralPeaks, SMS_AnalParams *pAnalParams,
+                      sfloat *pFCurrentMax)
 {
     sfloat fPeakMag;
     sfloat fMaxMag = 0.;
     int iPeak, iMaxPeak = -1;
 
-    for (iPeak = 0; iPeak < SMS_MAX_NPEAKS; iPeak++)
+    for (iPeak = 0; iPeak < pAnalParams->maxPeaks; iPeak++)
     {
         fPeakMag = pSpectralPeaks[iPeak].fMag;
 
@@ -330,7 +331,8 @@ static int GetNextMax (SMS_Peak *pSpectralPeaks, sfloat *pFCurrentMax)
  * \return \todo should this return something?
  */
 static int GetStartingPeak(int iGuide, SMS_Guide *pGuides, int nGuides,
-                           SMS_Peak *pSpectralPeaks, sfloat *pFCurrentMax)
+                           SMS_Peak *pSpectralPeaks, SMS_AnalParams *pAnalParams,
+                           sfloat *pFCurrentMax)
 {
     int iPeak = -1;
     short peakNotFound = 1;
@@ -338,7 +340,7 @@ static int GetStartingPeak(int iGuide, SMS_Guide *pGuides, int nGuides,
     while (peakNotFound == 1 && *pFCurrentMax > 0)
     {
         /* \todo I don't think this ever returns -1, but check */
-        if ((iPeak = GetNextMax(pSpectralPeaks, pFCurrentMax)) < 0)
+        if ((iPeak = GetNextMax(pSpectralPeaks, pAnalParams, pFCurrentMax)) < 0)
             return (-1);
 
         if (CheckForConflict (iPeak, pGuides, nGuides) < 0)
@@ -425,7 +427,7 @@ int sms_peakContinuation(int iFrame, SMS_AnalParams *pAnalParams)
 	
 			if(GetStartingPeak(iGuide, pAnalParams->guides, pAnalParams->nGuides, 
 			                   pAnalParams->ppFrames[iFrame]->pSpectralPeaks,
-			                   &fCurrentMax) == -1)
+                               pAnalParams, &fCurrentMax) == -1)
 				break;
 		}
 

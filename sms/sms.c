@@ -217,15 +217,20 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
         pAnalParams->specEnvParams.iMaxFreq = pAnalParams->fHighestFreq;
 
     /*\todo this probably doesn't need env coefficients - they aren't getting used */
-    sms_allocFrame(&pAnalParams->prevFrame, pAnalParams->nGuides,
-                  pAnalParams->nStochasticCoeff, 1, pAnalParams->iStochasticType, 0);
+    if(sms_allocFrame(&pAnalParams->prevFrame, pAnalParams->nGuides,
+                      pAnalParams->nStochasticCoeff, 1, pAnalParams->iStochasticType, 0)
+       == -1)
+    {
+        sms_error("Could not allocate memory for prevFrame");
+        return -1;
+    }
 
     pAnalParams->sizeNextRead = (pAnalParams->iDefaultSizeWindow + 1) * 0.5;
 
     /* sound buffer */
-    if ((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(sfloat))) == NULL)
+    if((pSoundBuf->pFBuffer = (sfloat *) calloc(sizeBuffer, sizeof(sfloat))) == NULL)
     {
-        sms_error("could not allocate memory");
+        sms_error("Could not allocate memory for sound buffer");
         return -1;
     }
     pSoundBuf->iMarker = -sizeBuffer;
@@ -365,56 +370,6 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
     }
 
     return 0;
-
-    /*[> buffer of analysis frames <]*/
-    /*pAnalParams->pFrames = (SMS_AnalFrame *) malloc(pAnalParams->iMaxDelayFrames * sizeof(SMS_AnalFrame)); */
-    /*if(pAnalParams->pFrames == NULL)*/
-    /*{*/
-    /*    sms_error("could not allocate memory for delay frames");*/
-    /*    return -1;*/
-    /*}*/
-
-    /*pAnalParams->ppFrames = (SMS_AnalFrame **) malloc(pAnalParams->iMaxDelayFrames * sizeof(SMS_AnalFrame *));*/
-    /*if(pAnalParams->ppFrames == NULL)*/
-    /*{*/
-    /*    sms_error("could not allocate memory for pointers to delay frames");*/
-    /*    return -1;*/
-    /*}*/
-
-    /*[> initialize the frame pointers and allocate memory <]*/
-    /*for (i = 0; i < pAnalParams->iMaxDelayFrames; i++)*/
-    /*{*/
-    /*    pAnalParams->pFrames[i].iStatus = SMS_FRAME_EMPTY;*/
-    /*    pAnalParams->pFrames[i].pSpectralPeaks =*/
-    /*       (SMS_Peak *)malloc(pAnalParams->maxPeaks * sizeof(SMS_Peak));*/
-    /*    if (pAnalParams->pFrames[i].pSpectralPeaks == NULL)*/
-    /*    {*/
-    /*       sms_error("could not allocate memory for spectral peaks");*/
-    /*       return -1;*/
-    /*    }*/
-    /*    (pAnalParams->pFrames[i].deterministic).nTracks = pAnalParams->nGuides;*/
-    /*    if (((pAnalParams->pFrames[i].deterministic).pFSinFreq =*/
-    /*        (sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)*/
-    /*    {*/
-    /*       sms_error("could not allocate memory");*/
-    /*       return -1;*/
-    /*    }*/
-    /*    if (((pAnalParams->pFrames[i].deterministic).pFSinAmp =*/
-    /*        (sfloat *)calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)*/
-    /*    {*/
-    /*       sms_error("could not allocate memory");*/
-    /*       return -1;*/
-    /*    }*/
-    /*    if (((pAnalParams->pFrames[i].deterministic).pFSinPha =*/
-    /*        (sfloat *) calloc (pAnalParams->nGuides, sizeof(sfloat))) == NULL)*/
-    /*    {*/
-    /*       sms_error("could not allocate memory");*/
-    /*       return -1;*/
-    /*    }*/
-    /*    pAnalParams->ppFrames[i] = &pAnalParams->pFrames[i];*/
-    /*}*/
-
-    /*return 0;*/
 }
 
 void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams)
@@ -691,14 +646,19 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
            sizeof(sfloat) * pAnalParams->nGuides);
 
     /* clear peaks */
-    memset((void *) pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks, 0,
-           sizeof (SMS_Peak) * pAnalParams->maxPeaks);
+    int i;
+    for(i = 0; i < pAnalParams->maxPeaks; i++)
+    {
+        pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fFreq = 0.0;
+        pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag = 0.0;
+        pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fPhase = 0.0;
+    }
 
     pAnalParams->ppFrames[iCurrentFrame]->nPeaks = 0;
     pAnalParams->ppFrames[iCurrentFrame]->fFundamental = 0;
 
     pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  
-    pAnalParams->ppFrames[iCurrentFrame - 1]->iFrameNum + 1;
+        pAnalParams->ppFrames[iCurrentFrame - 1]->iFrameNum + 1;
     pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = sizeWindow;
 
     /* if first frame set center of data around 0 */
@@ -987,3 +947,4 @@ void sms_arrayScalarTempered(int sizeArray, sfloat *pArray)
     for(i = 0; i < sizeArray; i++)
         pArray[i] = sms_scalarTempered(pArray[i]);
 }
+

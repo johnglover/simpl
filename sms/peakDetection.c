@@ -169,17 +169,23 @@ int sms_detectPeaks(int sizeSpec, sfloat *pMag, sfloat *pPhase,
     sfloat fInvSizeFft = 1.0 / sizeFft;
     int iFirstBin = MAX(1, sizeFft * pAnalParams->fLowestFreq / pAnalParams->iSamplingRate);
     int iHighestBin = MIN(sizeSpec-1, sizeFft * pAnalParams->fHighestFreq / pAnalParams->iSamplingRate);
+    int iPeak = 0;
 
     /* clear peak structure */
-    memset(pSpectralPeaks, 0, pAnalParams->maxPeaks * sizeof(SMS_Peak));
+    for(iPeak = 0; iPeak < pAnalParams->maxPeaks; iPeak++)
+    {
+        pSpectralPeaks[iPeak].fFreq = 0.0;
+        pSpectralPeaks[iPeak].fMag = 0.0;
+        pSpectralPeaks[iPeak].fPhase = 0.0;
+    }
 
     /* set starting search values */
     int iCurrentLoc = iFirstBin;
-    int iPeak = 0;          /* index for spectral search */
     sfloat fPeakMag = 0.0;  /* magnitude of peak */
     sfloat fPeakLoc = 0.0;  /* location of peak */
 
     /* find peaks */
+    iPeak = 0;
     while((iPeak < pAnalParams->maxPeaks) &&
           (FindNextPeak(pMag, iHighestBin, &iCurrentLoc, &fPeakMag, 
                         &fPeakLoc, pAnalParams->fMinPeakMag) == 1))

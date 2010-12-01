@@ -262,53 +262,6 @@ typedef struct
     sfloat *stocMagSpectrum;
     sfloat *approxEnvelope;          /*!< spectral approximation envelope */
     SMS_AnalFrame **ppFrames;        /*!< pointers to the frames analyzed (it is circular-shifted once the array is full */
-
-    //int iDebugMode; [>!< debug codes enumerated by SMS_DBG \see SMS_DBG <]
-    //int iFormat;          [>!< analysis format code defined by SMS_Format \see SMS_Format <]
-    //int iSoundType;            [>!< type of sound to be analyzed \see SMS_SOUND_TYPE <] 
-    //int iStochasticType;      [>!<  type of stochastic model defined by SMS_StocSynthType \see SMS_StocSynthType <]
-    //int iFrameRate;        [>!< rate in Hz of data frames <]
-    //int nStochasticCoeff;  [>!< number of stochastic coefficients per frame  <]
-    //sfloat fLowestFundamental; [>!< lowest fundamental frequency in Hz <]
-    //sfloat fHighestFundamental;[>!< highest fundamental frequency in Hz <]
-    //sfloat fDefaultFundamental;[>!< default fundamental in Hz <]
-    //sfloat fPeakContToGuide;   [>!< contribution of previous peak to current guide (between 0 and 1) <]
-    //sfloat fFundContToGuide;   [>!< contribution of current fundamental to current guide (between 0 and 1) <]
-    //sfloat fFreqDeviation;     [>!< maximum deviation from peak to peak <]                   
-    //int iSamplingRate;        [>! sampling rate of sound to be analyzed <]
-    //int iDefaultSizeWindow;   [>!< default size of analysis window in samples <]
-    //int windowSize;           [>!< the current window size <]
-    //int sizeHop;              [>!< hop size of analysis window in samples <]
-    //sfloat fSizeWindow;       [>!< size of analysis window in number of periods <]
-    //int nTracks;              [>!< number of sinusoidal tracks in frame <]
-    //int maxPeaks;             [>!< maximum number of peaks in a frame <]
-    //int nGuides;              [>!< number of guides used for peak detection and continuation \see SMS_Guide <]
-    //int iCleanTracks;         [>!< whether or not to clean sinusoidal tracks <]
-    //sfloat fMinRefHarmMag;     [>!< minimum magnitude in dB for reference peak <]
-    //sfloat fRefHarmMagDiffFromMax; [>!< maximum magnitude difference from reference peak to highest peak <]
-    //int iRefHarmonic;          [>!< reference harmonic to use in the fundamental detection <]
-    //int iMinTrackLength;           [>!< minimum length in samples of a given track <]
-    //int iMaxSleepingTime;      [>!< maximum sleeping time for a track <]
-    //sfloat fLowestFreq;        [>!< lowest frequency to be searched <]
-    //sfloat fHighestFreq;        [>!< highest frequency to be searched <]
-    //sfloat fMinPeakMag;         [>!< minimum magnitude in dB for a good peak <]     
-    //int iAnalysisDirection;    [>!< analysis direction, direct or reverse <]    
-    //int iSizeSound;             [>!< total size of sound to be analyzed in samples <]       
-    //int nFrames;             [>!< total number of frames that will be analyzed <]
-    //int iWindowType;            [>!< type of FFT analysis window \see SMS_WINDOWS <]                             
-    //int iMaxDelayFrames;     [>!< maximum number of frames to delay before peak continuation <]
-    //int minGoodFrames;       [>!< minimum number of stable frames for backward search <]
-    //sfloat maxDeviation;    [>!< maximum deviation allowed <]
-    //int analDelay;          [>! number of frames in the past to be looked in possible re-analyze <]
-    //sfloat fResidualAccumPerc; [>!< accumalitive residual percentage <]
-    //int sizeNextRead;     [>!< size of samples to read from sound file next analysis <]
-    //sfloat preEmphasisLastValue;
-    //SMS_Data prevFrame;   [>!< the previous analysis frame  <]
-    //SMS_SEnvParams specEnvParams; [>!< all data for spectral enveloping <]
-    //SMS_SndBuffer soundBuffer;    [>!< signal to be analyzed <]
-    //SMS_SndBuffer synthBuffer; [>!< resynthesized signal used to create the residual <]
-    //SMS_AnalFrame *pFrames;  [>!< an array of frames that have already been analyzed <]
-    //SMS_AnalFrame **ppFrames; [>!< pointers to the frames analyzed (it is circular-shifted once the array is full <]
 } SMS_AnalParams;
 
 /*! \struct SMS_ModifyParams
@@ -364,27 +317,6 @@ typedef struct
     SMS_ModifyParams modParams; /*!< modification parameters */
     sfloat *approxEnvelope;     /*!< spectral approximation envelope */
 } SMS_SynthParams;
-//typedef struct
-//{
-//    int iStochasticType;        [>!<  type of stochastic model defined by SMS_StocSynthType \see SMS_StocSynthType <]
-//    int iSynthesisType;         [>!< type of synthesis to perform \see SMS_SynthType <]
-//    int iDetSynthType;          [>!< method for synthesizing deterministic component \see SMS_DetSynthType <]
-//    int iOriginalSRate;         [>!< samplerate of the sound model source (for stochastic synthesis approximation) <]
-//    int iSamplingRate;          [>!< synthesis samplerate <]
-//    int sizeHop;                [>!< number of samples to synthesis for each frame <]
-//    int origSizeHop;            [>!< original number of samples used to create each analysis frame <]
-//    int nTracks;
-//    int nStochasticCoeff;
-//    sfloat deemphasisLastValue;
-//    sfloat *pFDetWindow;        [>!< array to hold the window used for deterministic synthesis  \see SMS_WIN_IFFT <]
-//    sfloat *pFStocWindow;       [>!< array to hold the window used for stochastic synthesis (Hanning) <]
-//    sfloat *pSynthBuff;         [>!< an array for keeping samples during overlap-add (2x sizeHop) <]
-//    sfloat *pMagBuff;           [>!< an array for keeping magnitude spectrum for stochastic synthesis <]
-//    sfloat *pPhaseBuff;         [>!< an array for keeping phase spectrum for stochastic synthesis <]
-//    sfloat *pSpectra;           [>!< array for in-place FFT transform <]
-//    SMS_Data prevFrame;         [>!< previous data frame, for interpolation between frames <]
-//    SMS_ModifyParams modParams; [>!< modification parameters <]
-//} SMS_SynthParams;
 
 /*! \struct SMS_HarmCandidate
  * \brief structure to hold information about a harmonic candidate 

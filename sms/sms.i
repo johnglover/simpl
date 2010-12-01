@@ -373,7 +373,7 @@
     {
         SMS_SpectralPeaks *s = (SMS_SpectralPeaks *)malloc(sizeof(SMS_SpectralPeaks));
         s->nPeaks = n;
-        if((s->pSpectralPeaks = (SMS_Peak *)calloc (s->nPeaks, sizeof(SMS_Peak))) == NULL)
+        if((s->pSpectralPeaks = (SMS_Peak *)malloc(n * sizeof(SMS_Peak))) == NULL)
         {
             sms_error("could not allocate memory for spectral peaks");
             return NULL;
@@ -392,7 +392,7 @@
         for(i = 0; i < $self->nPeaksFound; i++)
             pArray[i] = $self->pSpectralPeaks[i].fFreq;
     }
-    void getMag( int sizeArray, sfloat *pArray )
+    void getMag(int sizeArray, sfloat *pArray )
     {
         if(sizeArray < $self->nPeaksFound)
         {
@@ -403,7 +403,7 @@
         for(i = 0; i < $self->nPeaksFound; i++)
             pArray[i] = $self->pSpectralPeaks[i].fMag;
     }
-    void getPhase( int sizeArray, sfloat *pArray )
+    void getPhase(int sizeArray, sfloat *pArray )
     {
         if(sizeArray < $self->nPeaksFound)
         {

@@ -87,7 +87,7 @@ void sms_analyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, sfloat fRe
     /* find a reference harmonic */
     if(pCurrentFrame->nPeaks > 0 &&
        (pAnalParams->iFormat == SMS_FORMAT_H || pAnalParams->iFormat == SMS_FORMAT_HP))
-        pCurrentFrame->fFundamental = sms_harmDetection(pAnalParams->nTracks, pCurrentFrame->pSpectralPeaks,
+        pCurrentFrame->fFundamental = sms_harmDetection(pAnalParams->maxPeaks, pCurrentFrame->pSpectralPeaks,
                                                         fRefFundamental, pAnalParams->iRefHarmonic,
                                                         pAnalParams->fLowestFundamental, pAnalParams->fHighestFundamental,
                                                         pAnalParams->iSoundType, pAnalParams->fMinRefHarmMag,

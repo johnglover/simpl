@@ -24,13 +24,14 @@
 
 #include "sms.h"
 
-/*! diferent status of guide */
+/*! guide states */
 #define GUIDE_BEG -2
 #define GUIDE_DEAD -1
 #define GUIDE_ACTIVE 0
 
-#define MAX_CONT_CANDIDATES 5  /*!< maximum number of peak continuation
-                                 candidates */
+/*!< maximum number of peak continuation candidates */
+#define MAX_CONT_CANDIDATES 5  
+
 /*! \brief function to get the next closest peak from a guide
  *
  * \param fGuideFreq        guide's frequency
@@ -40,20 +41,20 @@
  * \param fFreqDev              maximum deviation from guide
  * \return peak number or -1 if nothing is good
  */
-int GetNextClosestPeak(sfloat fGuideFreq, sfloat *pFFreqDistance,
-                       SMS_Peak *pSpectralPeaks, SMS_AnalParams *pAnalParams,
-                       sfloat fFreqDev)
+static int GetNextClosestPeak(sfloat fGuideFreq, sfloat *pFFreqDistance,
+                              SMS_Peak *pSpectralPeaks, SMS_AnalParams *pAnalParams,
+                              sfloat fFreqDev)
 {
     int iInitialPeak = SMS_MAX_NPEAKS * fGuideFreq / (pAnalParams->iSamplingRate * .5);
     int iLowPeak, iHighPeak, iChosenPeak = -1;
     sfloat fLowDistance, fHighDistance, fFreq;
 
-    if(pSpectralPeaks[iInitialPeak].fFreq <= 0)
-        iInitialPeak = 0;
-
     if(iInitialPeak >= pAnalParams->maxPeaks)
         iInitialPeak = 0;
+    else if(pSpectralPeaks[iInitialPeak].fFreq <= 0)
+        iInitialPeak = 0;
 
+    /* find a low peak to start */
     fLowDistance = fGuideFreq - pSpectralPeaks[iInitialPeak].fFreq;
     if(floor(fLowDistance) < floor(*pFFreqDistance))
     {
@@ -67,18 +68,15 @@ int GetNextClosestPeak(sfloat fGuideFreq, sfloat *pFFreqDistance,
     else
     {
         while(floor(fLowDistance) >= floor(*pFFreqDistance) &&
-              iInitialPeak < pAnalParams->maxPeaks)
+              iInitialPeak < (pAnalParams->maxPeaks-1))
         {
             iInitialPeak++; 
-            /* TODO: is this really the correct behaviour? Will ignore
-             * iInitialPeak values of maxPeaks */
-            if((fFreq = pSpectralPeaks[iInitialPeak].fFreq) == 0 || 
-               (iInitialPeak == pAnalParams->maxPeaks))
-               return -1;
-
+            if((fFreq = pSpectralPeaks[iInitialPeak].fFreq) == 0)
+                return -1;
             fLowDistance = fGuideFreq - fFreq;
         }
-        iInitialPeak--;
+        if(iInitialPeak > 0)
+            iInitialPeak--;
         fLowDistance = fGuideFreq - pSpectralPeaks[iInitialPeak].fFreq;
     }
 
@@ -92,7 +90,7 @@ int GetNextClosestPeak(sfloat fGuideFreq, sfloat *pFFreqDistance,
     iHighPeak = iInitialPeak;
     fHighDistance = fGuideFreq - pSpectralPeaks[iHighPeak].fFreq;
     while(floor(fHighDistance) >= floor(-*pFFreqDistance) &&
-          iHighPeak < pAnalParams->maxPeaks)
+          iHighPeak < (pAnalParams->maxPeaks - 1))
     {
         iHighPeak++;     
         if((fFreq = pSpectralPeaks[iHighPeak].fFreq) == 0)
@@ -107,21 +105,21 @@ int GetNextClosestPeak(sfloat fGuideFreq, sfloat *pFFreqDistance,
         iHighPeak = -1;
 
     /* chose between the two extrema */
-    if (iHighPeak >= 0 && iLowPeak >= 0)
+    if(iHighPeak >= 0 && iLowPeak >= 0)
     {
-        if (fabs(fHighDistance) > fLowDistance)
+        if(fabs(fHighDistance) > fLowDistance)
             iChosenPeak = iLowPeak;
         else
             iChosenPeak = iHighPeak;
     }
-    else if (iHighPeak < 0 && iLowPeak >= 0)
+    else if(iHighPeak < 0 && iLowPeak >= 0)
         iChosenPeak = iLowPeak;
-    else if (iHighPeak >= 0 && iLowPeak < 0)
+    else if(iHighPeak >= 0 && iLowPeak < 0)
         iChosenPeak = iHighPeak;
     else
         return -1;
 
-    *pFFreqDistance = fabs (fGuideFreq - pSpectralPeaks[iChosenPeak].fFreq);
+    *pFFreqDistance = fabs(fGuideFreq - pSpectralPeaks[iChosenPeak].fFreq);
     return iChosenPeak;
 }   
 

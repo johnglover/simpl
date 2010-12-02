@@ -344,14 +344,21 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
         sms_error("Could not allocate memory for guides");
         return -1;
     }
+
     /* initial guide values */
-    if(pAnalParams->iFormat == SMS_FORMAT_H ||
-       pAnalParams->iFormat == SMS_FORMAT_HP)
+    for (i = 0; i < pAnalParams->nGuides; i++)
     {
-        for (i = 0; i < pAnalParams->nGuides; i++)
+        if(pAnalParams->iFormat == SMS_FORMAT_H || pAnalParams->iFormat == SMS_FORMAT_HP)
         {
             pAnalParams->guides[i].fFreq = pAnalParams->fDefaultFundamental * (i + 1);
         }
+        else
+        {
+            pAnalParams->guides[i].fFreq = 0.0;
+        }
+        pAnalParams->guides[i].fMag = 0.0;
+        pAnalParams->guides[i].iPeakChosen = -1;
+        pAnalParams->guides[i].iStatus = 0;
     }
 
     /* stochastic analysis */
@@ -671,7 +678,7 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
             pAnalParams->ppFrames[iCurrentFrame-1]->iFrameSample + pAnalParams->sizeHop;
 
     /* check for end of sound */
-    if ((pAnalParams->ppFrames[iCurrentFrame]->iFrameSample + (sizeWindow+1)/2) >= pAnalParams->iSizeSound
+    if((pAnalParams->ppFrames[iCurrentFrame]->iFrameSample + (sizeWindow+1)/2) >= pAnalParams->iSizeSound
          && pAnalParams->iSizeSound > 0)
     {
         pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  -1;

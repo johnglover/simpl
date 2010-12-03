@@ -25,7 +25,7 @@
 
 /*! \brief fill the sound buffer
  *
- * \param sizeWaveform   size of input data
+ * \param sizeWaveform  size of input data
  * \param pWaveform     input data
  * \param pAnalParams   pointer to structure of analysis parameters
  */
@@ -42,12 +42,12 @@ void sms_fillSoundBuffer(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pA
     pAnalParams->soundBuffer.iMarker += sizeNewData;
 
     /* put the new data in, and do some pre-emphasis */
-    if (pAnalParams->iAnalysisDirection == SMS_DIR_REV)
-        for (i=0; i<sizeNewData; i++)
+    if(pAnalParams->iAnalysisDirection == SMS_DIR_REV)
+        for(i=0; i<sizeNewData; i++)
             pAnalParams->soundBuffer.pFBuffer[pAnalParams->soundBuffer.sizeBuffer - sizeNewData + i] =
-                sms_preEmphasis(pWaveform[sizeNewData - (1+ i)], pAnalParams);
+                sms_preEmphasis(pWaveform[sizeNewData - (1 + i)], pAnalParams);
     else
-        for (i=0; i<sizeNewData; i++)
+        for(i=0; i<sizeNewData; i++)
             pAnalParams->soundBuffer.pFBuffer[pAnalParams->soundBuffer.sizeBuffer - sizeNewData + i] =
                 sms_preEmphasis(pWaveform[i], pAnalParams);
 }

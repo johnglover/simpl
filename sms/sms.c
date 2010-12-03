@@ -310,6 +310,13 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
             return -1;
         }
         pAnalParams->ppFrames[i] = &pAnalParams->pFrames[i];
+
+        /* set initial values */
+        if(sms_clearAnalysisFrame(i, pAnalParams) < 0)
+        {
+            sms_error("could not set initial values for analysis frames");
+            return -1;
+        }
     }
 
     /* memory for residual */
@@ -631,6 +638,42 @@ int sms_sizeNextWindow(int iCurrentFrame, SMS_AnalParams *pAnalParams)
     return sizeWindow;
 }
 
+/*! \brief set default values for analysis frame variables
+ * \param iCurrentFrame frame number of the current frame
+ * \param pAnalParams analysis parameters
+ * \return 0 on success, -1 on error
+ */
+int sms_clearAnalysisFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams)
+{
+    int i;
+    SMS_AnalFrame *currentFrame = pAnalParams->ppFrames[iCurrentFrame];
+
+    /* clear deterministic data */
+    for(i = 0; i < pAnalParams->nGuides; i++)
+    {
+        currentFrame->deterministic.pFSinFreq[i] = 0.0;
+        currentFrame->deterministic.pFSinAmp[i] = 0.0;
+        currentFrame->deterministic.pFSinPha[i] = 0.0;
+    }
+
+    /* clear peaks */
+    for(i = 0; i < pAnalParams->maxPeaks; i++)
+    {
+       currentFrame->pSpectralPeaks[i].fFreq = 0.0;
+       currentFrame->pSpectralPeaks[i].fMag = 0.0;
+       currentFrame->pSpectralPeaks[i].fPhase = 0.0;
+    }
+
+    currentFrame->nPeaks = 0;
+    currentFrame->fFundamental = 0;
+    currentFrame->iFrameNum = 0;
+    currentFrame->iFrameSize = 0;
+    currentFrame->iFrameSample = 0;
+    currentFrame->iStatus = SMS_FRAME_EMPTY;
+
+    return 0;
+}
+
 /*! \brief initialize the current frame
  *
  * initializes arrays to zero and sets the correct sample position.
@@ -704,8 +747,11 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
     sfloat fFund, fSum = 0, fAverage, fDeviation = 0;
     int i;
 
+    if(pAnalParams->minGoodFrames < 1)
+        return -1;
+
     /* get the sum of the past few fundamentals */
-    for(i = 0; i < pAnalParams->minGoodFrames; i++)
+    for(i = 0; (i < pAnalParams->minGoodFrames) && (iCurrentFrame-i >= 0); i++)
     {
         fFund = pAnalParams->ppFrames[iCurrentFrame-i]->fFundamental;
         if(fFund <= 0)
@@ -718,7 +764,7 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
     fAverage = fSum / pAnalParams->minGoodFrames;
 
     /* get the deviation from the average */
-    for(i = 0; i < pAnalParams->minGoodFrames; i++)
+    for(i = 0; (i < pAnalParams->minGoodFrames) && (iCurrentFrame-i >= 0); i++)
         fDeviation += fabs(pAnalParams->ppFrames[iCurrentFrame-i]->fFundamental - fAverage);
 
     /* return the deviation from the average */

@@ -642,6 +642,7 @@ void sms_fillHeader(SMS_Header *pSmsHeader, SMS_AnalParams *pAnalParams, char *p
 int sms_writeHeader(char *pFileName, SMS_Header *pSmsHeader, FILE **ppOutSmsFile);
 int sms_writeFile(FILE *pSmsFile, SMS_Header *pSmsHeader);
 int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow);
+int sms_clearAnalysisFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams);
 int sms_allocFrame(SMS_Data *pSmsFrame, int nTracks, int nCoeff, 
                    int iPhase, int stochType, int nEnvCoeff);
 int sms_allocFrameH(SMS_Header *pSmsHeader, SMS_Data *pSmsFrame);

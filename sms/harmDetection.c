@@ -339,7 +339,7 @@ sfloat sms_harmDetection(int numPeaks, SMS_Peak* spectralPeaks, sfloat refFundam
     lowestFreq = lowestFreq * refHarmonic;
     highestFreq = highestFreq * refHarmonic;
 
-    while((peakFreq < highestFreq) && (iPeak < numPeaks))
+    while((peakFreq < highestFreq) && (iPeak < numPeaks - 1))
     {
         iPeak++;
         peakFreq = spectralPeaks[iPeak].fFreq;

@@ -102,9 +102,6 @@ sndobj:
 - make peak detection use the new window_size property
 
 sms:
-- test_partial_tracking fails with max_partials = max_peaks = 2
-- test_synthesis fails when max_partials = max_peaks = num_frames = 10
-- test_synthesis fails when max_peaks = 70, max_partials = 50. 
 - test_synthesis: why does it occasionally not synthesise anything unless frame number is changed?
 - test_synthesis: remove mag to db conversion
 - can sms_scaleDet be moved to the harmonic analysis phase?

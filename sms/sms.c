@@ -386,44 +386,6 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
     return 0;
 }
 
-void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams)
-{
-    pAnalParams->sizeHop = hopSize;
-    pAnalParams->iFrameRate = pAnalParams->iSamplingRate / hopSize;
-    int sizeBuffer = (pAnalParams->iMaxDelayFrames * pAnalParams->sizeHop) + SMS_MAX_WINDOW;
-
-    /* if storing residual phases, restrict number of stochastic coefficients to the size of the spectrum (sizeHop = 1/2 sizeFft)*/
-    if(pAnalParams->iStochasticType == SMS_STOC_IFFT)
-        pAnalParams->nStochasticCoeff = sms_power2(pAnalParams->sizeHop);
-
-    /* sound buffer */
-    SMS_SndBuffer *pSoundBuf = &pAnalParams->soundBuffer;
-
-    free(pSoundBuf->pFBuffer);
-    pSoundBuf->pFBuffer = calloc(sizeBuffer, sizeof(sfloat));
-    if(pSoundBuf->pFBuffer == NULL)
-    {
-        sms_error("could not allocate memory");
-        return;
-    }
-    pSoundBuf->iMarker = -sizeBuffer;
-    pSoundBuf->iFirstGood = sizeBuffer;
-    pSoundBuf->sizeBuffer = sizeBuffer;
-
-    /* deterministic synthesis buffer */
-    SMS_SndBuffer *pSynthBuf = &pAnalParams->synthBuffer;
-    pSynthBuf->sizeBuffer = pAnalParams->sizeHop << 1;
-
-    free(pSynthBuf->pFBuffer);
-    pSynthBuf->pFBuffer = calloc(sizeBuffer, sizeof(sfloat));
-    if(pSynthBuf->pFBuffer == NULL)
-    {
-        sms_error("could not allocate memory");
-        return;
-    }
-    pSynthBuf->iMarker = pSynthBuf->sizeBuffer;
-}
-
 /*! \brief give default values to an SMS_SynthParams struct 
  * 
  * This will initialize an SMS_SynthParams with values that work
@@ -511,26 +473,6 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
     return SMS_OK;
 }
 
-int sms_changeSynthHop(SMS_SynthParams *pSynthParams, int sizeHop)
-{
-    int sizeFft = sizeHop * 2;
-
-    pSynthParams->pSynthBuff = (sfloat *) realloc(pSynthParams->pSynthBuff, sizeFft * sizeof(sfloat));
-    pSynthParams->pSpectra = (sfloat *) realloc(pSynthParams->pSpectra, sizeFft * sizeof(sfloat));
-    pSynthParams->pMagBuff = (sfloat *) realloc(pSynthParams->pMagBuff, sizeHop * sizeof(sfloat));
-    pSynthParams->pPhaseBuff = (sfloat *) realloc(pSynthParams->pPhaseBuff, sizeHop * sizeof(sfloat));
-    pSynthParams->pFStocWindow = 
-        (sfloat *) realloc(pSynthParams->pFStocWindow, sizeFft * sizeof(sfloat));
-    sms_getWindow( sizeFft, pSynthParams->pFStocWindow, SMS_WIN_HANNING );
-    pSynthParams->pFDetWindow =
-        (sfloat *) realloc(pSynthParams->pFDetWindow, sizeFft * sizeof(sfloat));
-    sms_getWindow(sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT);
-
-    pSynthParams->sizeHop = sizeHop;
-
-    return(SMS_OK);
-}
-
 /*! \brief free analysis data
  * 
  * frees all the memory allocated to an SMS_AnalParams by
@@ -605,6 +547,45 @@ void sms_freeSynth(SMS_SynthParams *pSynthParams)
         free(pSynthParams->approxEnvelope);
 
     sms_freeFrame(&pSynthParams->prevFrame);
+}
+
+/*! \brief Allocate memory for an array of spectral peaks
+ *
+ * Creates memory and sets default values.
+ *
+ * \param peaks the spectral peaks
+ * \param n number of peaks
+ * \return 0 on success, -1 on error
+ */
+int sms_initSpectralPeaks(SMS_SpectralPeaks* peaks, int n)
+{
+    peaks->nPeaks = n;
+    peaks->nPeaksFound = 0;
+
+    peaks->pSpectralPeaks = (SMS_Peak *)malloc(n * sizeof(SMS_Peak));
+    if(peaks->pSpectralPeaks == NULL)
+    {
+        sms_error("could not allocate memory for spectral peaks");
+        return -1;
+    }
+    return 0;
+}
+
+/*! \brief Deallocate memory for an array of spectral peaks
+ *
+ * \param peaks the spectral peaks
+ */
+void sms_freeSpectralPeaks(SMS_SpectralPeaks* peaks)
+{
+    if(!peaks)
+        return;
+    if(peaks->nPeaks <= 0)
+        return;
+
+    if(peaks->pSpectralPeaks)
+        free(peaks->pSpectralPeaks);
+    peaks->nPeaks = 0;
+    peaks->nPeaksFound = 0;
 }
 
 /*! \brief set window size for next frame 

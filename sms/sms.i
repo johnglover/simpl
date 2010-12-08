@@ -372,13 +372,16 @@
     SMS_SpectralPeaks(int n)
     {
         SMS_SpectralPeaks *s = (SMS_SpectralPeaks *)malloc(sizeof(SMS_SpectralPeaks));
-        s->nPeaks = n;
-        if((s->pSpectralPeaks = (SMS_Peak *)malloc(n * sizeof(SMS_Peak))) == NULL)
+        if(s == NULL)
         {
-            sms_error("could not allocate memory for spectral peaks");
+            sms_error("Could not allocate memory for SMS_SpectralPeaks");
             return NULL;
         }
-        s->nPeaksFound = 0;
+        if(sms_initSpectralPeaks(s, n) < 0)
+        {
+            sms_error("Could not initialise SMS_SpectralPeaks");
+            return NULL;
+        }
         return s;
     }
     void getFreq(int sizeArray, sfloat *pArray )

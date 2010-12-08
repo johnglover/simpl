@@ -580,12 +580,12 @@ int sms_init();
 void sms_free();  
 int sms_initAnalysis(SMS_AnalParams *pAnalParams);
 void sms_initAnalParams(SMS_AnalParams *pAnalParams);
-void sms_changeHopSize(int hopSize, SMS_AnalParams *pAnalParams);
 void sms_initSynthParams(SMS_SynthParams *synthParams);
 int sms_initSynth(SMS_SynthParams *pSynthParams);
-int sms_changeSynthHop(SMS_SynthParams *pSynthParams, int sizeHop);
 void sms_freeAnalysis(SMS_AnalParams *pAnalParams);
-void sms_freeSynth(SMS_SynthParams *pSynthParams );
+void sms_freeSynth(SMS_SynthParams *pSynthParams);
+int sms_initSpectralPeaks(SMS_SpectralPeaks* peaks, int n);
+void sms_freeSpectralPeaks(SMS_SpectralPeaks* peaks);
 
 void sms_fillSoundBuffer(int sizeWaveform, sfloat *pWaveform,  SMS_AnalParams *pAnalParams);
 void sms_windowCentered(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeFft, sfloat *pFftBuffer);

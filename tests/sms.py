@@ -1039,8 +1039,6 @@ class TestSimplSMS(object):
             pysms.sms_synthesize(analysis_frames[current_frame], synth_samples, synth_params)
             sms_audio = np.hstack((sms_audio, synth_samples))
             current_frame += 1
-        #from scipy.io.wavfile import write
-        #write('sms_audio.wav', sampling_rate, sms_audio)
 
         for frame in analysis_frames:
             pysms.sms_freeFrame(frame)

@@ -19,15 +19,8 @@ from simpl import simplsms
 
 class SMSPeakDetection(simpl.PeakDetection):
     "Sinusoidal peak detection using SMS"
-    _instances = 0
     
     def __init__(self):
-        # limit this to only 1 instance at a time as calls to libsms are not independent,
-        # some static C variables are used. These should really be addressed in libsms.
-        # TODO: silently treat this as a Singleton object rather than raising an exception?
-        SMSPeakDetection._instances += 1
-        if SMSPeakDetection._instances > 1:
-            raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")
         simpl.PeakDetection.__init__(self)
         simplsms.sms_init()
         # analysis parameters
@@ -58,7 +51,6 @@ class SMSPeakDetection(simpl.PeakDetection):
     def __del__(self):
         simplsms.sms_freeAnalysis(self._analysis_params)
         simplsms.sms_free()
-        SMSPeakDetection._instances -= 1
         
     # properties
     max_frequency = property(lambda self: self.get_max_frequency(),
@@ -196,14 +188,8 @@ class SMSPeakDetection(simpl.PeakDetection):
 
 class SMSPartialTracking(simpl.PartialTracking):
     "Partial tracking using SMS"
-    _instances = 0
     
     def __init__(self):
-        # limit this to only 1 instance at a time as calls to libsms are not independent,
-        # some static C variables are used. These should really be addressed in libsms.
-        SMSPartialTracking._instances += 1
-        if SMSPartialTracking._instances > 1:
-            raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")
         simpl.PartialTracking.__init__(self)
         simplsms.sms_init()
         self._analysis_params = simplsms.SMS_AnalParams()
@@ -229,7 +215,6 @@ class SMSPartialTracking(simpl.PartialTracking):
         simplsms.sms_freeAnalysis(self._analysis_params)
         simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_free()
-        SMSPartialTracking._instances -= 1
         
     def set_max_partials(self, max_partials):
         self._max_partials = max_partials
@@ -286,12 +271,8 @@ class SMSPartialTracking(simpl.PartialTracking):
 
 class SMSSynthesis(simpl.Synthesis):
     "Sinusoidal resynthesis using SMS"
-    _instances = 0
     
     def __init__(self):
-        SMSSynthesis._instances += 1
-        if SMSSynthesis._instances > 1:
-            raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")   
         simpl.Synthesis.__init__(self)
         simplsms.sms_init()
         self._synth_params = simplsms.SMS_SynthParams() 
@@ -308,7 +289,6 @@ class SMSSynthesis(simpl.Synthesis):
         simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_freeSynth(self._synth_params)
         simplsms.sms_free()
-        SMSSynthesis._instances -= 1
         
     # properties
     synthesis_type = property(lambda self: self.get_synthesis_type(),
@@ -398,12 +378,8 @@ class SMSSynthesis(simpl.Synthesis):
     
 
 class SMSResidual(simpl.Residual):
-    _instances = 0
     
     def __init__(self):
-        SMSResidual._instances += 1
-        if SMSResidual._instances > 1:
-            raise Exception("Currently only 1 instance of each SMS analysis/synthesis object can exist at once")
         simpl.Residual.__init__(self)
         simplsms.sms_init()
         self._analysis_params = simplsms.SMS_AnalParams()
@@ -411,7 +387,6 @@ class SMSResidual(simpl.Residual):
         
     def __del__(self):
         simplsms.sms_free()
-        SMSSynthesis._instances -= 1
         
     def find_residual(self, synth, original):
         "Calculate and return the residual signal"

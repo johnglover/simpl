@@ -182,7 +182,7 @@ void sms_synthesize(SMS_Data *pSmsData, sfloat *pFSynthesis,  SMS_SynthParams *p
     else if(pSynthParams->iSynthesisType == SMS_STYPE_DET)
     {
         if(pSynthParams->iDetSynthType == SMS_DET_IFFT)
-            SineSynthIFFT (pSmsData, pSynthParams);
+            SineSynthIFFT(pSmsData, pSynthParams);
         else /*pSynthParams->iDetSynthType == SMS_DET_SIN*/
         {
             sms_sineSynthFrame(pSmsData, pSynthParams->pSynthBuff, pSynthParams->sizeHop,
@@ -196,5 +196,3 @@ void sms_synthesize(SMS_Data *pSmsData, sfloat *pFSynthesis,  SMS_SynthParams *p
     for(i = 0; i < sizeHop; i++)
         pFSynthesis[i] = sms_deEmphasis(pSynthParams->pSynthBuff[i], pSynthParams);
 }
-
-

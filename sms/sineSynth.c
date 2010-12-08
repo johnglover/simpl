@@ -163,25 +163,23 @@ void sms_sineSynthFrame(SMS_Data *pSmsData, sfloat *pFBuffer,
     int iHalfSamplingRate = iSamplingRate >> 1;
 
     /* go through all the tracks */    
-    for (i = 0; i < nTracks; i++)
+    for(i = 0; i < nTracks; i++)
     {
-        /* get magnitude */
         fMag = pSmsData->pFSinAmp[i];
-
         fFreq = pSmsData->pFSinFreq[i];
 
-        /* gaurd so transposed frequencies don't alias */
-        if (fFreq > iHalfSamplingRate || fFreq < 0) 
+        /* make that sure transposed frequencies don't alias */
+        if(fFreq > iHalfSamplingRate || fFreq < 0) 
             fMag = 0;
 
         /* generate sines if there are magnitude values */
-        if ((fMag > 0) || (pLastFrame->pFSinAmp[i] > 0))
+        if((fMag > 0) || (pLastFrame->pFSinAmp[i] > 0))
         {  
             /* frequency from Hz to radians */
             fFreq = (fFreq == 0) ? 0 : TWO_PI * fFreq / iSamplingRate;
 
             /* \todo make seperate function for SineSynth /wo phase */
-            if (pSmsData->pFSinPha == NULL)
+            if(pSmsData->pFSinPha == NULL)
             {                
                 SineSynth(fFreq, fMag, pLastFrame, pFBuffer, sizeBuffer, i);
             }

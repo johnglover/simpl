@@ -75,6 +75,14 @@ class TestSimplSMS(object):
         analysis_params.iStochasticType = simplsms.SMS_STOC_NONE
         return analysis_params
 
+    def pysms_synthesis_params(self, sampling_rate):
+        synth_params = pysms.SMS_SynthParams() 
+        pysms.sms_initSynthParams(synth_params)
+        synth_params.iSamplingRate = sampling_rate
+        synth_params.iSynthesisType = pysms.SMS_STYPE_DET
+        synth_params.sizeHop = self.hop_size 
+        return synth_params
+
     def test_size_next_read(self):
         """test_size_next_read
         Make sure pysms PeakDetection is calculating 
@@ -982,104 +990,82 @@ class TestSimplSMS(object):
         simplsms.sms_freeAnalysis(analysis_params)
         simplsms.sms_free()
 
-    #def test_harmonic_synthesis(self):
-    #    """test_harmonic_synthesis
-    #    Compare pysms synthesised harmonic component with SMS synthesised 
-    #    harmonic component."""
-    #    pysms.sms_init()
-    #    sms_header = pysms.SMS_Header()
-    #    snd_header = pysms.SMS_SndHeader()
-    #    # Try to open the input file to fill snd_header
-    #    if(pysms.sms_openSF(input_file, snd_header)):
-    #        raise NameError("error opening sound file: " + pysms.sms_errorString())
-    #    analysis_params = pysms.SMS_AnalParams()
-    #    analysis_params.iSamplingRate = 44100
-    #    analysis_params.iFrameRate = sampling_rate / hop_size
-    #    sms_header.nStochasticCoeff = 128
-    #    analysis_params.fDefaultFundamental = 100
-    #    analysis_params.fHighestFreq = 20000
-    #    analysis_params.iMaxDelayFrames = 3
-    #    analysis_params.analDelay = 0
-    #    analysis_params.minGoodFrames = 1
-    #    analysis_params.iFormat = pysms.SMS_FORMAT_HP
-    #    analysis_params.nTracks = max_partials
-    #    analysis_params.nGuides = max_partials
-    #    analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
-    #    pysms.sms_initAnalysis(analysis_params, snd_header)
-    #    analysis_params.nFrames = num_samples / hop_size
-    #    analysis_params.iSizeSound = num_samples
-    #    analysis_params.peakParams.iMaxPeaks = max_peaks
-    #    analysis_params.iStochasticType = pysms.SMS_STOC_NONE
-    #    pysms.sms_fillHeader(sms_header, analysis_params, "pysms")
+    def test_harmonic_synthesis(self):
+        """test_harmonic_synthesis
+        Compare pysms synthesised harmonic component with SMS synthesised 
+        harmonic component."""
+        audio, sampling_rate = self.get_audio()
+        pysms.sms_init()
+        snd_header = pysms.SMS_SndHeader()
+        # Try to open the input file to fill snd_header
+        if(pysms.sms_openSF(self.input_file, snd_header)):
+            raise NameError("error opening sound file: " + pysms.sms_errorString())
+        analysis_params = self.pysms_analysis_params(sampling_rate)
+        analysis_params.nFrames = self.num_frames
+        if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+        analysis_params.iSizeSound = self.num_samples
+        sms_header = pysms.SMS_Header()
+        pysms.sms_fillHeader(sms_header, analysis_params, "pysms")
 
-    #    sample_offset = 0
-    #    size_new_data = 0
-    #    current_frame = 0
-    #    sms_header.nFrames = num_frames
-    #    analysis_frames = []
-    #    do_analysis = True
+        sample_offset = 0
+        size_new_data = 0
+        current_frame = 0
+        analysis_frames = []
+        do_analysis = True
 
-    #    while do_analysis and (current_frame < num_frames):
-    #        sample_offset += size_new_data
-    #        if((sample_offset + analysis_params.sizeNextRead) < num_samples):
-    #            size_new_data = analysis_params.sizeNextRead
-    #        else:
-    #            size_new_data = num_samples - sample_offset
-    #        frame = audio[sample_offset:sample_offset + size_new_data]
-    #        analysis_data = pysms.SMS_Data()
-    #        pysms.sms_allocFrameH(sms_header, analysis_data)
-    #        status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
-    #        analysis_frames.append(analysis_data)
-    #        if status == -1:
-    #            do_analysis = False
-    #        current_frame += 1
+        while do_analysis and (current_frame < self.num_frames):
+            sample_offset += size_new_data
+            size_new_data = analysis_params.sizeNextRead
+            frame = audio[sample_offset:sample_offset + size_new_data]
+            # convert frame to floats for libsms
+            frame = np.array(frame, dtype=np.float32)
+            analysis_data = pysms.SMS_Data()
+            pysms.sms_allocFrameH(sms_header, analysis_data)
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            analysis_frames.append(analysis_data)
+            if status == -1:
+                do_analysis = False
+            current_frame += 1
 
-    #    pysms.sms_freeAnalysis(analysis_params)
-    #    pysms.sms_closeSF()
+        synth_params = self.pysms_synthesis_params(sampling_rate)
+        pysms.sms_initSynth(sms_header, synth_params)
 
-    #    interp_frame = pysms.SMS_Data() 
-    #    synth_params = pysms.SMS_SynthParams() 
-    #    synth_params.iSynthesisType = pysms.SMS_STYPE_DET
-    #    synth_params.iDetSynthType = pysms.SMS_DET_SIN
-    #    synth_params.sizeHop = hop_size 
-    #    synth_params.iSamplingRate = 0
+        synth_samples = np.zeros(synth_params.sizeHop, dtype=np.float32)
+        sms_audio = np.array([], dtype=np.float32)
+        current_frame = 0
 
-    #    pysms.sms_initSynth(sms_header, synth_params)
-    #    pysms.sms_allocFrame(interp_frame, sms_header.nTracks, sms_header.nStochasticCoeff, 1, sms_header.iStochasticType, sms_header.nEnvCoeff)
+        while current_frame < len(analysis_frames):
+            pysms.sms_synthesize(analysis_frames[current_frame], synth_samples, synth_params)
+            sms_audio = np.hstack((sms_audio, synth_samples))
+            current_frame += 1
+        #from scipy.io.wavfile import write
+        #write('sms_audio.wav', sampling_rate, sms_audio)
 
-    #    synth_samples = pysms.zeros(synth_params.sizeHop)
-    #    num_synth_samples = 0
-    #    target_synth_samples = len(analysis_frames) * hop_size
-    #    pysms_audio = pysms.array([])
-    #    current_frame = 0
+        for frame in analysis_frames:
+            pysms.sms_freeFrame(frame)
+        pysms.sms_freeAnalysis(analysis_params)
+        pysms.sms_closeSF()
+        pysms.sms_freeSynth(synth_params)
+        pysms.sms_free()
 
-    #    while num_synth_samples < target_synth_samples:
-    #        pysms.sms_synthesize(analysis_frames[current_frame], synth_samples, synth_params)
-    #        pysms_audio = np.hstack((pysms_audio, synth_samples))
-    #        num_synth_samples += synth_params.sizeHop
-    #        current_frame += 1
+        pd = simpl.SMSPeakDetection()
+        pd.max_peaks = self.max_peaks
+        pd.hop_size = self.hop_size 
+        pt = simpl.SMSPartialTracking()
+        pt.max_partials = self.max_partials
+        peaks = pd.find_peaks(audio)[0:self.num_frames]
+        partials = pt.find_partials(peaks)
+        synth = simpl.SMSSynthesis()
+        synth.hop_size = self.hop_size
+        synth.stochastic_type = pysms.SMS_STOC_NONE
+        synth.synthesis_type = pysms.SMS_STYPE_DET
+        synth.max_partials = self.max_partials
+        simpl_audio = synth.synth(partials)
 
-    #    pysms.sms_freeSynth(synth_params)
-    #    pysms.sms_free()     
-
-    #    pd = simpl.SMSPeakDetection()
-    #    pd.max_peaks = max_peaks
-    #    pd.hop_size = hop_size 
-    #    pt = simpl.SMSPartialTracking()
-    #    pt.max_partials = max_partials
-    #    peaks = pd.find_peaks(audio)
-    #    partials = pt.find_partials(peaks[0:num_frames])
-    #    synth = simpl.SMSSynthesis()
-    #    synth.hop_size = hop_size
-    #    synth.stochastic_type = pysms.SMS_STOC_NONE
-    #    synth.synthesis_type = pysms.SMS_STYPE_DET
-    #    synth.max_partials = max_partials
-    #    simpl_audio = synth.synth(partials)
-
-    #    self.assertEquals(pysms_audio.size, simpl_audio.size)
-    #    for i in range(simpl_audio.size):
-    #        self.assertAlmostEquals(pysms_audio[i], simpl_audio[i],
-    #                                places = FLOAT_PRECISION)
+        assert len(sms_audio) == len(simpl_audio)
+        for i in range(simpl_audio.size):
+            assert_almost_equals(sms_audio[i], simpl_audio[i], self.FLOAT_PRECISION)
 
     #def test_residual_synthesis(self):
     #    """test_residual_synthesis
@@ -1153,26 +1139,12 @@ class TestSimplSMS(object):
     #    res.num_coefficients = 128
     #    res.type = simpl.SMSResidual.TIME_DOMAIN
     #    residual = res.find_residual(simpl_harmonic, audio[0:simpl_harmonic.size])
-#        print_partials(partials)
-#        print simpl_harmonic.size
-#        for i in range(residual.size):
-#            print residual[i]
-#        for i in range(simpl_harmonic.size):
-#            print simpl_harmonic[i]
-#        from pylab import plot, show
-#        plot(simpl_harmonic)
-#        plot(residual)
-#        plot(audio[0:simpl_harmonic.size])
-#        show()
-#        from scipy.io.wavfile import write
-#        write("res.wav", 44100, residual)
-#        res.synth(simpl_harmonic, audio)
 
 if __name__ == "__main__":
     # run individual tests programatically
     # useful for debugging, particularly with GDB
     import nose
     argv = [__file__, 
-            __file__ + ":TestSimplSMS.test_simplsms_interpolate_frames"]
+            __file__ + ":TestSimplSMS.test_harmonic_synthesis"]
     nose.run(argv=argv)
 

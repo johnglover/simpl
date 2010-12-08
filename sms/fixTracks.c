@@ -33,8 +33,8 @@
  * \param pIState                 pointer to the state of tracks
  * \param pAnalParams       pointer to analysis parameters
  */
-static void FillGap (int iCurrentFrame, int iTrack, int *pIState, 
-                     SMS_AnalParams *pAnalParams)
+static void FillGap(int iCurrentFrame, int iTrack, int *pIState, 
+                    SMS_AnalParams *pAnalParams)
 {
 	int iFrame, iLastFrame = - (pIState[iTrack] - 1);
 	sfloat fConstant = TWO_PI / pAnalParams->iSamplingRate;
@@ -45,8 +45,8 @@ static void FillGap (int iCurrentFrame, int iTrack, int *pIState,
 		return;
   
 	/* if firstMag is 0 it means that there is no Gap, just the begining of a track */
-	if (pAnalParams->ppFrames[iCurrentFrame - 
-	    iLastFrame]->deterministic.pFSinAmp[iTrack] == 0)
+	if(pAnalParams->ppFrames[iCurrentFrame - 
+	   iLastFrame]->deterministic.pFSinAmp[iTrack] == 0)
 	{
 		pIState[iTrack] = 1;
 		return;
@@ -63,10 +63,10 @@ static void FillGap (int iCurrentFrame, int iTrack, int *pIState,
   
 	/* if inharmonic format and the two extremes are very different  */
 	/* do not interpolate, it means that they are different tracks */
-	if ((pAnalParams->iFormat == SMS_FORMAT_IH ||
-	     pAnalParams->iFormat == SMS_FORMAT_IHP) &&
-		(MIN (fFirstFreq, fLastFreq) * .5 * pAnalParams->fFreqDeviation <
-	     fabs ((double) fLastFreq - fFirstFreq)))
+	if((pAnalParams->iFormat == SMS_FORMAT_IH ||
+	    pAnalParams->iFormat == SMS_FORMAT_IHP) &&
+	   (MIN (fFirstFreq, fLastFreq) * .5 * pAnalParams->fFreqDeviation <
+	   fabs(fLastFreq - fFirstFreq)))
 	{
 		pIState[iTrack] = 1;
 		return;		
@@ -76,8 +76,7 @@ static void FillGap (int iCurrentFrame, int iTrack, int *pIState,
 	fFreq = fFirstFreq;
 	/* fill the gap by interpolating values */
 	/* if the gap is too long it should consider the lower partials */
-	for (iFrame = iCurrentFrame - iLastFrame + 1; iFrame < iCurrentFrame; 
-	     iFrame++)
+	for(iFrame = iCurrentFrame - iLastFrame + 1; iFrame < iCurrentFrame; iFrame++)
 	{
 		/* interpolate magnitude */
 		fMag += fIncrMag;
@@ -119,16 +118,16 @@ static void FillGap (int iCurrentFrame, int iTrack, int *pIState,
  * \param pIState               pointer to the state of tracks
  * \param pAnalParams     pointer to analysis parameters
  */
-static void DeleteShortTrack (int iCurrentFrame, int iTrack, int *pIState,
+static void DeleteShortTrack(int iCurrentFrame, int iTrack, int *pIState,
                              SMS_AnalParams *pAnalParams)
 {
 	int iFrame, frame;
   
-	for (iFrame = 1; iFrame <= pIState[iTrack]; iFrame++)
+	for(iFrame = 1; iFrame <= pIState[iTrack]; iFrame++)
 	{
 		frame = iCurrentFrame - iFrame;
       
-		if (frame <= 0)
+		if(frame <= 0)
 			return;
       
 		pAnalParams->ppFrames[frame]->deterministic.pFSinAmp[iTrack] = 0;
@@ -136,11 +135,11 @@ static void DeleteShortTrack (int iCurrentFrame, int iTrack, int *pIState,
 		pAnalParams->ppFrames[frame]->deterministic.pFSinPha[iTrack] = 0;
 	}
   
-	if (pAnalParams->iDebugMode == SMS_DBG_CLEAN_TRAJ ||
-	    pAnalParams->iDebugMode == SMS_DBG_ALL)
-		fprintf (stdout, "deleteShortTrack: track %d, frames %d to %d deleted\n",
-		         iTrack, pAnalParams->ppFrames[iCurrentFrame - pIState[iTrack]]->iFrameNum, 
-		         pAnalParams->ppFrames[iCurrentFrame-1]->iFrameNum);
+	if(pAnalParams->iDebugMode == SMS_DBG_CLEAN_TRAJ ||
+	   pAnalParams->iDebugMode == SMS_DBG_ALL)
+		fprintf(stdout, "deleteShortTrack: track %d, frames %d to %d deleted\n",
+		        iTrack, pAnalParams->ppFrames[iCurrentFrame - pIState[iTrack]]->iFrameNum, 
+		        pAnalParams->ppFrames[iCurrentFrame-1]->iFrameNum);
   
 	/* reset state */
 	pIState[iTrack] = -pAnalParams->iMaxSleepingTime;
@@ -227,8 +226,8 @@ void sms_cleanTracks(int iCurrentFrame, SMS_AnalParams *pAnalParams)
  * \param pAnalParams      pointer to analysis parameters
  * \param nTrack                    number of tracks
  */
-void  sms_scaleDet(sfloat *pFSynthBuffer, sfloat *pFOriginalBuffer, 
-                   sfloat *pFSinAmp, SMS_AnalParams *pAnalParams, int nTrack)
+void sms_scaleDet(sfloat *pFSynthBuffer, sfloat *pFOriginalBuffer, 
+                  sfloat *pFSinAmp, SMS_AnalParams *pAnalParams, int nTrack)
 {
 	sfloat fOriginalMag = 0, fSynthesisMag = 0;
 	sfloat fCosScaleFactor;
@@ -237,8 +236,8 @@ void  sms_scaleDet(sfloat *pFSynthBuffer, sfloat *pFOriginalBuffer,
 	/* get sound energy */
 	for(i = 0; i < pAnalParams->sizeHop; i++)
 	{
-		fOriginalMag += fabs((double) pFOriginalBuffer[i]); 
-		fSynthesisMag += fabs((double) pFSynthBuffer[i]);
+		fOriginalMag += fabs(pFOriginalBuffer[i]); 
+		fSynthesisMag += fabs(pFSynthBuffer[i]);
 	}
   
 	/* if total energy of deterministic sound is larger than original,
@@ -254,7 +253,7 @@ void  sms_scaleDet(sfloat *pFSynthBuffer, sfloat *pFOriginalBuffer,
       
 		for(iTrack = 0; iTrack < nTrack; iTrack++)
 			if(pFSinAmp[iTrack] > 0)
-				pFSinAmp[iTrack] = sms_magToDB (sms_dBToMag (pFSinAmp[iTrack]) * fCosScaleFactor);
+				pFSinAmp[iTrack] = sms_magToDB(sms_dBToMag(pFSinAmp[iTrack]) * fCosScaleFactor);
 	}
 }
 

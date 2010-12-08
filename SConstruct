@@ -41,7 +41,11 @@ if get_platform() == "unsupported":
     exit(1)
 
 # environment
-env = Environment(ENV=os.environ)
+if get_platform() == 'win32':
+    # can only build with mingw on windows
+    env = Environment(ENV=os.environ, tools=['mingw'])
+else:
+    env = Environment(ENV=os.environ)
 
 # set default installation directories
 default_install_dir = ""
@@ -128,7 +132,7 @@ try:
     except AttributeError:
         numpy_include = numpy.get_numpy_include()
 except ImportError:
-    print "Numpy was not found. Cannot build simpl.\n"
+    print "Numpy was not found. Cannot build simpl."
     exit(1)
 env.Append(CPPPATH = numpy_include)
 

@@ -469,34 +469,36 @@ void sms_initSynthParams(SMS_SynthParams *synthParams)
  */
 int sms_initSynth(SMS_SynthParams *pSynthParams)
 {
-    int sizeHop, sizeFft, err;
+    int sizeHop, sizeFft;
 
     /* make sure sizeHop is something to the power of 2 */
     sizeHop = sms_power2(pSynthParams->sizeHop);
     if(sizeHop != pSynthParams->sizeHop)
     {
-        sms_error("sizeHop was not a power of two.");
-        err = -1;
+        printf("Warning: Synthesis hop size (%d) was not a power of two.\n",
+                pSynthParams->sizeHop);
+        printf("         Changed to %d.\n", sizeHop);
         pSynthParams->sizeHop = sizeHop;
     }
     sizeFft = sizeHop * 2;
 
-    pSynthParams->pFStocWindow =(sfloat *) calloc(sizeFft, sizeof(sfloat));
+    /* TODO: check memory allocation */
+    pSynthParams->pFStocWindow = (sfloat *)calloc(sizeFft, sizeof(sfloat));
     sms_getWindow(sizeFft, pSynthParams->pFStocWindow, SMS_WIN_HANNING);
-    pSynthParams->pFDetWindow = (sfloat *) calloc(sizeFft, sizeof(sfloat));
+    pSynthParams->pFDetWindow = (sfloat *)calloc(sizeFft, sizeof(sfloat));
     sms_getWindow(sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT);
 
-    /* allocate memory for analysis data - size of original hopsize */
-    /* previous frame to interpolate from */
+    /* allocate memory for analysis data - size of original hopsize 
+     * previous frame to interpolate from */
     /* \todo why is stoch coeff + 1? */
     sms_allocFrame(&pSynthParams->prevFrame, pSynthParams->nTracks,
                    pSynthParams->nStochasticCoeff + 1, 1,
                    pSynthParams->iStochasticType, 0);
 
-    pSynthParams->pSynthBuff = (sfloat *) calloc(sizeFft, sizeof(sfloat));
-    pSynthParams->pMagBuff = (sfloat *) calloc(sizeHop, sizeof(sfloat));
-    pSynthParams->pPhaseBuff = (sfloat *) calloc(sizeHop, sizeof(sfloat));
-    pSynthParams->pSpectra = (sfloat *) calloc(sizeFft, sizeof(sfloat));
+    pSynthParams->pSynthBuff = (sfloat *)calloc(sizeFft, sizeof(sfloat));
+    pSynthParams->pMagBuff = (sfloat *)calloc(sizeHop, sizeof(sfloat));
+    pSynthParams->pPhaseBuff = (sfloat *)calloc(sizeHop, sizeof(sfloat));
+    pSynthParams->pSpectra = (sfloat *)calloc(sizeFft, sizeof(sfloat));
 
     /* approximation envelope */
     pSynthParams->approxEnvelope = (sfloat *)calloc(pSynthParams->nStochasticCoeff, sizeof(sfloat));

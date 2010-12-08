@@ -31,23 +31,6 @@
 /*! \brief  maximum size for magnitude spectrum */
 #define SMS_MAX_SPEC 8192  
 
-void printAnalysisParams(SMS_AnalParams* params)
-{
-    printf("fLowestFreq:            %f\n"
-           "fHighestFreq:           %f\n"
-           "fMinPeakMag:            %f\n"
-           "iSamplingRate:          %d\n"
-           "maxPeaks:              %d\n"
-           "fHighestFundamental:    %f\n"
-           "iRefHarmonic:           %d\n"
-           "fMinRefHarmMag:         %f\n"
-           "fRefHarmMagDiffFromMax: %f\n"
-           "iSoundType:             %d\n",
-            params->fLowestFreq, params->fHighestFreq, params->fMinPeakMag, params->iSamplingRate,
-            params->maxPeaks, params->fHighestFundamental, params->iRefHarmonic,
-            params->fMinRefHarmMag, params->fRefHarmMagDiffFromMax, params->iSoundType);
-}
-
 /*! \brief compute spectrum, find peaks, and fundamental of one frame
  *
  * This is the main core of analysis calls

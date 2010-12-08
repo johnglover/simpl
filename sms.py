@@ -141,6 +141,7 @@ class SMSPeakDetection(simpl.PeakDetection):
     
     def set_sampling_rate(self, sampling_rate):
         self._sampling_rate = sampling_rate
+        # TODO: update analysis params framerate?
         self._analysis_params.iSamplingRate = sampling_rate
         
     def set_window_size(self, window_size):
@@ -244,9 +245,6 @@ class SMSPartialTracking(simpl.PartialTracking):
         amps = simpl.zeros(num_peaks)
         freqs = simpl.zeros(num_peaks)
         phases = simpl.zeros(num_peaks)
-        #amps = simpl.zeros(self.max_partials)
-        #freqs = simpl.zeros(self.max_partials)
-        #phases = simpl.zeros(self.max_partials)
         for i in range(num_peaks):
             peak = frame[i]
             amps[i] = peak.amplitude
@@ -297,14 +295,14 @@ class SMSSynthesis(simpl.Synthesis):
         simpl.Synthesis.__init__(self)
         simplsms.sms_init()
         self._synth_params = simplsms.SMS_SynthParams() 
-        self._synth_params.iDetSynthType = simplsms.SMS_DET_SIN
+        self._synth_params.iDetSynthType = simplsms.SMS_DET_IFFT
         # use the default simpl hop size instead of the default SMS hop size
         self._synth_params.sizeHop = self._hop_size 
         simplsms.sms_initSynth(self._synth_params)
         self._current_frame = simpl.zeros(self.hop_size)
         self._analysis_frame = simplsms.SMS_Data()
         simplsms.sms_allocFrame(self._analysis_frame, self.max_partials, 
-                             self.num_stochastic_coeffs, 1, self.stochastic_type, 0)
+                                self.num_stochastic_coeffs, 1, self.stochastic_type, 0)
 
     def __del__(self):
         simplsms.sms_freeFrame(self._analysis_frame)
@@ -336,8 +334,9 @@ class SMSSynthesis(simpl.Synthesis):
         
     def set_max_partials(self, max_partials):
         self._synth_params.nTracks = max_partials
+        simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_allocFrame(self._analysis_frame, max_partials, 
-                             self.num_stochastic_coeffs, 1, self.stochastic_type, 0)
+                                self.num_stochastic_coeffs, 1, self.stochastic_type, 0)
     
     def get_sampling_rate(self):
         return self._synth_params.iSamplingRate
@@ -356,16 +355,18 @@ class SMSSynthesis(simpl.Synthesis):
     
     def set_num_stochastic_coeffs(self, num_stochastic_coeffs):
         self._synth_params.nStochasticCoeff = num_stochastic_coeffs
+        simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_allocFrame(self._analysis_frame, self.max_partials, 
-                             num_stochastic_coeffs, 1, self.stochastic_type, 0)
+                                num_stochastic_coeffs, 1, self.stochastic_type, 0)
     
     def get_stochastic_type(self):
         return self._synth_params.iStochasticType
     
     def set_stochastic_type(self, stochastic_type):
         self._synth_params.iStochasticType = stochastic_type
+        simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_allocFrame(self._analysis_frame, self.max_partials, 
-                             self.num_stochastic_coeffs, 1, stochastic_type, 0)
+                                self.num_stochastic_coeffs, 1, stochastic_type, 0)
         
     def get_original_sampling_rate(self):
         return self._synth_params.iOriginalSRate

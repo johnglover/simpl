@@ -348,18 +348,19 @@ class Synthesis(object):
     
 class Residual(object):
     "Calculate a residual signal"
-    TIME_DOMAIN = 0
-    FREQUENCY_DOMAIN = 1
     
     def __init__(self):
-        self.type = Residual.TIME_DOMAIN
         self.hop_size = 512
         self.frame_size = 2048
         
+    # TODO: break this up into find_residual and find_frame_residual
+    #       so that it can be streamed
     def find_residual(self, synth, original):
         "Calculate and return the residual signal"
         raise Exception("NotYetImplemented")
     
+    # TODO: break this up into synth and synth_frame
+    #       so that it can be streamed
     def synth(self, synth, original):
         "Calculate and return a synthesised residual signal"
         raise Exception("NotYetImplemented")

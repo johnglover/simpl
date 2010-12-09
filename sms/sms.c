@@ -518,6 +518,17 @@ void sms_freeAnalysis(SMS_AnalParams *pAnalParams)
         free(pAnalParams->stocMagSpectrum);
     if(pAnalParams->approxEnvelope)
         free(pAnalParams->approxEnvelope);
+
+    pAnalParams->pFrames = NULL;
+    pAnalParams->ppFrames = NULL;
+    pAnalParams->soundBuffer.pFBuffer = NULL;
+    pAnalParams->synthBuffer.pFBuffer = NULL;
+    pAnalParams->residual = NULL;
+    pAnalParams->residualWindow = NULL;
+    pAnalParams->guideStates = NULL;
+    pAnalParams->guides = NULL;
+    pAnalParams->stocMagSpectrum = NULL;
+    pAnalParams->approxEnvelope = NULL;
 }
 
 /*! \brief free analysis data
@@ -578,8 +589,6 @@ int sms_initSpectralPeaks(SMS_SpectralPeaks* peaks, int n)
 void sms_freeSpectralPeaks(SMS_SpectralPeaks* peaks)
 {
     if(!peaks)
-        return;
-    if(peaks->nPeaks <= 0)
         return;
 
     if(peaks->pSpectralPeaks)
@@ -671,11 +680,11 @@ int sms_clearAnalysisFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams)
 int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow)
 {
     /* clear deterministic data */
-    memset((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinFreq, 0, 
+    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinFreq, 0, 
            sizeof(sfloat) * pAnalParams->nGuides);
-    memset((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp, 0, 
+    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp, 0, 
            sizeof(sfloat) * pAnalParams->nGuides);
-    memset((sfloat *) pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinPha, 0, 
+    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinPha, 0, 
            sizeof(sfloat) * pAnalParams->nGuides);
 
     /* clear peaks */
@@ -697,7 +706,6 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
     /* if first frame set center of data around 0 */
     if(pAnalParams->ppFrames[iCurrentFrame]->iFrameNum == 1)
         pAnalParams->ppFrames[iCurrentFrame]->iFrameSample = 0;
-
     /* if not, increment center of data by sizeHop */
     else
         pAnalParams->ppFrames[iCurrentFrame]->iFrameSample = 

@@ -156,11 +156,6 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
 
     /* initialize the current frame */
     sms_initFrame(iCurrentFrame, pAnalParams, pAnalParams->windowSize);
-    if(sms_errorCheck())
-    {
-        printf("Error in init frame: %s \n", sms_errorString());
-        return 0;
-    }
 
     if(pAnalParams->ppFrames[iCurrentFrame]->iStatus == SMS_FRAME_READY)
     {
@@ -196,14 +191,17 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
         /* save peaks */
         pSpectralPeaks->nPeaksFound = pAnalParams->ppFrames[iCurrentFrame]->nPeaks;
         pSpectralPeaks->nPeaks = pAnalParams->maxPeaks;
-        pSpectralPeaks->pSpectralPeaks = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks;
 
-        /* convert peak amps to linear */
         for(i = 0; i < pSpectralPeaks->nPeaks; i++)
         {
             if(i < pSpectralPeaks->nPeaksFound)
             {
-                pSpectralPeaks->pSpectralPeaks[i].fMag = pow(10.0, 0.05*(pSpectralPeaks->pSpectralPeaks[i].fMag));
+                pSpectralPeaks->pSpectralPeaks[i].fMag = 
+                    pow(10.0, 0.05*(pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag));
+                pSpectralPeaks->pSpectralPeaks[i].fFreq = 
+                    pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fFreq;
+                pSpectralPeaks->pSpectralPeaks[i].fPhase = 
+                    pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fPhase;
             }
             else
             {

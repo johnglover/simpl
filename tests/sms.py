@@ -1050,9 +1050,9 @@ class TestSimplSMS(object):
         pd = simpl.SMSPeakDetection()
         pd.max_peaks = self.max_peaks
         pd.hop_size = self.hop_size 
+        peaks = pd.find_peaks(audio)[0:self.num_frames]
         pt = simpl.SMSPartialTracking()
         pt.max_partials = self.max_partials
-        peaks = pd.find_peaks(audio)[0:self.num_frames]
         partials = pt.find_partials(peaks)
         synth = simpl.SMSSynthesis()
         synth.hop_size = self.hop_size

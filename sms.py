@@ -41,7 +41,7 @@ class SMSPeakDetection(simpl.PeakDetection):
         self._analysis_params.nGuides = self._max_peaks
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
-        self._peaks = simplsms.SMS_SpectralPeaks(self.max_peaks)
+        self._peaks = simplsms.SMS_SpectralPeaks(self._max_peaks)
         # By default, SMS will change the size of the frames being read depending on the
         # detected fundamental frequency (if any) of the input sound. To prevent this 
         # behaviour (useful when comparing different analysis algorithms), set the
@@ -134,6 +134,8 @@ class SMSPeakDetection(simpl.PeakDetection):
         return self._analysis_params.maxPeaks
         
     def set_max_peaks(self, max_peaks):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        simplsms.sms_freeSpectralPeaks(self._peaks)
         # make sure the new max is less than SMS_MAX_NPEAKS
         if max_peaks > simplsms.SMS_MAX_NPEAKS:
             print "Warning: max peaks (" + str(max_peaks) + ")",
@@ -141,7 +143,6 @@ class SMSPeakDetection(simpl.PeakDetection):
             print "         Setting to", simplsms.SMS_MAX_NPEAKS, "instead." 
             max_peaks = simplsms.SMS_MAX_NPEAKS
         # set analysis params
-        simplsms.sms_freeAnalysis(self._analysis_params)
         self._max_peaks = max_peaks
         self._analysis_params.nTracks = max_peaks
         self._analysis_params.maxPeaks = max_peaks
@@ -149,7 +150,6 @@ class SMSPeakDetection(simpl.PeakDetection):
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
         # set peaks list
-        simplsms.sms_freeSpectralPeaks(self._peaks)
         self._peaks = simplsms.SMS_SpectralPeaks(max_peaks)
 
     def get_sampling_rate(self):
@@ -403,6 +403,7 @@ class SMSSynthesis(simpl.Synthesis):
     
 
 class SMSResidual(simpl.Residual):
+    "SMS residual component"
     
     def __init__(self):
         simpl.Residual.__init__(self)
@@ -411,12 +412,12 @@ class SMSResidual(simpl.Residual):
         simplsms.sms_initAnalysis(self._analysis_params)
         
     def __del__(self):
+        simplsms.sms_freeAnalysis(self._analysis_params)
         simplsms.sms_free()
         
     def find_residual(self, synth, original):
         "Calculate and return the residual signal"
-        residual = simpl.zeros(synth.size)
-        if simplsms.sms_findResidual(synth, original, residual, self._analysis_params) == -1:
-            raise Exception("Residual error: Synthesised audio and original audio have different lengths")
+        residual = simpl.zeros(len(original)) # residual won't be longer than the original signal
+        simplsms.sms_findResidual(synth, original, residual, self._analysis_params)
         return residual
 

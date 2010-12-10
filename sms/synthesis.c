@@ -50,7 +50,7 @@ static void SineSynthIFFT(SMS_Data *pSmsData, SMS_SynthParams *pSynthParams)
             if(pSynthParams->prevFrame.pFSinAmp[i] <= 0)
                pSynthParams->prevFrame.pFSinPha[i] = TWO_PI * sms_random();
 
-            // fMag = sms_dBToMag(fMag);
+            fMag = sms_dBToMag(fMag);
             fTmp = pSynthParams->prevFrame.pFSinPha[i] +
                 TWO_PI * fFreq * fSamplingPeriod * sizeMag;
             fPhase = fTmp - floor(fTmp * INV_TWO_PI) * TWO_PI;
@@ -126,8 +126,6 @@ static int StocSynthApprox(SMS_Data *pSmsData, SMS_SynthParams *pSynthParams)
     if (*(pSmsData->pFStocGain) <= 0)
         return 0;
 
-    // *(pSmsData->pFStocGain) = sms_dBToMag(*(pSmsData->pFStocGain));
-
     sizeSpec1Used = sizeSpec1 * pSynthParams->iSamplingRate /
                     pSynthParams->iOriginalSRate;
 
@@ -165,7 +163,7 @@ void sms_synthesize(SMS_Data *pSmsData, sfloat *pFSynthesis,  SMS_SynthParams *p
     memset(pSynthParams->pSynthBuff+sizeHop, 0, sizeof(sfloat) * sizeHop);
 
     /* convert mags from linear to db */
-    /*sms_arrayMagToDB(pSmsData->nTracks, pSmsData->pFSinAmp);*/
+    sms_arrayMagToDB(pSmsData->nTracks, pSmsData->pFSinAmp);
 
     /* decide which combo of synthesis methods to use */
     if(pSynthParams->iSynthesisType == SMS_STYPE_ALL)

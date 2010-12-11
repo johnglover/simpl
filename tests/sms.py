@@ -1065,41 +1065,30 @@ class TestSimplSMS(object):
         for i in range(simpl_audio.size):
             assert_almost_equals(sms_audio[i], simpl_audio[i], self.FLOAT_PRECISION)
 
-    #def test_residual_synthesis(self):
-    #    """test_residual_synthesis
-    #    Compare pysms residual signal with SMS residual""" 
-    #    pysms.sms_init()
-    #    sms_header = pysms.SMS_Header()
-    #    snd_header = pysms.SMS_SndHeader()
-    #    # Try to open the input file to fill snd_header
-    #    if(pysms.sms_openSF(input_file, snd_header)):
-    #        raise NameError("error opening sound file: " + pysms.sms_errorString())
-    #    analysis_params = pysms.SMS_AnalParams()
-    #    analysis_params.iSamplingRate = 44100
-    #    analysis_params.iFrameRate = sampling_rate / hop_size
-    #    sms_header.nStochasticCoeff = 128
-    #    analysis_params.fDefaultFundamental = 100
-    #    analysis_params.fHighestFreq = 20000
-    #    analysis_params.iMaxDelayFrames = 3
-    #    analysis_params.analDelay = 0
-    #    analysis_params.minGoodFrames = 1
-    #    analysis_params.iFormat = pysms.SMS_FORMAT_HP
-    #    analysis_params.nTracks = max_partials
-    #    analysis_params.nGuides = max_partials
-    #    analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
-    #    pysms.sms_initAnalysis(analysis_params, snd_header)
-    #    analysis_params.nFrames = num_samples / hop_size
-    #    analysis_params.iSizeSound = num_samples
-    #    analysis_params.peakParams.iMaxPeaks = max_peaks
-    #    analysis_params.iStochasticType = pysms.SMS_STOC_APPROX
-    #    pysms.sms_fillHeader(sms_header, analysis_params, "pysms")
+    def test_residual_synthesis(self):
+        """test_residual_synthesis
+        Compare pysms residual signal with SMS residual""" 
+        audio, sampling_rate = self.get_audio()
+        pysms.sms_init()
+        snd_header = pysms.SMS_SndHeader()
+        # Try to open the input file to fill snd_header
+        if(pysms.sms_openSF(self.input_file, snd_header)):
+            raise NameError("error opening sound file: " + pysms.sms_errorString())
+        analysis_params = self.pysms_analysis_params(sampling_rate)
+        analysis_params.nFrames = self.num_frames
+        analysis_params.nStochasticCoeff = 128
+        analysis_params.iStochasticType = pysms.SMS_STOC_APPROX
+        if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+        analysis_params.iSizeSound = self.num_samples
+        sms_header = pysms.SMS_Header()
+        pysms.sms_fillHeader(sms_header, analysis_params, "pysms")
 
-    #    sample_offset = 0
-    #    size_new_data = 0
-    #    current_frame = 0
-    #    sms_header.nFrames = num_frames
-    #    analysis_frames = []
-    #    do_analysis = True
+        sample_offset = 0
+        size_new_data = 0
+        current_frame = 0
+        analysis_frames = []
+        do_analysis = True
 
     #    while do_analysis and (current_frame < num_frames-1):
     #        sample_offset += size_new_data
@@ -1143,6 +1132,6 @@ if __name__ == "__main__":
     # useful for debugging, particularly with GDB
     import nose
     argv = [__file__, 
-            __file__ + ":TestSimplSMS.test_harmonic_synthesis"]
+            __file__ + ":TestSimplSMS.test_residual_synthesis"]
     nose.run(argv=argv)
 

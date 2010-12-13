@@ -100,11 +100,10 @@ sndobj:
 - create properties for threshold and num_bins in SndObjPartialTracking class
 - make sndobjs use self.sampling_rate
 - make peak detection use the new window_size property
+- add partial_number to partials in the PartialTracking.update_partial function, as in
+SMS
 
 sms:
-- test_synthesis: why does it occasionally not synthesise anything unless frame number is changed?
-- test_synthesis: remove mag to db conversion
 - can sms_scaleDet be moved to the harmonic analysis phase?
-- improve synthesis accuracy beyond 3 decimal places
 - include stochastic residual synthesis in SMSResidual
 

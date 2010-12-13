@@ -26,7 +26,7 @@ class TestSimplSMS(object):
     input_file = 'audio/flute.wav'
     frame_size = 2048
     hop_size = 512
-    num_frames = 9 
+    num_frames = 20
     num_samples = frame_size + ((num_frames - 1) * hop_size)
     max_peaks = 10
     max_partials = 10
@@ -54,6 +54,7 @@ class TestSimplSMS(object):
         analysis_params.minGoodFrames = 1
         analysis_params.iCleanTracks = 0
         analysis_params.iStochasticType = pysms.SMS_STOC_NONE
+        #analysis_params.iDebugMode = pysms.SMS_DBG_PEAK_CONT
         return analysis_params
 
     def simplsms_analysis_params(self, sampling_rate):
@@ -80,7 +81,9 @@ class TestSimplSMS(object):
         pysms.sms_initSynthParams(synth_params)
         synth_params.iSamplingRate = sampling_rate
         synth_params.iSynthesisType = pysms.SMS_STYPE_DET
+        synth_params.iStochasticType = pysms.SMS_STOC_NONE
         synth_params.sizeHop = self.hop_size 
+        synth_params.nTracks = self.max_peaks
         return synth_params
 
     def test_size_next_read(self):
@@ -466,7 +469,6 @@ class TestSimplSMS(object):
         the simplsms find_peaks function. Analyses have to be performed
         separately due to libsms implementation issues."""
         audio, sampling_rate = self.get_audio()
-
         simplsms.sms_init()
         analysis_params = self.simplsms_analysis_params(sampling_rate)
         analysis_params.iMaxDelayFrames = self.num_frames + 1
@@ -728,6 +730,7 @@ class TestSimplSMS(object):
         if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
             raise Exception("Error allocating memory for analysis_params")
         analysis_params.iSizeSound = self.num_samples
+        analysis_params.nFrames = self.num_frames
         sms_header = pysms.SMS_Header()
         pysms.sms_fillHeader(sms_header, analysis_params, "pysms")
 
@@ -769,6 +772,7 @@ class TestSimplSMS(object):
                         if not live_partials[i]:
                             live_partials[i] = simpl.Partial()
                             live_partials[i].starting_frame = current_frame
+                            live_partials[i].partial_number = i
                             sms_partials.append(live_partials[i])
                         live_partials[i].add_peak(p)
                     # if the mag is 0 and this partial was alive, kill it
@@ -1056,9 +1060,9 @@ class TestSimplSMS(object):
         partials = pt.find_partials(peaks)
         synth = simpl.SMSSynthesis()
         synth.hop_size = self.hop_size
-        synth.stochastic_type = pysms.SMS_STOC_NONE
-        synth.synthesis_type = pysms.SMS_STYPE_DET
         synth.max_partials = self.max_partials
+        synth.stochastic_type = simplsms.SMS_STOC_NONE
+        synth.synthesis_type = simplsms.SMS_STYPE_DET
         simpl_audio = synth.synth(partials)
 
         assert len(sms_audio) == len(simpl_audio)
@@ -1132,6 +1136,7 @@ if __name__ == "__main__":
     # useful for debugging, particularly with GDB
     import nose
     argv = [__file__, 
-            __file__ + ":TestSimplSMS.test_residual_synthesis"]
+            __file__ + ":TestSimplSMS.test_partial_tracking"]
+            #__file__ + ":TestSimplSMS.test_residual_synthesis"]
     nose.run(argv=argv)
 

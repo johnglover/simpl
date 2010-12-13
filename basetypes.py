@@ -80,6 +80,7 @@ class Partial(object):
         "Initialise peaks list and increment partial_id"
         self.peaks = []
         self.starting_frame = 0
+        self.partial_number = -1
         self.partial_id = Partial._num_partials
         Partial._num_partials += 1
     
@@ -93,6 +94,7 @@ class Partial(object):
             peak.previous_peak = last_peak
         peak.partial_position = partial_position
         peak.partial_id = self.partial_id
+        peak.partial_number = self.partial_number
         
     def get_length(self):
         "Return the length of this partial (as a number of frames)"

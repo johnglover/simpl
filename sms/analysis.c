@@ -334,17 +334,16 @@ int sms_findResidual(int sizeSynthesis, sfloat* pSynthesis,
                      int sizeResidual, sfloat* pResidual,
                      SMS_AnalParams *analParams)
 {
-    if(sizeSynthesis != sizeOriginal || sizeOriginal != sizeResidual)
+    if(sizeResidual < sizeOriginal)
     {
+        sms_error("Residual signal length is smaller than the original signal length");
         return -1;
     }
-
-    /* perform preemphasis */
-    int i;
-    for(i = 0; i < sizeSynthesis; i++)
-    {
-        pOriginal[i] = sms_preEmphasis(pOriginal[i], analParams);
-    }
+    /*if(sizeSynthesis > sizeOriginal)*/
+    /*{*/
+    /*    printf("Warning: synthesised signal is longer than the orignal signal. ");*/
+    /*    printf("Orignal will be zero padded.\n");*/
+    /*}*/
 
     /*sms_residual(sizeResidual, pSynthesis, pOriginal, pResidual);*/
     return 0;
@@ -536,47 +535,45 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
         if(pAnalParams->ppFrames[0]->iStatus != SMS_FRAME_EMPTY &&
            pAnalParams->ppFrames[0]->iStatus != SMS_FRAME_END)
         {
-            int sizeResidual = pAnalParams->sizeHop * 2;
             int iSoundLoc = pAnalParams->ppFrames[0]->iFrameSample - pAnalParams->sizeHop;
             sfloat *pOriginal = &(pAnalParams->soundBuffer.pFBuffer[iSoundLoc -
                                   pAnalParams->soundBuffer.iMarker]);
 
             int sizeData = MIN(pAnalParams->soundBuffer.sizeBuffer -
                                (iSoundLoc - pAnalParams->soundBuffer.iMarker),
-                               pAnalParams->sizeResidual);
-
-            if(sizeData > pAnalParams->sizeResidual)
+                               pAnalParams->residualParams.residualSize);
+            if(sizeData > pAnalParams->residualParams.residualSize)
             {
                 sms_error("Residual size larger than expected.");
                 return -1;
             }
-            else if(sizeData < pAnalParams->sizeResidual)
+            else if(sizeData < pAnalParams->residualParams.residualSize)
             {
                 /* should only happen if we're at the end of a sound, unless hop size changes */
-                sms_getWindow(sizeData, pAnalParams->residualWindow, SMS_WIN_HAMMING);
-                sms_scaleWindow(sizeData, pAnalParams->residualWindow);
+                sms_getWindow(sizeData, pAnalParams->residualParams.residualWindow, SMS_WIN_HAMMING);
+                sms_scaleWindow(sizeData, pAnalParams->residualParams.residualWindow);
             }
 
             /* obtain residual sound from original and synthesized sounds.  accumulate the residual percentage.*/
             pAnalParams->fResidualAccumPerc += sms_residual(sizeData,
                                                             pAnalParams->synthBuffer.pFBuffer,
                                                             pOriginal,
-                                                            pAnalParams->residual,
-                                                            pAnalParams->residualWindow);
+                                                            pAnalParams->residualParams.residual,
+                                                            pAnalParams->residualParams.residualWindow);
 
             if(pAnalParams->iStochasticType == SMS_STOC_APPROX)
             {
                 /* filter residual with a high pass filter (it solves some problems) */
-                sms_filterHighPass(sizeData, pAnalParams->residual, pAnalParams->iSamplingRate);
+                sms_filterHighPass(sizeData, pAnalParams->residualParams.residual, pAnalParams->iSamplingRate);
 
                 /* approximate residual */
-                sms_stocAnalysis(sizeData, pAnalParams->residual, pAnalParams->residualWindow, 
+                sms_stocAnalysis(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.residualWindow, 
                                  pSmsData, pAnalParams);
             }
             else if(pAnalParams->iStochasticType == SMS_STOC_IFFT)
             {
                 int sizeMag = sms_power2(sizeData >> 1);
-                sms_spectrum(sizeData, pAnalParams->residual, pAnalParams->residualWindow, 
+                sms_spectrum(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.residualWindow, 
                              sizeMag, pSmsData->pFStocCoeff, pSmsData->pResPhase,
                              pAnalParams->fftBuffer);
             }

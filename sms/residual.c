@@ -26,13 +26,12 @@
 
 /*! \brief get the residual waveform
  *
- * \param sizeWindow       size of buffers
- * \param pSynthesis       pointer to deterministic component
- * \param pOriginal          pointer to original waveform
- * \param pResidual        pointer to output residual waveform
+ * \param sizeWindow size of buffers
+ * \param pSynthesis pointer to deterministic component
+ * \param pOriginal  pointer to original waveform
+ * \param pResidual  pointer to output residual waveform
  * \param pWindow    pointer to windowing array
  * \return residual percentage (0 if residual was not large enough)
- \todo why is residual energy percentage computed this way? should be optional and in a seperate function
  */
 int sms_residual(int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, sfloat *pResidual, sfloat *pWindow)
 {

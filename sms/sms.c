@@ -162,9 +162,10 @@ void sms_initAnalParams(SMS_AnalParams *pAnalParams)
     pAnalParams->pFrames = NULL;
     pAnalParams->ppFrames = NULL;
     /* residual */
-    pAnalParams->sizeResidual = pAnalParams->sizeHop * 2;
-    pAnalParams->residual = NULL;
-    pAnalParams->residualWindow = NULL;
+    sms_initResidualParams(&pAnalParams->residualParams);
+    /*pAnalParams->sizeResidual = pAnalParams->sizeHop * 2;*/
+    /*pAnalParams->residual = NULL;*/
+    /*pAnalParams->residualWindow = NULL;*/
     /* peak continuation */
     pAnalParams->guideStates = NULL;
     pAnalParams->guides = NULL;
@@ -321,21 +322,8 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
     }
 
     /* memory for residual */
-    pAnalParams->sizeResidual = pAnalParams->sizeHop * 2;
-    pAnalParams->residual = (sfloat *)calloc(pAnalParams->sizeResidual, sizeof(sfloat));
-    if(pAnalParams->residual == NULL)
-    {
-        sms_error("Could not allocate memory for residual");
-        return -1;
-    }
-    pAnalParams->residualWindow = (sfloat *)calloc(pAnalParams->sizeResidual, sizeof(sfloat));
-    if(pAnalParams->residualWindow == NULL)
-    {
-        sms_error("Could not allocate memory for residualWindow");
-        return -1;
-    }
-    sms_getWindow(pAnalParams->sizeResidual, pAnalParams->residualWindow, SMS_WIN_HAMMING);
-    sms_scaleWindow(pAnalParams->sizeResidual, pAnalParams->residualWindow);
+    pAnalParams->residualParams.residualSize = pAnalParams->sizeHop * 2;
+    sms_initResidual(&pAnalParams->residualParams);
 
     /* memory for guide states */
     pAnalParams->guideStates = (int *)calloc(pAnalParams->nGuides, sizeof(int));
@@ -370,7 +358,7 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
     }
 
     /* stochastic analysis */
-    pAnalParams->sizeStocMagSpectrum = sms_power2(pAnalParams->sizeResidual) >> 1;
+    pAnalParams->sizeStocMagSpectrum = sms_power2(pAnalParams->residualParams.residualSize) >> 1;
     pAnalParams->stocMagSpectrum = (sfloat *)calloc(pAnalParams->sizeStocMagSpectrum, sizeof(sfloat));
     if(pAnalParams->stocMagSpectrum == NULL)
     {
@@ -475,6 +463,71 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
     return SMS_OK;
 }
 
+/*! \brief give default values to an SMS_ResidualParams struct 
+ * 
+ * \param residualParams pointer to residual data structure
+ */
+void sms_initResidualParams(SMS_ResidualParams *residualParams)
+{
+    residualParams->residualSize = 0;
+    residualParams->residual = NULL;
+    residualParams->residualWindow = NULL;
+    residualParams->residualMag = 0.0;
+    residualParams->originalMag = 0.0;
+}
+
+/*! \brief initialize residual data structure
+ * 
+ * \param residualParams pointer to synthesis paramaters
+ * \return 0 on success, -1 on error
+ */
+int sms_initResidual(SMS_ResidualParams *residualParams)
+{
+    if(residualParams->residualSize <= 0)
+    {
+        sms_error("Residual size must be a positive integer");
+        return -1;
+    }
+
+    /* */
+    residualParams->residual = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
+    if(residualParams->residual == NULL)
+    {
+        sms_error("Could not allocate memory for residual");
+        return -1;
+    }
+
+    /* */
+    residualParams->residualWindow = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
+    if(residualParams->residualWindow == NULL)
+    {
+        sms_error("Could not allocate memory for residualWindow");
+        return -1;
+    }
+    sms_getWindow(residualParams->residualSize, residualParams->residualWindow, SMS_WIN_HAMMING);
+    sms_scaleWindow(residualParams->residualSize, residualParams->residualWindow);
+
+    return 0;
+}
+
+/*! \brief free residual data
+ * 
+ * frees all the memory allocated to an SMS_ResidualParams by
+ * sms_initResidual
+ *
+ * \param residualParams pointer to residual data structure
+ */
+void sms_freeResidual(SMS_ResidualParams *residualParams)
+{
+    if(residualParams->residual)
+        free(residualParams->residual);
+    if(residualParams->residualWindow)
+        free(residualParams->residualWindow);
+
+    residualParams->residual = NULL;
+    residualParams->residualWindow = NULL;
+}
+
 /*! \brief free analysis data
  * 
  * frees all the memory allocated to an SMS_AnalParams by
@@ -502,16 +555,14 @@ void sms_freeAnalysis(SMS_AnalParams *pAnalParams)
     }
 
     sms_freeFrame(&pAnalParams->prevFrame);
+    sms_freeResidual(&pAnalParams->residualParams);
+
     if(pAnalParams->soundBuffer.pFBuffer)
         free(pAnalParams->soundBuffer.pFBuffer);
     if((pAnalParams->synthBuffer).pFBuffer)
         free((pAnalParams->synthBuffer).pFBuffer);
     if(pAnalParams->ppFrames)
         free(pAnalParams->ppFrames);
-    if(pAnalParams->residual)
-        free(pAnalParams->residual);
-    if(pAnalParams->residualWindow)
-        free(pAnalParams->residualWindow);
     if(pAnalParams->guideStates)
         free(pAnalParams->guideStates);
     if(pAnalParams->guides)
@@ -525,8 +576,6 @@ void sms_freeAnalysis(SMS_AnalParams *pAnalParams)
     pAnalParams->ppFrames = NULL;
     pAnalParams->soundBuffer.pFBuffer = NULL;
     pAnalParams->synthBuffer.pFBuffer = NULL;
-    pAnalParams->residual = NULL;
-    pAnalParams->residualWindow = NULL;
     pAnalParams->guideStates = NULL;
     pAnalParams->guides = NULL;
     pAnalParams->stocMagSpectrum = NULL;

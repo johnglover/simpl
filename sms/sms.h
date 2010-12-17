@@ -187,6 +187,21 @@ typedef struct
     int iPeakChosen; /*!< peak number chosen by the guide */
 } SMS_Guide;
 
+/*! \struct SMS_ResidualParams
+ * \brief structure with information for residual functions
+ *
+ * This structure contains all the necessary settings and memory for residual synthesis.
+ *
+ */
+typedef struct
+{
+    int residualSize;
+    sfloat *residual;
+    sfloat *residualWindow;
+    sfloat residualMag;
+    sfloat originalMag;
+} SMS_ResidualParams;
+
 /*! \struct SMS_AnalParams
  * \brief structure with useful information for analysis functions
  *
@@ -253,9 +268,10 @@ typedef struct
     sfloat phaseSpectrum[SMS_MAX_SPEC];
     sfloat spectrumWindow[SMS_MAX_SPEC];
     sfloat fftBuffer[SMS_MAX_SPEC * 2];
-    int sizeResidual;
-    sfloat *residual;
-    sfloat *residualWindow;
+    SMS_ResidualParams residualParams;
+    //int sizeResidual;
+    //sfloat *residual;
+    //sfloat *residualWindow;
     int *guideStates;
     SMS_Guide* guides;
     sfloat inputBuffer[SMS_MAX_FRAME_SIZE];
@@ -655,6 +671,9 @@ void sms_clearFrame(SMS_Data *pSmsFrame);
 void sms_copyFrame(SMS_Data *pCopySmsFrame, SMS_Data *pOriginalSmsFrame);
 int sms_frameSizeB(SMS_Header *pSmsHeader);
 
+void sms_initResidualParams(SMS_ResidualParams *residualParams);
+int sms_initResidual(SMS_ResidualParams *residualParams);
+void sms_freeResidual(SMS_ResidualParams *residualParams);
 int sms_residual(int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, 
                  sfloat *pResidual, sfloat *pWindow);
 void sms_filterHighPass(int sizeResidual, sfloat *pResidual, int iSamplingRate);

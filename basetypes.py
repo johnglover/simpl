@@ -355,7 +355,7 @@ class Residual(object):
         self.hop_size = 512
         self.frame_size = 2048
         
-    # TODO: break this up into find_residual and find_frame_residual
+    # TODO: break this up into find_residual and residual_frame
     #       so that it can be streamed
     def find_residual(self, synth, original):
         "Calculate and return the residual signal"

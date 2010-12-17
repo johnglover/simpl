@@ -163,9 +163,6 @@ void sms_initAnalParams(SMS_AnalParams *pAnalParams)
     pAnalParams->ppFrames = NULL;
     /* residual */
     sms_initResidualParams(&pAnalParams->residualParams);
-    /*pAnalParams->sizeResidual = pAnalParams->sizeHop * 2;*/
-    /*pAnalParams->residual = NULL;*/
-    /*pAnalParams->residualWindow = NULL;*/
     /* peak continuation */
     pAnalParams->guideStates = NULL;
     pAnalParams->guides = NULL;
@@ -489,7 +486,7 @@ int sms_initResidual(SMS_ResidualParams *residualParams)
         return -1;
     }
 
-    /* */
+    /* residual signal */
     residualParams->residual = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
     if(residualParams->residual == NULL)
     {
@@ -497,7 +494,7 @@ int sms_initResidual(SMS_ResidualParams *residualParams)
         return -1;
     }
 
-    /* */
+    /* residual window */
     residualParams->residualWindow = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
     if(residualParams->residualWindow == NULL)
     {

@@ -269,9 +269,6 @@ typedef struct
     sfloat spectrumWindow[SMS_MAX_SPEC];
     sfloat fftBuffer[SMS_MAX_SPEC * 2];
     SMS_ResidualParams residualParams;
-    //int sizeResidual;
-    //sfloat *residual;
-    //sfloat *residualWindow;
     int *guideStates;
     SMS_Guide* guides;
     sfloat inputBuffer[SMS_MAX_FRAME_SIZE];
@@ -675,7 +672,7 @@ void sms_initResidualParams(SMS_ResidualParams *residualParams);
 int sms_initResidual(SMS_ResidualParams *residualParams);
 void sms_freeResidual(SMS_ResidualParams *residualParams);
 int sms_residual(int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, 
-                 sfloat *pResidual, sfloat *pWindow);
+                 SMS_ResidualParams* residualParams);
 void sms_filterHighPass(int sizeResidual, sfloat *pResidual, int iSamplingRate);
 int sms_stocAnalysis(int sizeWindow, sfloat *pResidual, sfloat *pWindow,
                      SMS_Data *pSmsFrame, SMS_AnalParams *pAnalParams);

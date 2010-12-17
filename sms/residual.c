@@ -33,39 +33,42 @@
  * \param pWindow    pointer to windowing array
  * \return residual percentage (0 if residual was not large enough)
  */
-int sms_residual(int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal, sfloat *pResidual, sfloat *pWindow)
+int sms_residual(int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal,
+                 SMS_ResidualParams* residualParams)
 {
-    static sfloat fResidualMag = 0.;
-    static sfloat fOriginalMag = 0.;
+    /*static sfloat fResidualMag = 0.;*/
+    /*static sfloat fOriginalMag = 0.;*/
     sfloat fScale = 1.;
     sfloat fCurrentResidualMag = 0.;
     sfloat fCurrentOriginalMag = 0.;
     int i;
 
     /* get residual */
-    for (i=0; i<sizeWindow; i++)
-        pResidual[i] = pOriginal[i] - pSynthesis[i];
+    for(i = 0; i < sizeWindow; i++)
+        residualParams->residual[i] = pOriginal[i] - pSynthesis[i];
 
     /* get energy of residual */
-    for (i=0; i<sizeWindow; i++)
-        fCurrentResidualMag += (pResidual[i] * pResidual[i]);
+    for(i = 0; i < sizeWindow; i++)
+        fCurrentResidualMag += (residualParams->residual[i] * residualParams->residual[i]);
 
     /* if residual is big enough compute coefficients */
-    if (fCurrentResidualMag)
+    if(fCurrentResidualMag)
     {  
         /* get energy of original */
-        for (i=0; i<sizeWindow; i++)
+        for(i = 0; i < sizeWindow; i++)
             fCurrentOriginalMag += (pOriginal[i] * pOriginal[i]);
 
-        fOriginalMag = .5 * (fCurrentOriginalMag/sizeWindow + fOriginalMag);
-        fResidualMag = .5 * (fCurrentResidualMag/sizeWindow + fResidualMag);
+        residualParams->originalMag = 
+            .5 * (fCurrentOriginalMag/sizeWindow + residualParams->originalMag);
+        residualParams->residualMag = 
+            .5 * (fCurrentResidualMag/sizeWindow + residualParams->residualMag);
 
         /* scale residual if need to be */
-        if (fResidualMag > fOriginalMag)
+        if(residualParams->residualMag > residualParams->originalMag)
         {
-            fScale = fOriginalMag / fResidualMag;
-            for (i=0; i<sizeWindow; i++)
-                pResidual[i] *= fScale;
+            fScale = residualParams->originalMag / residualParams->residualMag;
+            for(i = 0; i < sizeWindow; i++)
+                residualParams->residual[i] *= fScale;
         }
 
         return fCurrentResidualMag / fCurrentOriginalMag;

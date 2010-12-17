@@ -339,11 +339,6 @@ int sms_findResidual(int sizeSynthesis, sfloat* pSynthesis,
         sms_error("Residual signal length is smaller than the original signal length");
         return -1;
     }
-    /*if(sizeSynthesis > sizeOriginal)*/
-    /*{*/
-    /*    printf("Warning: synthesised signal is longer than the orignal signal. ");*/
-    /*    printf("Orignal will be zero padded.\n");*/
-    /*}*/
 
     /*sms_residual(sizeResidual, pSynthesis, pOriginal, pResidual);*/
     return 0;
@@ -558,8 +553,7 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
             pAnalParams->fResidualAccumPerc += sms_residual(sizeData,
                                                             pAnalParams->synthBuffer.pFBuffer,
                                                             pOriginal,
-                                                            pAnalParams->residualParams.residual,
-                                                            pAnalParams->residualParams.residualWindow);
+                                                            &pAnalParams->residualParams);
 
             if(pAnalParams->iStochasticType == SMS_STOC_APPROX)
             {

@@ -1142,7 +1142,7 @@ class TestSimplSMS(object):
         synth.max_partials = self.max_partials
         simpl_harmonic = synth.synth(partials)
         res = simpl.SMSResidual()
-        simpl_residual = res.find_residual(simpl_harmonic, audio[0:simpl_harmonic.size])
+        simpl_residual = res.synth(simpl_harmonic, audio[0:simpl_harmonic.size])
 
         #import matplotlib.pyplot as plt
         #plt.plot(sms_residual)

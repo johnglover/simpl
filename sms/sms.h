@@ -242,6 +242,7 @@ typedef struct
     int analDelay;                   /*! number of frames in the past to be looked in possible re-analyze */
     sfloat fResidualAccumPerc;       /*!< accumalitive residual percentage */
     int sizeNextRead;                /*!< size of samples to read from sound file next analysis */
+    int preEmphasis;                 /*!< whether or not to perform pre-emphasis */
     sfloat preEmphasisLastValue;
     SMS_Data prevFrame;              /*!< the previous analysis frame  */
     SMS_SEnvParams specEnvParams;    /*!< all data for spectral enveloping */
@@ -306,6 +307,7 @@ typedef struct
     int origSizeHop;            /*!< original number of samples used to create each analysis frame */
     int nTracks;
     int nStochasticCoeff;
+    int deEmphasis;             /*!< whether or not to perform de-emphasis */
     sfloat deEmphasisLastValue;
     sfloat *pFDetWindow;        /*!< array to hold the window used for deterministic synthesis  \see SMS_WIN_IFFT */
     sfloat *pFStocWindow;       /*!< array to hold the window used for stochastic synthesis (Hanning) */

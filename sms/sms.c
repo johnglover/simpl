@@ -139,6 +139,7 @@ void sms_initAnalParams(SMS_AnalParams *pAnalParams)
     pAnalParams->iMaxDelayFrames = MAX(pAnalParams->iMinTrackLength, pAnalParams->iMaxSleepingTime) + 2 +
         (pAnalParams->minGoodFrames + pAnalParams->analDelay);
     pAnalParams->fResidualAccumPerc = 0.;
+    pAnalParams->preEmphasis = 1; /*!< perform pre-emphasis by default */
     pAnalParams->preEmphasisLastValue = 0.;
     /* spectral envelope params */
     pAnalParams->specEnvParams.iType = SMS_ENV_NONE; /* turn off enveloping */
@@ -412,6 +413,7 @@ void sms_initSynthParams(SMS_SynthParams *synthParams)
     synthParams->pPhaseBuff = NULL;
     synthParams->pSpectra = NULL;
     synthParams->approxEnvelope = NULL;
+    synthParams->deEmphasis = 1; /*!< perform de-emphasis by default */
     synthParams->deEmphasisLastValue = 0;
 }
 

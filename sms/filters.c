@@ -33,9 +33,13 @@
  */
 sfloat sms_preEmphasis(sfloat fInput, SMS_AnalParams *pAnalParams)
 {
-    sfloat fOutput = fInput - SMS_EMPH_COEF * pAnalParams->preEmphasisLastValue;
-    pAnalParams->preEmphasisLastValue = fOutput;
-    return fOutput;
+    if(pAnalParams->preEmphasis)
+    {
+        sfloat fOutput = fInput - SMS_EMPH_COEF * pAnalParams->preEmphasisLastValue;
+        pAnalParams->preEmphasisLastValue = fOutput;
+        return fOutput;
+    }
+    return fInput;
 }
 
 /* de-emphasis filter function, it returns the filtered value 
@@ -44,9 +48,13 @@ sfloat sms_preEmphasis(sfloat fInput, SMS_AnalParams *pAnalParams)
  */
 sfloat sms_deEmphasis(sfloat fInput, SMS_SynthParams *pSynthParams)
 {
-    sfloat fOutput = fInput + SMS_EMPH_COEF * pSynthParams->deEmphasisLastValue;
-    pSynthParams->deEmphasisLastValue = fInput;
-    return fOutput;
+    if(pSynthParams->deEmphasis)
+    {
+        sfloat fOutput = fInput + SMS_EMPH_COEF * pSynthParams->deEmphasisLastValue;
+        pSynthParams->deEmphasisLastValue = fInput;
+        return fOutput;
+    }
+    return fInput;
 }
 
 /*! \brief  function to implement a zero-pole filter

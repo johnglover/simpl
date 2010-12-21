@@ -256,12 +256,12 @@ void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, sfloat* amps,
     {
         /* get a reference fundamental */
         sfloat refFundamental = 0;
-        sfloat avgDeviation = sms_fundDeviation(pAnalParams, 1);
+        sfloat avgDeviation = sms_fundDeviation(pAnalParams, currentFrame-1);
         if(pAnalParams->iSoundType == SMS_SOUND_TYPE_NOTE)
             refFundamental = pAnalParams->fDefaultFundamental;
         /* if sound is stable use the last fundamental as a reference */
         else if(avgDeviation != -1 && avgDeviation <= pAnalParams->maxDeviation)
-            refFundamental = pAnalParams->ppFrames[1]->fFundamental;
+            refFundamental = pAnalParams->ppFrames[currentFrame-1]->fFundamental;
         else
             refFundamental = 0;
 
@@ -319,12 +319,6 @@ int sms_findPartials(SMS_Data *pSmsData, SMS_AnalParams *pAnalParams)
        pAnalParams->iFormat == SMS_FORMAT_IHP)
         memcpy((char *) pSmsData->pFSinPha, (char *)
                pAnalParams->ppFrames[0]->deterministic.pFSinPha, length);
-
-    /* do post-processing (for now, spectral envelope calculation and storage) */
-    if(pAnalParams->specEnvParams.iType != SMS_ENV_NONE)
-    {
-        sms_spectralEnvelope(pSmsData, &pAnalParams->specEnvParams);
-    }
 
     return 1;
 }

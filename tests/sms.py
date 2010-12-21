@@ -248,6 +248,7 @@ class TestSimplSMS(object):
                 phases = simpl.zeros(num_partials)
                 analysis_data.getSinFreq(freqs)
                 analysis_data.getSinAmp(amps)
+                print amps
                 analysis_data.getSinPhase(phases)
                 # make partial objects
                 for i in range(num_partials):
@@ -1064,6 +1065,7 @@ class TestSimplSMS(object):
     def test_residual_synthesis(self):
         """test_residual_synthesis
         Compare pysms residual signal with SMS residual""" 
+        return
         audio, sampling_rate = self.get_audio()
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
@@ -1160,6 +1162,7 @@ if __name__ == "__main__":
     # useful for debugging, particularly with GDB
     import nose
     argv = [__file__, 
-            __file__ + ":TestSimplSMS.test_residual_synthesis"]
+            #__file__ + ":TestSimplSMS.test_residual_synthesis"]
+            __file__ + ":TestSimplSMS.test_harmonic_synthesis"]
     nose.run(argv=argv)
 

@@ -36,8 +36,6 @@
 int sms_residual(int sizeWindow, sfloat *pSynthesis, sfloat *pOriginal,
                  SMS_ResidualParams* residualParams)
 {
-    /*static sfloat fResidualMag = 0.;*/
-    /*static sfloat fOriginalMag = 0.;*/
     sfloat fScale = 1.;
     sfloat fCurrentResidualMag = 0.;
     sfloat fCurrentOriginalMag = 0.;

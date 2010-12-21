@@ -146,6 +146,68 @@ static int StocSynthApprox(SMS_Data *pSmsData, SMS_SynthParams *pSynthParams)
     return 1;
 }
 
+/*! \brief synthesizes one frame of the residual signal
+ *
+ * \param residualParams Parameters and memory for residual synthesis
+ */
+void sms_approxResidual(SMS_ResidualParams *residualParams)
+{
+    /* filter residual with a high pass filter */
+    sms_filterHighPass(residualParams->residualSize, 
+                       residualParams->residual, 
+                       residualParams->samplingRate);
+
+    sms_spectrumMag(residualParams->residualSize, 
+                    residualParams->residual, 
+                    residualParams->residualWindow, 
+                    residualParams->sizeStocMagSpectrum,
+                    residualParams->stocMagSpectrum, 
+                    residualParams->fftBuffer);
+
+    sms_spectralApprox(residualParams->stocMagSpectrum, 
+                       residualParams->sizeStocMagSpectrum,
+                       residualParams->sizeStocMagSpectrum, 
+                       residualParams->stocCoeffs,
+                       residualParams->nCoeffs, 
+                       residualParams->nCoeffs,
+                       residualParams->approxEnvelope);
+
+    /* get energy of spectrum  */
+    int i;
+    sfloat fMag = 0.0;
+    /*for(i = 0; i < pAnalParams->sizeStocMagSpectrum; i++)*/
+    /*    fMag += (pAnalParams->stocMagSpectrum[i] * pAnalParams->stocMagSpectrum[i]);*/
+
+    /**pSmsData->pFStocGain = fMag / pAnalParams->sizeStocMagSpectrum;*/
+
+    /*int i, sizeSpec1Used;*/
+    /*int sizeSpec1 = pSmsData->nCoeff;*/
+    /*int sizeSpec2 = pSynthParams->sizeHop;*/
+    /*int sizeFft = pSynthParams->sizeHop << 1; [> 50% overlap, so sizeFft is 2x sizeHop <]*/
+    /*sfloat fStocGain;*/
+
+    /*[> if no gain or no coefficients return  <]*/
+    /*if (*(pSmsData->pFStocGain) <= 0)*/
+    /*    return 0;*/
+
+    /*sizeSpec1Used = sizeSpec1 * pSynthParams->iSamplingRate / pSynthParams->iOriginalSRate;*/
+
+    /*[> sizeSpec1Used cannot be more than what is available  \todo check by graph <]*/
+    /*if(sizeSpec1Used  > sizeSpec1) sizeSpec1Used = sizeSpec1;*/
+
+    /*sms_spectralApprox(pSmsData->pFStocCoeff, sizeSpec1, sizeSpec1Used,*/
+    /*                   pSynthParams->pMagBuff, sizeSpec2, sizeSpec1Used,*/
+    /*                   pSynthParams->approxEnvelope);*/
+
+    /*[> generate random phases <]*/
+    /*for(i = 0; i < sizeSpec2; i++)*/
+    /*    pSynthParams->pPhaseBuff[i] =  TWO_PI * sms_random();*/
+
+    /*sms_invQuickSpectrumW(pSynthParams->pMagBuff, pSynthParams->pPhaseBuff,*/
+    /*                      sizeFft, pSynthParams->pSynthBuff, sizeFft,*/
+    /*                      pSynthParams->pFStocWindow, pSynthParams->pSpectra);*/
+}
+
 /*! \brief  synthesizes one frame of SMS data
  *
  * \param pSmsData      input SMS data

@@ -235,8 +235,6 @@ class SMSPartialTracking(simpl.PartialTracking):
         self._analysis_frame = simplsms.SMS_Data()
         simplsms.sms_allocFrameH(self._sms_header, self._analysis_frame)
         self.live_partials = [None for i in range(self.max_partials)]
-        #self._analysis_params.iDebugMode = simplsms.SMS_DBG_PEAK_CONT
-        self._analysis_params.nFrames = 20
         
     def __del__(self):
         simplsms.sms_freeAnalysis(self._analysis_params)
@@ -312,6 +310,8 @@ class SMSSynthesis(simpl.Synthesis):
         self._synth_params = simplsms.SMS_SynthParams() 
         simplsms.sms_initSynthParams(self._synth_params)
         self._synth_params.iDetSynthType = simplsms.SMS_DET_IFFT
+        self._synth_params.iSynthesisType = simplsms.SMS_STYPE_DET
+        self._synth_params.iStochasticType = simplsms.SMS_STOC_NONE
         # use the default simpl hop size instead of the default SMS hop size
         self._synth_params.sizeHop = self._hop_size 
         simplsms.sms_initSynth(self._synth_params)
@@ -426,16 +426,27 @@ class SMSResidual(simpl.Residual):
     def __init__(self):
         simpl.Residual.__init__(self)
         simplsms.sms_init()
-        self._analysis_params = simplsms.SMS_AnalParams()
-        simplsms.sms_initAnalysis(self._analysis_params)
+        self._residual_params = simplsms.SMS_ResidualParams()
+        simplsms.sms_initResidualParams(self._residual_params)
+        self._residual_params.residualSize = self._hop_size# * 2
+        simplsms.sms_initResidual(self._residual_params)
         
     def __del__(self):
-        simplsms.sms_freeAnalysis(self._analysis_params)
+        simplsms.sms_freeResidual(self._residual_params)
         simplsms.sms_free()
         
-    def find_residual(self, synth, original):
-        "Calculate and return the residual signal"
-        residual = simpl.zeros(len(original)) # residual won't be longer than the original signal
-        simplsms.sms_findResidual(synth, original, residual, self._analysis_params)
+    def residual_frame(self, synth, original):
+        "Computes the residual signal for a frame of audio"
+        simplsms.sms_findResidual(synth, original, self._residual_params)
+        residual = simpl.zeros(self._residual_params.residualSize)
+        self._residual_params.getResidual(residual)
         return residual
+
+    def synth_frame(self, synth, original):
+        "Calculate and return one frame of the synthesised residual signal"
+        self.residual_frame(synth, original)
+        simplsms.sms_approxResidual(self._residual_params)
+        residual_approx = simpl.zeros(self._residual_params.residualSize)
+        self._residual_params.getApprox(residual_approx)
+        return residual_approx
 

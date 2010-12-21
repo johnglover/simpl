@@ -23,8 +23,6 @@
  */
 #include "sms.h"
 
-#define ENV_THRESHOLD     .01 /* \todo was this value for type shorts?? */
-
 /*! \brief main function for the stochastic analysis
  * \param sizeWindow   size of buffer
  * \param pResidual    pointer to residual signal
@@ -38,7 +36,6 @@ int sms_stocAnalysis(int sizeWindow, sfloat *pResidual, sfloat *pWindow,
 {
     int i;
     sfloat fMag = 0.0;
-    sfloat fStocNorm;
 
     sms_spectrumMag(sizeWindow, pResidual, pWindow, pAnalParams->sizeStocMagSpectrum,
                     pAnalParams->stocMagSpectrum, pAnalParams->fftBuffer);
@@ -53,8 +50,6 @@ int sms_stocAnalysis(int sizeWindow, sfloat *pResidual, sfloat *pWindow,
         fMag += (pAnalParams->stocMagSpectrum[i] * pAnalParams->stocMagSpectrum[i]);
 
     *pSmsData->pFStocGain = fMag / pAnalParams->sizeStocMagSpectrum;
-    fStocNorm = 1. / *pSmsData->pFStocGain;
-
     return 0;
 }
 

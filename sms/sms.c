@@ -466,11 +466,23 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
  */
 void sms_initResidualParams(SMS_ResidualParams *residualParams)
 {
+    residualParams->samplingRate = 44100;
     residualParams->residualSize = 0;
     residualParams->residual = NULL;
     residualParams->residualWindow = NULL;
     residualParams->residualMag = 0.0;
     residualParams->originalMag = 0.0;
+    residualParams->nCoeffs = 128;
+    residualParams->stocCoeffs = NULL;
+    residualParams->sizeStocMagSpectrum = 0;
+    residualParams->stocMagSpectrum = NULL;
+    residualParams->approxEnvelope = NULL;
+    int i;
+    for(i = 0; i < SMS_MAX_SPEC; i++)
+    {
+        residualParams->fftBuffer[i] = 0.0;
+        residualParams->fftBuffer[i+SMS_MAX_SPEC] = 0.0;
+    }
 }
 
 /*! \brief initialize residual data structure
@@ -504,6 +516,29 @@ int sms_initResidual(SMS_ResidualParams *residualParams)
     sms_getWindow(residualParams->residualSize, residualParams->residualWindow, SMS_WIN_HAMMING);
     sms_scaleWindow(residualParams->residualSize, residualParams->residualWindow);
 
+    /* stochastic analysis */
+    residualParams->stocCoeffs = (sfloat *)calloc(residualParams->nCoeffs, sizeof(sfloat));
+    if(residualParams->stocCoeffs == NULL)
+    {
+        sms_error("Could not allocate memory for stochastic coefficients");
+        return -1;
+    }
+
+    residualParams->sizeStocMagSpectrum = sms_power2(residualParams->residualSize) >> 1;
+    residualParams->stocMagSpectrum = (sfloat *)calloc(residualParams->sizeStocMagSpectrum, sizeof(sfloat));
+    if(residualParams->stocMagSpectrum == NULL)
+    {
+        sms_error("Could not allocate memory for stochastic magnitude spectrum");
+        return -1;
+    }
+
+    residualParams->approxEnvelope = (sfloat *)calloc(residualParams->nCoeffs, sizeof(sfloat));
+    if(residualParams->approxEnvelope == NULL)
+    {
+        sms_error("Could not allocate memory for spectral approximation envelope");
+        return -1;
+    }
+
     return 0;
 }
 
@@ -520,9 +555,18 @@ void sms_freeResidual(SMS_ResidualParams *residualParams)
         free(residualParams->residual);
     if(residualParams->residualWindow)
         free(residualParams->residualWindow);
+    if(residualParams->stocCoeffs)
+        free(residualParams->stocCoeffs);
+    if(residualParams->stocMagSpectrum)
+        free(residualParams->stocMagSpectrum);
+    if(residualParams->approxEnvelope)
+        free(residualParams->approxEnvelope);
 
     residualParams->residual = NULL;
     residualParams->residualWindow = NULL;
+    residualParams->stocCoeffs = NULL;
+    residualParams->stocMagSpectrum = NULL;
+    residualParams->approxEnvelope = NULL;
 }
 
 /*! \brief free analysis data

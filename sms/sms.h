@@ -195,11 +195,18 @@ typedef struct
  */
 typedef struct
 {
+    int samplingRate;
     int residualSize;
     sfloat *residual;
     sfloat *residualWindow;
     sfloat residualMag;
     sfloat originalMag;
+    int nCoeffs;
+    sfloat *stocCoeffs;
+    int sizeStocMagSpectrum;
+    sfloat *stocMagSpectrum;
+    sfloat *approxEnvelope;
+    sfloat fftBuffer[SMS_MAX_SPEC * 2];
 } SMS_ResidualParams;
 
 /*! \struct SMS_AnalParams
@@ -561,13 +568,13 @@ sfloat sms_dBToMag(sfloat x);
 void sms_arrayMagToDB(int sizeArray, sfloat *pArray);
 void sms_arrayDBToMag(int sizeArray, sfloat *pArray);
 void sms_setMagThresh(sfloat x);
-sfloat sms_rms ( int sizeArray, sfloat *pArray );
-sfloat sms_sine (sfloat fTheta);
-sfloat sms_sinc (sfloat fTheta);
-sfloat sms_random ( void );
+sfloat sms_rms(int sizeArray, sfloat *pArray);
+sfloat sms_sine(sfloat fTheta);
+sfloat sms_sinc(sfloat fTheta);
+sfloat sms_random(void);
 int sms_power2(int n);
-sfloat sms_scalarTempered( sfloat x);
-void sms_arrayScalarTempered( int sizeArray, sfloat *pArray);
+sfloat sms_scalarTempered(sfloat x);
+void sms_arrayScalarTempered(int sizeArray, sfloat *pArray);
 
 #ifndef MAX
 /*! \brief returns the maximum of a and b */
@@ -586,8 +593,8 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
 int sms_findPartials(SMS_Data *pSmsFrame, SMS_AnalParams *pAnalParams);
 int sms_findResidual(int sizeSynthesis, sfloat* pSynthesis,
                      int sizeOriginal, sfloat* pOriginal,
-                     int sizeResidual, sfloat* pResidual,
-                     SMS_AnalParams *analParams);
+                     SMS_ResidualParams *residualParams);
+void sms_approxResidual(SMS_ResidualParams *residualParams);
 int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_AnalParams *pAnalParams);
 void sms_analyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, sfloat fRefFundamental);
 

@@ -331,89 +331,16 @@ int sms_findPartials(SMS_Data *pSmsData, SMS_AnalParams *pAnalParams)
 
 int sms_findResidual(int sizeSynthesis, sfloat* pSynthesis,
                      int sizeOriginal, sfloat* pOriginal,
-                     int sizeResidual, sfloat* pResidual,
-                     SMS_AnalParams *analParams)
+                     SMS_ResidualParams *residualParams)
 {
-    if(sizeResidual < sizeOriginal)
+    if(residualParams->residualSize < sizeOriginal)
     {
         sms_error("Residual signal length is smaller than the original signal length");
         return -1;
     }
 
-    /*sms_residual(sizeResidual, pSynthesis, pOriginal, pResidual);*/
+    sms_residual(residualParams->residualSize, pSynthesis, pOriginal, residualParams);
     return 0;
-}
-
-void sms_approxResidual(int sizeResidual, sfloat* pResidual,
-                        SMS_Data* pSmsData, SMS_SynthParams* pSynthParams)
-{
-    /* perform stochastic analysis after 1 frame of the     */
-    /* deterministic synthesis because it needs two frames  */
-//  if (pAnalParams->ppFrames[0]->iStatus != SMS_FRAME_EMPTY &&
-//      pAnalParams->ppFrames[0]->iStatus != SMS_FRAME_END)
-//  {
-//      int sizeResidual = pAnalParams->sizeHop * 2;
-//      int iSoundLoc = pAnalParams->ppFrames[0]->iFrameSample - pAnalParams->sizeHop;
-//  //          sfloat *pOriginal = &(pAnalParams->soundBuffer.pFBuffer[iSoundLoc - pAnalParams->soundBuffer.iMarker]);
-//      sfloat *pOriginal;
-//      sfloat *pFResidual;
-//
-//      static sfloat *pWindow;
-//      static int sizeWindowArray = 0;
-//
-//  //          int sizeData = MIN(pAnalParams->soundBuffer.sizeBuffer -
-//  //                            (iSoundLoc - pAnalParams->soundBuffer.iMarker),
-//  //                            sizeResidual);
-//      int sizeData = sizeResidual;
-//      if ((pFResidual = (sfloat *) calloc (sizeResidual, sizeof(sfloat))) == NULL)
-//      {
-//          sms_error("sms_analyze: error allocating memory for pFResidual");
-//          return -1;
-//      }
-//      if (sizeWindowArray != sizeData)
-//      {
-//          if(sizeWindowArray != 0) free(pWindow);
-//          if((pWindow = (sfloat *) calloc(sizeData, sizeof(sfloat))) == NULL)
-//          {
-//                  sms_error("sms_analyze: error allocating memory for pWindow");
-//                  return -1;
-//          }
-//          sms_getWindow( sizeData, pWindow, SMS_WIN_HAMMING);
-//          sms_scaleWindow( sizeData, pWindow);
-//          sizeWindowArray = sizeData;
-//      }
-//
-//      /* obtain residual sound from original and synthesized sounds.  accumulate the residual percentage.*/
-//      pAnalParams->fResidualAccumPerc += sms_residual(sizeData,
-//                                                      pAnalParams->synthBuffer.pFBuffer,
-//                                                      pOriginal,
-//                                                      pFResidual,
-//                                                      pWindow);
-//
-//      if (pAnalParams->iStochasticType == SMS_STOC_APPROX)
-//      {
-//          /* filter residual with a high pass filter (it solves some problems) */
-//          sms_filterHighPass (sizeData, pFResidual, pAnalParams->iSamplingRate);
-//
-//          /* approximate residual */
-//          sms_stocAnalysis (sizeData, pFResidual, pWindow, pSmsData);
-//      }
-//      else if  (pAnalParams->iStochasticType == SMS_STOC_IFFT)
-//      {
-//          int sizeMag = sms_power2(sizeData >> 1);
-//          sms_spectrum (sizeData, pFResidual, pWindow, sizeMag, pSmsData->pFStocCoeff,
-//                  pSmsData->pResPhase);
-//      }
-//
-//      /* get sharper transitions in deterministic representation */
-//  //              sms_scaleDet (pAnalParams->synthBuffer.pFBuffer, pOriginal,
-//  //                            pAnalParams->ppFrames[0]->deterministic.pFSinAmp,
-//  //                            pAnalParams, pSmsData->nTracks);
-//
-//      pAnalParams->ppFrames[0]->iStatus = SMS_FRAME_DONE;
-//
-//      free ((char *) pFResidual); /* \todo get rid of this free, manage memory the same as spectrum functions */
-//  }
 }
 
 int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_AnalParams *pAnalParams)

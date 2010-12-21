@@ -28,14 +28,13 @@
  * interpolation. The output spectrum doesn't have to be the same size as 
  * the input one.
  *
- * \param pFSpec1     magnitude spectrum to approximate
- * \param sizeSpec1       size of input spectrum
- * \param sizeSpec1Used  size of the spectrum to use
- * \param pFSpec2     output envelope
- * \param sizeSpec2      size of output envelope
- * \param nCoefficients  number of coefficients to use in approximation
- * \return error code \see SMS_ERRORS (or -1 if the algorithm just messes up, 
- *         it will print an error of its own.
+ * \param pFSpec1       magnitude spectrum to approximate
+ * \param sizeSpec1     size of input spectrum
+ * \param sizeSpec1Used size of the spectrum to use
+ * \param pFSpec2       output envelope
+ * \param sizeSpec2     size of output envelope
+ * \param nCoefficients number of coefficients to use in approximation
+ * \return error code \see SMS_ERRORS
  */
 int sms_spectralApprox(sfloat *pFSpec1, int sizeSpec1, int sizeSpec1Used,
                        sfloat *pFSpec2, int sizeSpec2, int nCoefficients,
@@ -48,44 +47,49 @@ int sms_spectralApprox(sfloat *pFSpec1, int sizeSpec1, int sizeSpec1Used,
     /* when number of coefficients is smaller than 2 do not approximate */
     if(nCoefficients < 2)
     {
-        for (i = 0; i < sizeSpec2; i++)
+        for(i = 0; i < sizeSpec2; i++)
             pFSpec2[i] = 1;
         return SMS_OK;
     }
 
     /* calculate the hop size */
-    if(sizeSpec1 != sizeSpec1Used)
-        fHopSize = (sfloat) sizeSpec1Used / nCoefficients;
-    else //why is this here, would be the same as sizeSpec1Used / nCoefficients
-        fHopSize = (sfloat) sizeSpec1 / nCoefficients;
-
+    /*if(sizeSpec1 != sizeSpec1Used)*/
+        /*fHopSize = (sfloat) sizeSpec1Used / nCoefficients;*/
+    /*else //why is this here, would be the same as sizeSpec1Used / nCoefficients*/
+        /*fHopSize = (sfloat) sizeSpec1 / nCoefficients;*/
     if(nCoefficients > sizeSpec1)
         nCoefficients = sizeSpec1;
 
-    fHopSize = (sfloat) sizeSpec1Used / nCoefficients;
+    fHopSize = (sfloat)sizeSpec1Used / nCoefficients;
 
     /* approximate by linear interpolation */
-    if (fHopSize > 1)
+    if(fHopSize > 1)
     {
         iFirstGood = 0;
         for(i = 0; i < nCoefficients; i++)
         {
             iLastSample = fLastLocation = fCurrentLoc + fHopSize;
-            iLastSample = MIN (sizeSpec1-1, iLastSample);
+            iLastSample = MIN(sizeSpec1-1, iLastSample);
             if(iLastSample < sizeSpec1-1)
+            {
                 fRight = pFSpec1[iLastSample] +
-                    (pFSpec1[iLastSample+1] - pFSpec1[iLastSample]) * 
-                    (fLastLocation - iLastSample);
+                         (pFSpec1[iLastSample+1] - pFSpec1[iLastSample]) * 
+                         (fLastLocation - iLastSample);
+            }
             else
+            {
                 fRight = pFSpec1[iLastSample];
+            }
+
             fValue = 0;
             for(j = iFirstGood; j <= iLastSample; j++)
                 fValue = MAX (fValue, pFSpec1[j]);
-            fValue = MAX (fValue, MAX (fRight, fLeft));
+            fValue = MAX(fValue, MAX (fRight, fLeft));
             envelope[i] = fValue;
+
             fLeft = fRight;
             fCurrentLoc = fLastLocation;
-            iFirstGood = (int) (1+ fCurrentLoc);
+            iFirstGood = (int)(1+ fCurrentLoc);
         }
     }
     else if(fHopSize == 1)
@@ -95,7 +99,7 @@ int sms_spectralApprox(sfloat *pFSpec1, int sizeSpec1, int sizeSpec1Used,
     }
     else
     {
-        sms_error("SpectralApprox: sizeSpec1 has too many nCoefficients\n"); /* \todo need to increase the frequency? */
+        sms_error("SpectralApprox: sizeSpec1 has too many nCoefficients"); /* \todo need to increase the frequency? */
         return -1;
     }
 

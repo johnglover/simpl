@@ -500,6 +500,32 @@
     }
 }
 
+%extend SMS_ResidualParams
+{
+    void getResidual(int sizeArray, sfloat *pArray)
+    {
+        if(sizeArray < $self->residualSize)
+        {
+            sms_error("numpy array not big enough");
+            return;
+        }
+        int i;
+        for(i = 0; i < $self->residualSize; i++)
+            pArray[i] = $self->residual[i];
+    }
+    void getApprox(int sizeArray, sfloat *pArray)
+    {
+        if(sizeArray < $self->nCoeffs)
+        {
+            sms_error("numpy array not big enough");
+            return;
+        }
+        int i;
+        for(i = 0; i < $self->nCoeffs; i++)
+            pArray[i] = $self->approxEnvelope[i];
+    }
+}
+
 %extend SMS_ModifyParams
 {
     /* no need to return an error code, if sms_error is called, it will throw an exception in python */

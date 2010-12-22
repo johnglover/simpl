@@ -14,7 +14,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from basetypes import Peak, PeakDetection, Partial, PartialTracking, Synthesis, Residual
+from basetypes import Frame, Peak, Partial
+from basetypes import PeakDetection, PartialTracking, Synthesis, Residual
 from basetypes import compare_peak_amps, compare_peak_freqs
 from sndobj import SndObjPeakDetection, SndObjPartialTracking, SndObjSynthesis
 from sms import SMSPeakDetection, SMSPartialTracking, SMSSynthesis, SMSResidual

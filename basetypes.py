@@ -116,6 +116,26 @@ class Partial(object):
             yield peak
 
 
+class Frame(object):
+    """Represents a frame of audio information.
+    This can be: - raw audio samples 
+                 - an unordered list of sinusoidal peaks 
+                 - an ordered list of partials
+                 - synthesised audio samples
+                 - residual samples
+                 - synthesised residual samples"""
+    
+    def __init__(self):
+        self._size = 512
+        self._max_partials = 100
+        self.audio = None
+        self.peaks = None
+        self.partials = None
+        self.synth = None
+        self.residual = None
+        self.synth_residual = None
+
+
 class PeakDetection(object):
     "Detect spectral peaks"
     
@@ -128,7 +148,7 @@ class PeakDetection(object):
         self._window_type = "hamming"
         self._window_size = 2048
         self._min_peak_separation = 1.0 # in Hz
-        self.peaks = []
+        self.frames = []
         
     # properties
     sampling_rate = property(lambda self: self.get_sampling_rate(),
@@ -185,28 +205,32 @@ class PeakDetection(object):
 
     def find_peaks_in_frame(self, frame):
         "Find and return all spectral peaks in a given frame of audio"
-        current_peaks = []
-        return current_peaks
+        peaks = []
+        return peaks
         
     def find_peaks(self, audio):
         """Find and return all spectral peaks in a given audio signal.
         If the signal contains more than 1 frame worth of audio, it will be broken
         up into separate frames, with a list of peaks returned for each frame."""
-        self.peaks = []
+        self.frames = []
         pos = 0
         while pos < len(audio):
             # get the next frame size
             if not self._static_frame_size:
                 self.frame_size = self.get_next_frame_size()
             # get the next frame
-            frame = audio[pos:pos+self.frame_size]
+            frame = Frame()
+            frame.size = self.frame_size
+            frame.audio = audio[pos:pos+self.frame_size]
             # pad if necessary
-            if len(frame) < self.frame_size:
-                frame = np.hstack((frame, simpl.zeros(self.frame_size - len(frame))))
+            if len(frame.audio) < self.frame_size:
+                frame.audio = np.hstack((frame.audio, 
+                                         simpl.zeros(self.frame_size - len(frame.audio))))
             # find peaks
-            self.peaks.append(self.find_peaks_in_frame(frame))
+            frame.peaks = self.find_peaks_in_frame(frame)
+            self.frames.append(frame)
             pos += self.hop_size
-        return self.peaks
+        return self.frames
         
 
 class PartialTracking(object):
@@ -216,7 +240,7 @@ class PartialTracking(object):
         self._max_partials = 100
         self._min_partial_length = 0
         self._max_gap = 2
-        self.partials = [] # list of Partials
+        self.frames = []
         
     # properties
     sampling_rate = property(lambda self: self.get_sampling_rate(),
@@ -252,25 +276,18 @@ class PartialTracking(object):
     def set_max_gap(self, gap):
         self._max_gap = gap
         
-    def get_partial(self, id):
-        """Return the partial with partial_id = id. Returns None if no such
-        partial exists"""
-        for p in self.partials:
-            if p.partial_id == id:
-                return p
-        return None
-        
-    def update_partials(self, frame, frame_number):
+    def update_partials(self, frame):
         "Streamable (real-time) partial-tracking."
-        frame_partials = []
-        return frame_partials
+        peaks = [None for i in range(self.max_partials)]
+        return peaks
         
     def find_partials(self, frames):
-        """Creates tracks from the frames of peaks in self.peak_frames, 
-        stored in self.track_frames"""
-        for frame_number, frame in enumerate(frames):
-            self.update_partials(frame, frame_number)
-        return self.partials
+        """Find partials from the sinusoidal peaks in a list of Frames"""
+        self.frames = []
+        for frame in frames:
+            frame.partials = self.update_partials(frame)
+            self.frames.append(frame)
+        return self.frames
 
     
 class Synthesis(object):
@@ -317,34 +334,15 @@ class Synthesis(object):
     def set_sampling_rate(self, sampling_rate):
         self._sampling_rate = sampling_rate
 
-    def synth_frame(self, partials):
+    def synth_frame(self, frame):
         "Synthesises a frame of audio, given a list of peaks from tracks"
         raise Exception("NotYetImplemented")
         
-    def synth(self, partials):
+    def synth(self, frames):
         "Synthesise audio from the given partials"
         audio_out = simpl.array([])
-        # return an empty frame if there are no partials
-        if not partials:
-            return audio_out
-        current_partials = []
-        num_frames = max([partial.get_last_frame() for partial in partials])
-        # for each frame of audio
-        for frame_number in range(num_frames):
-            # get all partials that start on this frame, append to list of continuing partials
-            current_partials.extend([partial.list_peaks() for partial in partials if partial.starting_frame == frame_number])    
-            # get all peaks to be synthesised for this frame
-            current_peaks = []
-            for partial_number, partial in enumerate(current_partials):
-                try:
-                    current_peaks.append(partial.next())
-                except StopIteration:
-                    # End of partial. Set this partial to None, remove it from the list later
-                    current_partials[partial_number] = None
-            # synth frame
-            audio_out = np.hstack((audio_out, self.synth_frame(current_peaks)))
-            # remove any finished partials
-            current_partials = [partial for partial in current_partials if partial]
+        for frame in frames:
+            audio_out = np.hstack((audio_out, self.synth_frame(frame)))
         return audio_out
     
     
@@ -402,3 +400,4 @@ class Residual(object):
                                   self.synth_frame(synth_frame, original_frame)))
             sample_offset += self._hop_size
         return residual
+

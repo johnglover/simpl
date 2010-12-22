@@ -171,7 +171,7 @@ class SMSPeakDetection(simpl.PeakDetection):
     def find_peaks_in_frame(self, frame):
         "Find and return all spectral peaks in a given frame of audio"
         current_peaks = []
-        num_peaks = simplsms.sms_findPeaks(frame, 
+        num_peaks = simplsms.sms_findPeaks(frame.audio, 
                                            self._analysis_params, 
                                            self._peaks)
         if num_peaks > 0:
@@ -197,18 +197,21 @@ class SMSPeakDetection(simpl.PeakDetection):
         #       make sure the results are the same as with libsms. Make sure
         #       we have the same number of frames as the other algorithms.
         self._analysis_params.iSizeSound = len(audio)
-        self.peaks = []
+        self.frames = []
         pos = 0
         while pos < len(audio):
             # get the next frame size
             if not self._static_frame_size:
                 self.frame_size = self.get_next_frame_size()
             # get the next frame
-            frame = audio[pos:pos+self.frame_size]
+            frame = simpl.Frame()
+            frame.size = self.frame_size
+            frame.audio = audio[pos:pos+self.frame_size]
             # find peaks
-            self.peaks.append(self.find_peaks_in_frame(frame))
+            frame.peaks = self.find_peaks_in_frame(frame)
+            self.frames.append(frame)
             pos += self.frame_size
-        return self.peaks
+        return self.frames
     
 
 class SMSPartialTracking(simpl.PartialTracking):
@@ -226,20 +229,22 @@ class SMSPartialTracking(simpl.PartialTracking):
         self._analysis_params.minGoodFrames = 1
         self._analysis_params.iCleanTracks = 0
         self._analysis_params.iFormat = simplsms.SMS_FORMAT_HP
-        self._analysis_params.nTracks = self.max_partials
-        self._analysis_params.nGuides = self.max_partials
+        self._analysis_params.nTracks = self._max_partials
+        self._analysis_params.nGuides = self._max_partials
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
         self._sms_header = simplsms.SMS_Header()
         simplsms.sms_fillHeader(self._sms_header, self._analysis_params, "simpl")
         self._analysis_frame = simplsms.SMS_Data()
         simplsms.sms_allocFrameH(self._sms_header, self._analysis_frame)
-        self.live_partials = [None for i in range(self.max_partials)]
         
     def __del__(self):
         simplsms.sms_freeAnalysis(self._analysis_params)
         simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_free()
+
+    def get_max_partials(self):
+        return self._analysis_params.nTracks
         
     def set_max_partials(self, max_partials):
         simplsms.sms_freeAnalysis(self._analysis_params)
@@ -253,16 +258,15 @@ class SMSPartialTracking(simpl.PartialTracking):
         simplsms.sms_fillHeader(self._sms_header, self._analysis_params, "simpl")
         simplsms.sms_allocFrameH(self._sms_header, self._analysis_frame)
         
-    def update_partials(self, frame, frame_number):
+    def update_partials(self, frame):
         "Streamable (real-time) partial-tracking."
-        frame_partials = []
         # load Peak amplitudes, frequencies and phases into arrays
-        num_peaks = len(frame)
+        num_peaks = len(frame.peaks)
         amps = simpl.zeros(num_peaks)
         freqs = simpl.zeros(num_peaks)
         phases = simpl.zeros(num_peaks)
         for i in range(num_peaks):
-            peak = frame[i]
+            peak = frame.peaks[i]
             amps[i] = peak.amplitude
             freqs[i] = peak.frequency
             phases[i] = peak.phase
@@ -271,34 +275,20 @@ class SMSPartialTracking(simpl.PartialTracking):
         # SMS partial tracking
         simplsms.sms_findPartials(self._analysis_frame, self._analysis_params)
         # read values back into amps, freqs, phases
-        num_partials = self._analysis_frame.nTracks
-        amps = simpl.zeros(num_partials)
-        freqs = simpl.zeros(num_partials)
-        phases = simpl.zeros(num_partials)
+        amps = simpl.zeros(self.max_partials)
+        freqs = simpl.zeros(self.max_partials)
+        phases = simpl.zeros(self.max_partials)
         self._analysis_frame.getSinAmp(amps)
         self._analysis_frame.getSinFreq(freqs)
         self._analysis_frame.getSinPhase(phases)
-        # form simpl Partial objects
-        for i in range(num_partials):
-            # for each partial, if the mag is > 0, this partial is alive
-            if amps[i] > 0:
-                # create a peak object
-                p = simpl.Peak()
-                p.amplitude = amps[i]
-                p.frequency = freqs[i]
-                p.phase = phases[i]
-                # add this peak to the appropriate partial
-                if not self.live_partials[i]:
-                    self.live_partials[i] = simpl.Partial()
-                    self.live_partials[i].starting_frame = frame_number
-                    self.live_partials[i].partial_number = i
-                    self.partials.append(self.live_partials[i])
-                self.live_partials[i].add_peak(p)
-            # if the mag is 0 and this partial was alive, kill it
-            else:
-                if self.live_partials[i]:
-                    self.live_partials[i] = None
-        return frame_partials
+        peaks = []
+        for i in range(self.max_partials):
+            p = simpl.Peak()
+            p.amplitude = amps[i]
+            p.frequency = freqs[i]
+            p.phase = phases[i]
+            peaks.append(p)
+        return peaks
     
 
 class SMSSynthesis(simpl.Synthesis):
@@ -328,6 +318,8 @@ class SMSSynthesis(simpl.Synthesis):
     # properties
     synthesis_type = property(lambda self: self.get_synthesis_type(),
                               lambda self, x: self.set_synthesis_type(x))
+    det_synthesis_type = property(lambda self: self.get_det_synthesis_type(),
+                                  lambda self, x: self.set_det_synthesis_type(x))
     num_stochastic_coeffs = property(lambda self: self.get_num_stochastic_coeffs(),
                                      lambda self, x: self.set_num_stochastic_coeffs(x))
     stochastic_type = property(lambda self: self.get_stochastic_type(),
@@ -369,6 +361,12 @@ class SMSSynthesis(simpl.Synthesis):
     def set_synthesis_type(self, synthesis_type):
         self._synth_params.iSynthesisType = synthesis_type
     
+    def get_det_synthesis_type(self):
+        return self._synth_params.iDetSynthesisType
+    
+    def set_det_synthesis_type(self, det_synthesis_type):
+        self._synth_params.iDetSynthesisType = det_synthesis_type
+
     def get_num_stochastic_coeffs(self):
         return self._synth_params.nStochasticCoeff
     
@@ -401,18 +399,15 @@ class SMSSynthesis(simpl.Synthesis):
     def set_original_hop_size(self, hop_size):
         self._synth_params.origSizeHop = hop_size
 
-    def synth_frame(self, peaks):
-        "Synthesises a frame of audio, given a list of peaks from tracks"
+    def synth_frame(self, frame):
+        "Synthesises a frame of audio"
         amps = simpl.zeros(self.max_partials)
         freqs = simpl.zeros(self.max_partials)
         phases = simpl.zeros(self.max_partials)
-        for i in range(len(peaks)):
-            p = peaks[i].partial_number
-            if p < 0:
-                p = i
-            amps[p] = peaks[i].amplitude
-            freqs[p] = peaks[i].frequency
-            phases[p] = peaks[i].phase
+        for i in range(len(frame.partials)):
+            amps[i] = frame.partials[i].amplitude
+            freqs[i] = frame.partials[i].frequency
+            phases[i] = frame.partials[i].phase
         self._analysis_frame.setSinAmp(amps)
         self._analysis_frame.setSinFreq(freqs)
         self._analysis_frame.setSinPha(phases)

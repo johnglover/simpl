@@ -19,12 +19,12 @@ import matplotlib.pyplot as plt
 from scipy.io.wavfile import read
 
 input_file = '../tests/audio/flute.wav'
-audio_in_data = read(input_file)
-audio_in = simpl.asarray(audio_in_data[1]) / 32768.0  # values between -1 and 1
-sample_rate = audio_in_data[0]
+audio_data = read(input_file)
+audio = simpl.asarray(audio_data[1]) / 32768.0  # values between -1 and 1
+sample_rate = audio_data[0]
 
 # take just the first few frames
-audio = audio_in[0:4096]
+audio = audio[0:4096]
 # peak detection using the SndObj library
 pd = simpl.SndObjPeakDetection()
 pd.max_peaks = 20

@@ -14,6 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+import simpl
 import matplotlib.pyplot as plt
 import colours
 
@@ -26,63 +27,81 @@ def plot_frame_peaks(peaks):
         y_values.append(peak.amplitude)
     plt.plot(x_values, y_values, 'ro')
 
-#def _plot_frame_peaks(frame, frame_number, max_amp=0):
-#    "Plot one frame, which is a list of Peak objects"
-#    x_values = [frame_number for x in range(len(frame))]
-#    y_values = [int(peak.frequency) for peak in frame]
-#    plt.plot(x_values, y_values, 'ro')
-
-def _plot_frame_peaks(frame, frame_number, max_amp=0):
+def _plot_frame_peaks(peaks, frame_number, max_amp=0):
     "Plot one frame, which is a list of Peak objects"
-    for peak in frame:
+    for peak in peaks:
         plt.plot(frame_number, int(peak.frequency), linestyle="None",
                  marker="o", markersize=2, markeredgewidth=None,
                  markerfacecolor=colours.pbj(peak.amplitude/max_amp))
     
-def plot_peaks(peaks):
+def plot_peaks(frames):
     "Plot peaks found by a peak detection algorithm"
-    max_amp = max([max([p.amplitude for p in f if p]) for f in peaks if f])
-    for frame_number, frame in enumerate(peaks):
-        _plot_frame_peaks(frame, frame_number, max_amp)
+    # Get the maximum peak amplitude, used to select an appropriate
+    # colour for each peak.
+    max_amp = None
+    for frame in frames:
+        if frame.peaks:
+            max_amp = max(max_amp, max([p.amplitude for p in frame.peaks]))
+    # If no max amp then no peaks so return
+    if not max_amp:
+        print "Warning: no peaks to plot"
+        return
+
+    for frame_number, frame in enumerate(frames):
+        _plot_frame_peaks(frame.peaks, frame_number, max_amp)
         
-#def plot_partials(partials, show_peaks=True):
-#    "Plot partials created by a partial tracking algorithm"
-#    max_amp = max([max([peak.amplitude for peak in p.peaks if p.peaks])
-#                   for p in partials if p])
-#    num_frames = max([partial.get_last_frame() for partial in partials])
-
-#    peaks = [[] for f in range(num_frames)]
-#    for partial in partials:
-#        x_values = []
-#        y_values = []
-#        for peak_number, peak in enumerate(partial.peaks):
-#            x_values.append(partial.starting_frame + peak_number)
-#            y_values.append(int(peak.frequency))
-#            peaks[partial.starting_frame + peak_number].append(peak)
-#        plt.plot(x_values, y_values, "b")
-#    if show_peaks:
-#        plot_peaks(peaks)  
-
-def plot_partials(partials, show_peaks=False):
+def plot_partials(frames, show_peaks=False):
     "Plot partials created by a partial tracking algorithm"
-    max_amp = max([max([peak.amplitude for peak in p.peaks if p.peaks])
-                   for p in partials if p])
-    num_frames = max([partial.get_last_frame() for partial in partials])
+    # Get the maximum peak amplitude, used to select an appropriate
+    # colour for each peak.
+    max_amp = None
+    for frame in frames:
+        if frame.peaks:
+            max_amp = max(max_amp, max([p.amplitude for p in frame.peaks]))
+    # If no max amp then no peaks so return
+    if not max_amp:
+        print "Warning: no peaks to plot"
+        return
 
+    # Create Partial objects from frames
+    num_frames = len(frames)
+    partials = []
+    live_partials = [None for i in range(len(frames[0].partials))]
+    for n, f in enumerate(frames):
+        for i, p in enumerate(f.partials):
+            if p.amplitude > 0:
+                # active partial
+                if live_partials[i]:
+                    live_partials[i].add_peak(p)
+                else:
+                    partial = simpl.Partial()
+                    partial.starting_frame = n
+                    partial.add_peak(p)
+                    live_partials[i] = partial
+            else:
+                # currently dead
+                if live_partials[i]:
+                    partials.append(live_partials[i])
+                    live_partials[i] = None
+    for p in live_partials:
+        if p:
+            partials.append(p)
+    
     peaks = [[] for f in range(num_frames)]
     for partial in partials:
-        x_values = []
-        y_values = []
-        avg_amp = 0.0
-        num_peaks = 0
-        for peak_number, peak in enumerate(partial.peaks):
-            x_values.append(partial.starting_frame + peak_number)
-            y_values.append(int(peak.frequency))
-            avg_amp += peak.amplitude
-            num_peaks += 1
-            peaks[partial.starting_frame + peak_number].append(peak)
-        avg_amp /= num_peaks
-        plt.plot(x_values, y_values, color=colours.pbj(avg_amp/max_amp))
+       x_values = []
+       y_values = []
+       avg_amp = 0.0
+       num_peaks = 0
+       for peak_number, peak in enumerate(partial.peaks):
+           x_values.append(partial.starting_frame + peak_number)
+           y_values.append(int(peak.frequency))
+           avg_amp += peak.amplitude
+           num_peaks += 1
+           peaks[partial.starting_frame + peak_number].append(peak)
+       avg_amp /= num_peaks
+       plt.plot(x_values, y_values, color=colours.pbj(avg_amp/max_amp))
+
     if show_peaks:
-        plot_peaks(peaks)  
+        plot_peaks(frames)  
 

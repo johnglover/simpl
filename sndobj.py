@@ -75,8 +75,8 @@ class SndObjPeakDetection(simpl.PeakDetection):
         
     def find_peaks_in_frame(self, frame):
         "Find and return all spectral peaks in a given frame of audio"
-        current_peaks = []
-        self._input.PushIn(frame)
+        peaks = []
+        self._input.PushIn(frame.audio)
         self._input.DoProcess()
         self._ifgram.DoProcess()
         num_peaks_found = self._analysis.FindPeaks()
@@ -86,24 +86,24 @@ class SndObjPeakDetection(simpl.PeakDetection):
             p.amplitude = self._analysis.Output(i*3)
             p.frequency = self._analysis.Output((i*3)+1)
             p.phase = self._analysis.Output((i*3)+2)
-            if not current_peaks:
-                current_peaks.append(p)
+            if not peaks:
+                peaks.append(p)
             else:
-                if np.abs(p.frequency - current_peaks[-1].frequency) > self._min_peak_separation:
-                    current_peaks.append(p)
+                if np.abs(p.frequency - peaks[-1].frequency) > self._min_peak_separation:
+                    peaks.append(p)
                 else:
-                    if p.amplitude > current_peaks[-1].amplitude:
-                        current_peaks.remove(current_peaks[-1])
-                        current_peaks.append(p)
-        return current_peaks
+                    if p.amplitude > peaks[-1].amplitude:
+                        peaks.remove(peaks[-1])
+                        peaks.append(p)
+        return peaks
     
 
 class SndObjPartialTracking(simpl.PartialTracking):
     "Partial tracking using the algorithm from the Sound Object Library"
     def __init__(self):
         simpl.PartialTracking.__init__(self)
-        self._threshold = 0.003 # todo: property
-        self._num_bins = 1025 # todo: property
+        self._threshold = 0.003 # TODO: make this a property
+        self._num_bins = 1025 # TODO: make this a property
         self._analysis = simplsndobj.SinAnal(simplsndobj.SndObj(), self._num_bins,
                                              self._threshold, self.max_partials)
         
@@ -111,16 +111,16 @@ class SndObjPartialTracking(simpl.PartialTracking):
         self._analysis.Set("max tracks", num_partials)
         self._max_partials = num_partials
              
-    def update_partials(self, frame, frame_number):
+    def update_partials(self, frame):
         "Streamable (real-time) partial-tracking."
-        frame_partials = []
+        partials = []
         # load Peak amplitudes, frequencies and phases into arrays
-        num_peaks = len(frame)
+        num_peaks = len(frame.peaks)
         amps = simpl.zeros(num_peaks)
         freqs = simpl.zeros(num_peaks)
         phases = simpl.zeros(num_peaks)
         for i in range(num_peaks):
-            peak = frame[i]
+            peak = frame.peaks[i]
             amps[i] = peak.amplitude
             freqs[i] = peak.frequency
             phases[i] = peak.phase
@@ -135,18 +135,8 @@ class SndObjPartialTracking(simpl.PartialTracking):
             peak.amplitude = self._analysis.Output(i*3)
             peak.frequency = self._analysis.Output((i*3)+1)
             peak.phase = self._analysis.Output((i*3)+2)
-            id = self._analysis.GetTrackID(i)
-            # if this is a continuing partial, create a peak and append it
-            if id >= 0 and id <= len(self.partials) - 1:
-                self.partials[id].add_peak(peak)
-            # if not, make a new partial
-            else:
-                partial = simpl.Partial()
-                partial.starting_frame = frame_number
-                partial.add_peak(peak)
-                self.partials.append(partial)
-            frame_partials.append(peak)
-        return frame_partials
+            partials.append(peak)
+        return partials
     
                 
 class SimplSndObjAnalysisWrapper(simplsndobj.SinAnal):

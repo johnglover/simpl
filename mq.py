@@ -144,7 +144,7 @@ class MQPeakDetection(simpl.PeakDetection):
         self._max_peaks peaks."""
         self._current_peaks = []        
         # fft of frame
-        f = np.fft.rfft(frame * self._window)
+        f = np.fft.rfft(frame.audio * self._window)
         spectrum = abs(f)
         # find all peaks in the spectrum
         prev_mag = np.abs(spectrum[0])

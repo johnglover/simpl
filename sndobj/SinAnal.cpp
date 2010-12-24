@@ -57,14 +57,14 @@ SinAnal::SinAnal(SndObj* input, double threshold, int maxtracks,
 	m_numpeaks = 0;
 	m_numbins = ((FFT *)m_input)->GetFFTSize()/2 + 1;
 	
-	m_bndx = new double*[minpoints+2];
-	m_pkmags = new double*[minpoints+2];
-	m_adthresh = new double*[minpoints+2];
-	m_tstart = new unsigned int*[minpoints+2];
-	m_lastpk = new unsigned int*[minpoints+2];
-	m_trkid = new unsigned int*[minpoints+2];
+	m_bndx = new double*[m_minpoints+2];
+	m_pkmags = new double*[m_minpoints+2];
+	m_adthresh = new double*[m_minpoints+2];
+	m_tstart = new unsigned int*[m_minpoints+2];
+	m_lastpk = new unsigned int*[m_minpoints+2];
+	m_trkid = new unsigned int*[m_minpoints+2];
 	int i;
-	for(i = 0; i < minpoints+2; i++){
+	for(i = 0; i < m_minpoints+2; i++){
 		m_bndx[i] = new double[m_maxtracks];
 		memset(m_bndx[i], 0, sizeof(double) * m_maxtracks);
 		m_pkmags[i] = new double[m_maxtracks];
@@ -129,20 +129,20 @@ SinAnal::SinAnal(SndObj* input, int numbins, double threshold, int maxtracks,
 	m_numpeaks = 0;
 	m_numbins = numbins;
 
-	m_bndx = new double*[minpoints+2];
-	m_pkmags = new double*[minpoints+2];
-	m_adthresh = new double*[minpoints+2];
-	m_tstart = new unsigned int*[minpoints+2];
-	m_lastpk = new unsigned int*[minpoints+2];
-	m_trkid = new unsigned int*[minpoints+2];
+	m_bndx = new double*[m_minpoints+2];
+	m_pkmags = new double*[m_minpoints+2];
+	m_adthresh = new double*[m_minpoints+2];
+	m_tstart = new unsigned int*[m_minpoints+2];
+	m_lastpk = new unsigned int*[m_minpoints+2];
+	m_trkid = new unsigned int*[m_minpoints+2];
 	int i;
-	for(i=0; i<minpoints+2; i++){
+	for(i = 0; i < m_minpoints+2; i++){
 		m_bndx[i] = new double[m_maxtracks];
 		memset(m_bndx[i], 0, sizeof(double) * m_maxtracks);
 		m_pkmags[i] = new double[m_maxtracks];
 		memset(m_pkmags[i], 0, sizeof(double) * m_maxtracks);
 		m_adthresh[i] = new double[m_maxtracks];
-		memset(m_pkmags[i], 0, sizeof(double) * m_maxtracks);
+		memset(m_adthresh[i], 0, sizeof(double) * m_maxtracks);
 		m_tstart[i] = new unsigned int[m_maxtracks];
         memset(m_tstart[i], 0, sizeof(unsigned int) * m_maxtracks);
 		m_lastpk[i] = new unsigned int[m_maxtracks];
@@ -189,69 +189,97 @@ SinAnal::SinAnal(SndObj* input, int numbins, double threshold, int maxtracks,
 }
 
 SinAnal::~SinAnal(){
-	delete[] m_phases;
-	delete[] m_freqs;
-	delete[] m_mags;
-	delete[] m_binmax;
-	delete[] m_magmax;
-	delete[] m_diffs;
-	delete[] m_maxix;
-	delete[] m_bndx;  
-	delete[] m_pkmags;  
-	delete[] m_adthresh; 
-	delete[] m_tstart; 
-	delete[] m_lastpk; 
-	delete[] m_trkid;  
-	delete[] m_trndx;
-	delete[] m_contflag;
-	delete[] m_bins;
+    if(m_numbins){
+        int i;
+        for(i = 0; i < m_minpoints+2; i++){
+            delete [] m_bndx[i];
+            delete [] m_pkmags[i];
+            delete [] m_adthresh[i];
+            delete [] m_tstart[i];
+            delete [] m_lastpk[i];
+            delete [] m_trkid[i];
+        }
+    }
+
+	if(m_bndx) delete[] m_bndx;  
+	if(m_pkmags) delete[] m_pkmags;  
+	if(m_adthresh) delete[] m_adthresh; 
+	if(m_tstart) delete[] m_tstart; 
+	if(m_lastpk) delete[] m_lastpk; 
+	if(m_trkid) delete[] m_trkid;  
+	if(m_bins) delete[] m_bins;
+	if(m_trndx) delete[] m_trndx;
+	if(m_contflag) delete[] m_contflag;
+
+	if(m_phases) delete[] m_phases;
+	if(m_freqs) delete[] m_freqs;
+	if(m_mags) delete[] m_mags;
+	if(m_binmax) delete[] m_binmax;
+	if(m_magmax) delete[] m_magmax;
+	if(m_diffs) delete[] m_diffs;
+	if(m_maxix) delete[] m_maxix;
 }
 
 void
 SinAnal::SetMaxTracks(int maxtracks){
+    if(m_numbins){
+        int i;
+        for(i = 0; i < m_minpoints+2; i++){
+            delete [] m_bndx[i];
+            delete [] m_pkmags[i];
+            delete [] m_adthresh[i];
+            delete [] m_tstart[i];
+            delete [] m_lastpk[i];
+            delete [] m_trkid[i];
+        }
+    }
+
+	if(m_bndx) delete[] m_bndx;  
+	if(m_pkmags) delete[] m_pkmags;  
+	if(m_adthresh) delete[] m_adthresh; 
+	if(m_tstart) delete[] m_tstart; 
+	if(m_lastpk) delete[] m_lastpk; 
+	if(m_trkid) delete[] m_trkid;  
+	if(m_bins) delete[] m_bins;
+	if(m_trndx) delete[] m_trndx;
+	if(m_contflag) delete[] m_contflag;
+
 	m_maxtracks = maxtracks;
-	
-	if(m_numbins){
-		delete[] m_bndx;  
-		delete[] m_pkmags;  
-		delete[] m_adthresh;  
-		delete[] m_trndx;
-		delete[] m_contflag;
-		delete[] m_bins;
-	}
-	
-	m_contflag = new bool[m_maxtracks];
 	m_bins = new double[m_maxtracks];
+	memset(m_bins, 0, sizeof(double) * m_maxtracks);
 	m_trndx = new int[m_maxtracks];
-	m_prev = m_minpoints+1; m_cur = 0;
-	m_bndx = new double*[2];
-	m_pkmags = new double*[2];
-	m_adthresh = new double*[2];
-	m_tstart = new unsigned int*[2];
-	m_lastpk = new unsigned int*[2];
-	m_trkid = new unsigned int*[2];
+	memset(m_trndx, 0, sizeof(int) * m_maxtracks);
+	m_contflag = new bool[m_maxtracks];
+	memset(m_contflag, 0, sizeof(bool) * m_maxtracks);
+
+	m_prev = 1; 
+    m_cur = 0;
+	m_bndx = new double*[m_minpoints+2];
+	m_pkmags = new double*[m_minpoints+2];
+	m_adthresh = new double*[m_minpoints+2];
+	m_tstart = new unsigned int*[m_minpoints+2];
+	m_lastpk = new unsigned int*[m_minpoints+2];
+	m_trkid = new unsigned int*[m_minpoints+2];
 	int i;
-	for(i=0; i<m_minpoints+2; i++){
+	for(i = 0; i < m_minpoints+2; i++){
         m_bndx[i] = new double[m_maxtracks];
-		memset(m_bndx[i],0,sizeof(double)*m_maxtracks);
+		memset(m_bndx[i], 0, sizeof(double) * m_maxtracks);
 		m_pkmags[i] = new double[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
+		memset(m_pkmags[i], 0, sizeof(double) * m_maxtracks);
 		m_adthresh[i] = new double[m_maxtracks];
-		memset(m_pkmags[i],0,sizeof(double)*m_maxtracks);
+		memset(m_adthresh[i], 0, sizeof(double) * m_maxtracks);
 		m_tstart[i] = new unsigned int[m_maxtracks];
-        memset(m_tstart[i],0,sizeof(unsigned int)*m_maxtracks);
+        memset(m_tstart[i], 0, sizeof(unsigned int) * m_maxtracks);
 		m_lastpk[i] = new unsigned int[m_maxtracks];
-        memset(m_lastpk[i],0,sizeof(unsigned int)*m_maxtracks);
+        memset(m_lastpk[i], 0, sizeof(unsigned int) * m_maxtracks);
 		m_trkid[i] = new unsigned int[m_maxtracks];
-        memset(m_trkid[i],0,sizeof(unsigned int)*m_maxtracks);
-		
+        memset(m_trkid[i], 0, sizeof(unsigned int) * m_maxtracks);
 	}
 	for(i = 0; i < m_maxtracks; i++)
 		m_pkmags[m_prev][i] = m_bndx[m_prev][i] = m_adthresh[m_prev][i] = 0.f;
 	
 	SetVectorSize(m_maxtracks*3);
 }
-
 
 void
 SinAnal::SetIFGram(SndObj* input){
@@ -281,8 +309,6 @@ SinAnal::SetIFGram(SndObj* input){
 	m_phases[m_numbins-1] = 0.f;
 	m_freqs[m_numbins-1] = m_sr/2;
 }
-
-
 
 int
 SinAnal::Set(char* mess, double value){
@@ -473,36 +499,35 @@ SinAnal::PartialTracking(){
 			for(i=0; i < m_numbins; i++)
 				if(m_diffs[i] < m_diffs[bestix]) bestix = i;
 
-				// if difference smaller than 1 bin
-				double tempf = F -  m_binmax[bestix];
-				tempf = (tempf < 0 ? -tempf : tempf);
-				if(tempf < 1.){
-					// if amp jump is too great (check)
-					if(m_adthresh[m_prev][j] <
-						(dbstep = 20*log10(m_magmax[bestix]/m_pkmags[m_prev][j]))){
-						// mark for discontinuation;
-						m_contflag[j] = false;
-					}
-					else {
-						m_bndx[m_prev][j] = m_binmax[bestix];
-						m_pkmags[m_prev][j] = m_magmax[bestix];
-						// track index keeps track history
-						// so we know which ones continue
-						m_contflag[j] = true;
-						m_binmax[bestix] = m_magmax[bestix] = 0.f;
-						m_lastpk[m_prev][j] = m_timecount;
-						foundcont = 1;
-						count++;
+            // if difference smaller than 1 bin
+            double tempf = F -  m_binmax[bestix];
+            tempf = (tempf < 0 ? -tempf : tempf);
+            if(tempf < 1.){
+                // if amp jump is too great (check)
+                if(m_adthresh[m_prev][j] <
+                    (dbstep = 20*log10(m_magmax[bestix]/m_pkmags[m_prev][j]))){
+                    // mark for discontinuation;
+                    m_contflag[j] = false;
+                }
+                else{
+                    m_bndx[m_prev][j] = m_binmax[bestix];
+                    m_pkmags[m_prev][j] = m_magmax[bestix];
+                    // track index keeps track history
+                    // so we know which ones continue
+                    m_contflag[j] = true;
+                    m_binmax[bestix] = m_magmax[bestix] = 0.f;
+                    m_lastpk[m_prev][j] = m_timecount;
+                    foundcont = 1;
+                    count++;
 
-						// update the adaptive mag threshold
-						double tmp1 = dbstep*1.5f;
-						double tmp2 = m_adthresh[m_prev][j] -
-							(m_adthresh[m_prev][j] - 1.5f)*0.048770575f;
-						m_adthresh[m_prev][j] = (tmp1 > tmp2 ? tmp1 : tmp2);
-					}  // else
-				} // if difference
-				// if check
-		}
+                    // update the adaptive mag threshold
+                    double tmp1 = dbstep*1.5f;
+                    double tmp2 = m_adthresh[m_prev][j] -
+                        (m_adthresh[m_prev][j] - 1.5f)*0.048770575f;
+                    m_adthresh[m_prev][j] = (tmp1 > tmp2 ? tmp1 : tmp2);
+                }  // else
+            } // if difference
+		} // if check
 
 		// if we did not find a continuation
 		// we'll check if the magnitudes around it are below
@@ -511,17 +536,14 @@ SinAnal::PartialTracking(){
 		// old
 		if(!foundcont){
 			if((exp(m_mags[int(m_bndx[m_prev][j]+0.5)]) < 0.2*m_pkmags[m_prev][j])
-				|| ((m_timecount - m_lastpk[m_prev][j]) > (unsigned int) m_maxgap))
-			{
+				|| ((m_timecount - m_lastpk[m_prev][j]) > (unsigned int) m_maxgap)){
 				m_contflag[j] = false;
-
-			} else {
+			} 
+            else{
                 m_contflag[j] = true;
                 count++;
 			}
-
 		}
-
 	} // for loop
 
 	// compress the arrays
@@ -544,9 +566,9 @@ SinAnal::PartialTracking(){
 		// create new tracks for all new peaks
 		for(j=0; j< m_numbins && count < m_maxtracks; j++){
 			if(m_magmax[j] > m_startupThresh){
-				m_bndx[m_cur][count] = m_binmax[j];
-				m_pkmags[m_cur][count] = m_magmax[j];
-				m_adthresh[m_cur][count] = 400.f;
+                m_bndx[m_cur][count] = m_binmax[j];
+                m_pkmags[m_cur][count] = m_magmax[j];
+                m_adthresh[m_cur][count] = 400.f;
 				// track ID is a positive number in the
 				// range of 0 - maxtracks*3 - 1
 				// it is given when the track starts
@@ -567,16 +589,15 @@ SinAnal::PartialTracking(){
 	// count is the number of continuing tracks + new tracks
 	// now we check for tracks that have been there for more
 	// than minpoints hop periods and output them
-
 	m_tracks = 0;
 	for(i=0; i < count; i++){
 		int curpos = m_timecount-m_minpoints;
 		if(curpos >= 0 && m_tstart[m_cur][i] <= (unsigned int)curpos){
 			int tpoint = m_cur-m_minpoints;
-
-			if(tpoint < 0) {
+			if(tpoint < 0){
 				tpoint += m_minpoints+2;
 			}
+
 			m_bins[i] = m_bndx[tpoint][i];
 			m_mags[i] = m_pkmags[tpoint][i];
 			m_trndx[i] = m_trkid[tpoint][i];
@@ -586,9 +607,8 @@ SinAnal::PartialTracking(){
 
 	// end track-selecting
 	// current arrays become previous
-    //int tmp = m_prev;
-	m_prev = m_cur;
-	m_cur = (m_cur < m_minpoints+1 ? m_cur+1 : 0);
+    m_prev = m_cur;
+    m_cur = (m_cur < m_minpoints+1 ? m_cur+1 : 0);
 	m_timecount++;
 
 	// Output

@@ -322,6 +322,7 @@ class MQSynthesis(simpl.Synthesis):
     def __init__(self):
         simpl.Synthesis.__init__(self)
         self._current_frame = simpl.zeros(self.frame_size)
+        self._previous_partials = [simpl.Peak() for i in range(self.max_partials)]
 
     def hz_to_radians(self, frequency):
         if not frequency:
@@ -329,24 +330,23 @@ class MQSynthesis(simpl.Synthesis):
         else:
             return (frequency * 2.0 * np.pi) / self.sampling_rate
     
-    def synth_frame(self, peaks):
+    def synth_frame(self, frame):
         "Synthesises a frame of audio, given a list of peaks from tracks"
         self._current_frame *= 0.0
 
-        for p in peaks:
+        for n, p in enumerate(frame.partials):
             # get values for last amplitude, frequency and phase
             # these are the initial values of the instantaneous amplitude/frequency/phase
             current_freq = self.hz_to_radians(p.frequency)
-            if not p.previous_peak:
-                prev_amp = 0.0
+            prev_amp = self._previous_partials[n].amplitude
+            if prev_amp == 0:
                 prev_freq = current_freq 
                 prev_phase = p.phase - (current_freq * self.frame_size)
                 while prev_phase >= np.pi: prev_phase -= 2.0 * np.pi 
                 while prev_phase < -np.pi: prev_phase += 2.0 * np.pi
             else:
-                prev_amp = p.previous_peak.amplitude
-                prev_freq = self.hz_to_radians(p.previous_peak.frequency)
-                prev_phase = p.previous_peak.phase
+                prev_freq = self.hz_to_radians(self._previous_partials[n].frequency)
+                prev_phase = self._previous_partials[n].phase
 
             # amplitudes are linearly interpolated between frames
             inst_amp = prev_amp
@@ -367,6 +367,9 @@ class MQSynthesis(simpl.Synthesis):
                 inst_amp += amp_inc
                 inst_phase = prev_phase + (prev_freq * i) + (alpha * (i**2)) + (beta * (i**3))
                 self._current_frame[i] += (2.0 * inst_amp) * np.cos(inst_phase)
+
+            # update previous partials list
+            self._previous_partials[n] = p
 
         return self._current_frame
 

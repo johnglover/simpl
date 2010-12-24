@@ -1,5 +1,6 @@
 Sinusoidal Modelling - A Python Library (SiMPL)
-Version 0.1
+Version 0.2 (first released in December 2010)
+
 Copyright (c) 2009 John Glover, National University of Ireland, Maynooth
 http://simplsound.sourceforge.net
 john.c.glover@nuim.ie
@@ -100,8 +101,6 @@ sndobj:
 - create properties for threshold and num_bins in SndObjPartialTracking class
 - make sndobjs use self.sampling_rate
 - make peak detection use the new window_size property
-- add partial_number to partials in the PartialTracking.update_partial function, as in
-SMS
 
 sms:
 - can sms_scaleDet be moved to the harmonic analysis phase?

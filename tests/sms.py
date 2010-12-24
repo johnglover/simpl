@@ -1144,7 +1144,6 @@ class TestSimplSMS(object):
     def test_residual_synthesis(self):
         """test_residual_synthesis
         Compare pysms residual signal with SMS residual""" 
-        return
         audio, sampling_rate = self.get_audio()
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()

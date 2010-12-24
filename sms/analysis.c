@@ -197,7 +197,7 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
             if(i < pSpectralPeaks->nPeaksFound)
             {
                 pSpectralPeaks->pSpectralPeaks[i].fMag = 
-                    pow(10.0, 0.05*(pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag));
+                    sms_dBToMag(pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag);
                 pSpectralPeaks->pSpectralPeaks[i].fFreq = 
                     pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fFreq;
                 pSpectralPeaks->pSpectralPeaks[i].fPhase = 
@@ -210,6 +210,7 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
                 pSpectralPeaks->pSpectralPeaks[i].fPhase = 0.0;
             }
         }
+        /*printf("\n");*/
         return pSpectralPeaks->nPeaks;
     }
     else
@@ -243,7 +244,7 @@ void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, sfloat* amps,
     for(i = 0; i < numamps; i++)
     {
         /* copy current peaks data */
-        frame->pSpectralPeaks[i].fMag = 20.0 * log10(amps[i]);
+        frame->pSpectralPeaks[i].fMag = sms_magToDB(amps[i]);
         frame->pSpectralPeaks[i].fFreq = freqs[i];
         frame->pSpectralPeaks[i].fPhase = phases[i];
     }
@@ -515,7 +516,7 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
         for(i = 0; i < numTracks; i++)
         {
             pSmsData->pFSinFreq[i] = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fFreq;
-            pSmsData->pFSinAmp[i] = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag;
+            pSmsData->pFSinAmp[i] = sms_dBToMag(pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag);
             if(pAnalParams->iFormat == SMS_FORMAT_HP ||
                pAnalParams->iFormat == SMS_FORMAT_IHP)
             {

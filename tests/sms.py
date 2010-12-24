@@ -502,7 +502,7 @@ class TestSimplSMS(object):
                 if simplsms_amps[i]:
                     p = simpl.Peak()
                     # convert amplitude back to linear
-                    p.amplitude = 10**(simplsms_amps[i]/20.0)
+                    p.amplitude = simplsms_amps[i]
                     p.frequency = simplsms_freqs[i]
                     p.phase = simplsms_phases[i]
                     frame_peaks.append(p)

@@ -144,31 +144,31 @@ class SimplSndObjAnalysisWrapper(simplsndobj.SinAnal):
     data to the SndObj synthesis objects."""
     def __init__(self):
         simplsndobj.SinAnal.__init__(self)
-        self.peaks = []
+        self.partials = []
         
     def GetTracks(self):
-        return len(self.peaks)
+        return len(self.partials)
 
     def GetTrackID(self, partial_number):
-        if partial_number < len(self.peaks):
-            return self.peaks[partial_number].partial_id
+        if partial_number < len(self.partials):
+            return partial_number
         else:
             # TODO: what should this return if no matching partial found?
             return 0
         
     def Output(self, position):
         peak = int(position) / 3
-        if peak > len(self.peaks):
+        if peak > len(self.partials):
             # TODO: what should this return if no matching partial found?
             return 0.0
 
         data_field = int(position) % 3
         if data_field is 0:
-            return self.peaks[peak].amplitude
+            return self.partials[peak].amplitude
         elif data_field is 1:
-            return self.peaks[peak].frequency
+            return self.partials[peak].frequency
         elif data_field is 2:
-            return self.peaks[peak].phase
+            return self.partials[peak].phase
         
         
 class SndObjSynthesis(simpl.Synthesis):
@@ -196,11 +196,11 @@ class SndObjSynthesis(simpl.Synthesis):
         self._synth.Set('max tracks', num_partials)
         self._max_partials = num_partials
         
-    def synth_frame(self, peaks):
+    def synth_frame(self, frame):
         "Synthesises a frame of audio, given a list of peaks from tracks"
-        self._analysis.peaks = peaks
-        if len(peaks) > self._max_partials:
-            self.max_partials = len(peaks)
+        self._analysis.partials = frame.partials
+        if len(frame.partials) > self._max_partials:
+            self.max_partials = len(frame.partials)
         self._synth.DoProcess()
         self._synth.PopOut(self._current_frame)
         return self._current_frame

@@ -33,7 +33,6 @@ pt = simpl.MQPartialTracking()
 pt.max_partials = 20
 partials = pt.find_partials(peaks)
 synth = simpl.SndObjSynthesis()
-
 audio_out = synth.synth(partials)
 audio_out = np.asarray(audio_out * 32768, np.int16)
 write(output_file, 44100, audio_out)

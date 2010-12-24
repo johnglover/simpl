@@ -206,15 +206,24 @@ class MQPartialTracking(simpl.PartialTracking):
                 return None
         return None
     
-    def _kill_track(self, peak, next_frame):
-        """When a track dies it is matched to itself in the next frame, with 0 amplitude."""
+    def _kill_partial(self, partials, peak):
+        """When a partial dies it is matched to itself in the next frame, with 0 amplitude."""
         if peak.is_free():  # this may be a 0 amp (dead) peak from a previous tracking step
             next_peak = simpl.Peak()
-            next_peak.amplitude = 0
+            next_peak.amplitude = 0.0
             next_peak.frequency = peak.frequency
-            self.get_partial(peak.partial_id).add_peak(next_peak)
-        
-    def update_partials(self, frame, frame_number):
+            self._extend_partial(partials, peak, next_peak)
+            #self.get_partial(peak.partial_id).add_peak(next_peak)
+
+    def _extend_partial(self, partials, prev_peak, next_peak):
+        """Sets next_peak to be the next sinusoidal peak in the partial
+        that currently ends with prev_peak."""
+        partials[prev_peak.partial_id] = next_peak
+        prev_peak.next_peak = next_peak
+        next_peak.previous_peak = prev_peak
+        next_peak.partial_id = prev_peak.partial_id
+
+    def update_partials(self, frame):
         """Streamable (real-time) MQ peak-tracking.
         
         1. If there is no peak within the matching interval, the track dies.
@@ -232,56 +241,81 @@ class MQPartialTracking(simpl.PartialTracking):
         3. Once all peaks from the current frame have been matched, there may still be
         peaks remaining in the next frame. A new peak is created in the current frame
         at the same frequency and with 0 amplitude, and a match is made."""
-        frame_partials = []
-        # MQ algorithm needs 2 frames of data, so return if this is the first frame
+        partials = [None for i in range(self.max_partials)]
+        # MQ algorithm needs 2 frames of data, so create new partials and
+        # return if this is the first frame
         if not self._current_frame:
             self._current_frame = frame
-            return frame_partials
+            # if more peaks than paritals, select the max_partials largest 
+            # amplitude peaks in frame
+            if len(frame.peaks) > self.max_partials:
+                frame.peaks.sort(cmp=simpl.compare_peak_amps)   
+                frame.peaks.reverse()
+                partials = frame.peaks[0:self.max_partials]
+            # if not, save all peaks as new partials, and add a few zero
+            # peaks if necessary
+            else:
+                partials = frame.peaks
+                for i in range(len(frame.peaks), self.max_partials):
+                    partials.append(simpl.Peak())
+            # give the new partials a partial ID
+            for i in range(self.max_partials):
+                partials[i].partial_id = i
+            return partials
                 
-        for peak in self._current_frame:
-            if peak.is_start_of_partial():
-                partial = simpl.Partial()
-                partial.starting_frame = frame_number
-                partial.add_peak(peak)
-                self.partials.append(partial)
-            match = self._find_closest_match(peak, frame)
+        for peak in self._current_frame.partials:
+            match = self._find_closest_match(peak, frame.peaks)
             if match:
                 # is this match closer to any of the other unmatched peaks in frame?
-                closest_to_candidate = self._find_closest_match(match, self._current_frame, 'forwards')
+                closest_to_candidate = self._find_closest_match(match, self._current_frame.partials, 'forwards')
                 if not closest_to_candidate == peak:
                     # see if the closest peak with lower frequency to the candidate is within
                     # the matching interval
-                    lower_peak = self._get_free_peak_below(match, frame)
+                    lower_peak = self._get_free_peak_below(match, frame.peaks)
                     if lower_peak:
                         if abs(lower_peak.frequency - peak.frequency) < self._matching_interval:
                             # this is the definitive match
-                            self.get_partial(peak.partial_id).add_peak(lower_peak)
+                            #self.get_partial(peak.partial_id).add_peak(lower_peak)
+                            self._extend_partial(partials, peak, lower_peak)
                         else:
-                            self._kill_track(peak, frame)
+                            self._kill_partial(partials, peak)
                     else:
-                        self._kill_track(peak, frame)
+                        self._kill_partial(partials, peak)
                 # if not, it is a definitive match
                 else:
-                    self.get_partial(peak.partial_id).add_peak(match)
+                    #self.get_partial(peak.partial_id).add_peak(match)
+                    self._extend_partial(partials, peak, match)
             else:  # no match
-                self._kill_track(peak, frame)
+                self._kill_partial(partials, peak)
                 
         # now that all peaks in the current frame have been matched, look for any 
         # unmatched peaks in the next frame
-        for p in frame:
+        for p in frame.peaks:
             if not p.previous_peak:
-                # create a new track by adding a peak in the current frame, matched to p,
-                # with amplitude 0
-                partial = simpl.Partial()
-                partial.starting_frame = frame_number
-                new_peak = simpl.Peak()
-                new_peak.amplitude = 0
-                new_peak.frequency = p.frequency
-                partial.add_peak(new_peak)
-                partial.add_peak(p)
-                self.partials.append(partial)
+                # look for a free partial ID in the current partials
+                free_partial = None
+                for i in range(self.max_partials):
+                    if not partials[i]:
+                        free_partial = i
+                        break
+                if free_partial:
+                    # create a new track by adding a peak in the current frame, 
+                    # matched to p, with amplitude 0
+                    new_peak = simpl.Peak()
+                    new_peak.frequency = p.frequency
+                    new_peak.partial_id = free_partial
+                    #partial.add_peak(new_peak)
+                    #partial.add_peak(p)
+                    self._extend_partial(partials, new_peak, p)
+
+        # add zero peaks for any remaining free partials
+        for i in range(self.max_partials):
+            if not partials[i]:
+                p = simpl.Peak()
+                p.partial_id = i
+                partials[i] = p
         self._current_frame = frame        
-        return frame_partials
+        return partials
 
 
 class MQSynthesis(simpl.Synthesis):

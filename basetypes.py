@@ -20,9 +20,9 @@ import numpy as np
 class Peak(object):
     "A spectral peak"
     def __init__(self):
-        self.amplitude = 0
-        self.frequency = 0
-        self.phase = 0
+        self.amplitude = 0.0
+        self.frequency = 0.0
+        self.phase = 0.0
         self.next_peak = None
         self.previous_peak = None
         self.partial_id = None

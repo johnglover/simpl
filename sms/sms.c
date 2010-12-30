@@ -912,7 +912,7 @@ sfloat sms_magToDB(sfloat x)
         return 0.0;
     else
         //return(20. * log10(x * inv_mag_thresh));
-        return(TWENTY_OVER_LOG10 * log(x * inv_mag_thresh));
+        return TWENTY_OVER_LOG10 * log(x * inv_mag_thresh);
         /*return(TWENTY_OVER_LOG10 * log(x));*/
 }
 
@@ -926,7 +926,7 @@ sfloat sms_dBToMag(sfloat x)
     if(x < 0.00001)
         return 0.0;
     else
-        return(mag_thresh * pow(10., x*0.05));
+        return mag_thresh * pow(10., x*0.05);
         /*return pow(10.0, x*0.05);*/
 }
 

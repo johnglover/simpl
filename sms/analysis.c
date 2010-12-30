@@ -517,8 +517,7 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
         {
             pSmsData->pFSinFreq[i] = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fFreq;
             pSmsData->pFSinAmp[i] = sms_dBToMag(pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag);
-            if(pAnalParams->iFormat == SMS_FORMAT_HP ||
-               pAnalParams->iFormat == SMS_FORMAT_IHP)
+            if(pAnalParams->iFormat == SMS_FORMAT_HP || pAnalParams->iFormat == SMS_FORMAT_IHP)
             {
                 pSmsData->pFSinPha[i] = pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fPhase;
             }
@@ -538,8 +537,7 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
 
         /* convert mags back to linear */
         sms_arrayDBToMag(pSmsData->nTracks, pSmsData->pFSinAmp);
-        if(pAnalParams->iFormat == SMS_FORMAT_HP ||
-           pAnalParams->iFormat == SMS_FORMAT_IHP)
+        if(pAnalParams->iFormat == SMS_FORMAT_HP || pAnalParams->iFormat == SMS_FORMAT_IHP)
             memcpy((char *) pSmsData->pFSinPha, (char *)
                    pAnalParams->ppFrames[0]->deterministic.pFSinPha, length);
 

@@ -175,20 +175,19 @@ void sms_approxResidual(SMS_ResidualParams *residualParams)
     /* get energy of spectrum  */
     int i;
     sfloat fMag = 0.0;
-    /*for(i = 0; i < pAnalParams->sizeStocMagSpectrum; i++)*/
-    /*    fMag += (pAnalParams->stocMagSpectrum[i] * pAnalParams->stocMagSpectrum[i]);*/
+    for(i = 0; i < residualParams->sizeStocMagSpectrum; i++)
+        fMag += (residualParams->stocMagSpectrum[i] * pAnalParams->stocMagSpectrum[i]);
 
-    /**pSmsData->pFStocGain = fMag / pAnalParams->sizeStocMagSpectrum;*/
+    /* if no gain or no coefficients return  */
+    sfloat stocGain = fMag / residualParams->sizeStocMagSpectrum;
+    if(stocGain <= 0)
+       return;
 
-    /*int i, sizeSpec1Used;*/
-    /*int sizeSpec1 = pSmsData->nCoeff;*/
+    int i, sizeSpec1Used;
+    int sizeSpec1 = residualParams->nCoeffs;
     /*int sizeSpec2 = pSynthParams->sizeHop;*/
-    /*int sizeFft = pSynthParams->sizeHop << 1; [> 50% overlap, so sizeFft is 2x sizeHop <]*/
-    /*sfloat fStocGain;*/
-
-    /*[> if no gain or no coefficients return  <]*/
-    /*if (*(pSmsData->pFStocGain) <= 0)*/
-    /*    return 0;*/
+    int sizeSpec2 = residualParams->residualSize;
+    int sizeFft = sizeSpec2 << 1; /* 50% overlap, so sizeFft is 2x sizeHop */
 
     /*sizeSpec1Used = sizeSpec1 * pSynthParams->iSamplingRate / pSynthParams->iOriginalSRate;*/
 

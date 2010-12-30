@@ -48,7 +48,7 @@ int sms_spectrum(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag
     sms_fft(sizeFft, pFftBuffer);
 
     /* convert from rectangular to polar coordinates */
-    for (i = 0; i < sizeMag; i++)
+    for(i = 0; i < sizeMag; i++)
     { 
         it2 = i << 1; //even numbers 0-N
         fReal = pFftBuffer[it2]; /*odd numbers 1->N+1 */
@@ -126,7 +126,7 @@ int sms_invSpectrum(int sizeWaveform, sfloat *pWaveform, sfloat *pWindow,
 
     /* assume the output array has been taken care off */
     /* before, this was multiplied by .5, why? */
-    for (i = 0; i < sizeWaveform; i++)
+    for(i = 0; i < sizeWaveform; i++)
         //pWaveform[i] +=  pFftBuffer[i] * pWindow[i];
         pWaveform[i] = pFftBuffer[i];
 
@@ -150,7 +150,7 @@ int sms_invQuickSpectrumW(sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum,
     sfloat fPower;
 
     /* convert from polar coordinates to rectangular  */
-    for (i = 0; i<sizeMag; i++)
+    for(i = 0; i<sizeMag; i++)
     {
         it2 = i << 1;
         fPower = pFMagSpectrum[i];
@@ -165,7 +165,7 @@ int sms_invQuickSpectrumW(sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum,
     /* \todo is a seperate pFftBuffer necessary here?
        it seems like multiplying the window into the waveform
        would be fine, without pFftBuffer */
-    for (i = 0; i < sizeWave; i++)
+    for(i = 0; i < sizeWave; i++)
         pFWaveform[i] +=  (pFftBuffer[i] * pFWindow[i] * .5);
 
     return sizeMag;
@@ -178,19 +178,19 @@ int sms_invQuickSpectrumW(sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum,
  * \param pMag         pointer to sfloat array of magnitude spectrum
  * \param pPhase           pointer to sfloat array of phase spectrum
  */ 
-void sms_RectToPolar( int sizeMag, sfloat *pRect, sfloat *pMag, sfloat *pPhase)
+void sms_RectToPolar(int sizeMag, sfloat *pRect, sfloat *pMag, sfloat *pPhase)
 {
     int i, it2;
     sfloat fReal, fImag;
 
-    for (i=0; i<sizeMag; i++)
+    for(i=0; i<sizeMag; i++)
     {
         it2 = i << 1;
         fReal = pRect[it2];
         fImag = pRect[it2+1];
 
         pMag[i] = sqrtf(fReal * fReal + fImag * fImag);
-        if (pPhase)
+        if(pPhase)
             pPhase[i] = atan2f(fImag, fReal);
     }
 }

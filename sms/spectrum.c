@@ -25,12 +25,12 @@
 
 /*! \brief compute a complex spectrum from a waveform 
  *              
- * \param sizeWindow               size of analysis window
- * \param pWaveform            pointer to input waveform 
- * \param pWindow                      pointer to input window
- * \param sizeMag                      size of output magnitude and phase spectrums
- * \param pMag                          pointer to output magnitude spectrum 
- * \param pPhase                       pointer to output phase spectrum 
+ * \param sizeWindow size of analysis window
+ * \param pWaveform  pointer to input waveform 
+ * \param pWindow    pointer to input window
+ * \param sizeMag    size of output magnitude and phase spectrums
+ * \param pMag       pointer to output magnitude spectrum 
+ * \param pPhase     pointer to output phase spectrum 
  * \return sizeFft, -1 on error \todo remove this return
  */
 int sms_spectrum(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag, 
@@ -66,11 +66,11 @@ int sms_spectrum(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag
  * performs a zero-padded FFT (if sizeMag*2 > sizeWindow).
  * The spectra is then converted magnitude (RMS).
  *              
- * \param sizeWindow           size of analysis window / input wavefrom
- * \param pWaveform        pointer to input waveform
- * \param pWindow          pointer to analysis window 
- * \param sizeMag              size of output magnitude spectrum 
- * \param pMag     pointer to output magnitude spectrum 
+ * \param sizeWindow size of analysis window / input wavefrom
+ * \param pWaveform  pointer to input waveform
+ * \param pWindow    pointer to analysis window 
+ * \param sizeMag    size of output magnitude spectrum 
+ * \param pMag       pointer to output magnitude spectrum 
  * \return 0 on success, -1 on error
  */
 int sms_spectrumMag(int sizeWindow, sfloat *pWaveform, sfloat *pWindow,  
@@ -101,18 +101,17 @@ int sms_spectrumMag(int sizeWindow, sfloat *pWaveform, sfloat *pWindow,
     return sizeFft;
 }
 
-
 /*! \brief function for a quick inverse spectrum, windowed
  *
  *  Not done yet, but this will be a function that is the inverse of
  *  sms_spectrum above.
  *
  * function to perform the inverse FFT, windowing the output
- * sfloat *pFMagSpectrum        input magnitude spectrum
- * sfloat *pFPhaseSpectrum      input phase spectrum
+ * sfloat *pFMagSpectrum   input magnitude spectrum
+ * sfloat *pFPhaseSpectrum input phase spectrum
  * int sizeFft             size of FFT
- * sfloat *pFWaveform          output waveform
- * int sizeWave                size of output waveform
+ * sfloat *pFWaveform      output waveform
+ * int sizeWave            size of output waveform
  * sfloat *pFWindow        synthesis window
  */
 int sms_invSpectrum(int sizeWaveform, sfloat *pWaveform, sfloat *pWindow,
@@ -135,11 +134,11 @@ int sms_invSpectrum(int sizeWaveform, sfloat *pWaveform, sfloat *pWindow,
 
 /*! \brief function for a quick inverse spectrum, windowed
  * function to perform the inverse FFT, windowing the output
- * sfloat *pFMagSpectrum        input magnitude spectrum
- * sfloat *pFPhaseSpectrum      input phase spectrum
+ * sfloat *pFMagSpectrum   input magnitude spectrum
+ * sfloat *pFPhaseSpectrum input phase spectrum
  * int sizeFft             size of FFT
- * sfloat *pFWaveform          output waveform
- * int sizeWave                size of output waveform
+ * sfloat *pFWaveform      output waveform
+ * int sizeWave            size of output waveform
  * sfloat *pFWindow        synthesis window
  */
 int sms_invQuickSpectrumW(sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum, 
@@ -173,10 +172,10 @@ int sms_invQuickSpectrumW(sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum,
 
 /*! \brief convert spectrum from Rectangular to Polar form
  *              
- * \param sizeMag          size of spectrum (pMag and pPhase arrays)
- * \param pRect        pointer output spectrum in rectangular form (2x sizeSpec)
- * \param pMag         pointer to sfloat array of magnitude spectrum
- * \param pPhase           pointer to sfloat array of phase spectrum
+ * \param sizeMag size of spectrum (pMag and pPhase arrays)
+ * \param pRect   pointer output spectrum in rectangular form (2x sizeSpec)
+ * \param pMag    pointer to sfloat array of magnitude spectrum
+ * \param pPhase  pointer to sfloat array of phase spectrum
  */ 
 void sms_RectToPolar(int sizeMag, sfloat *pRect, sfloat *pMag, sfloat *pPhase)
 {
@@ -197,10 +196,10 @@ void sms_RectToPolar(int sizeMag, sfloat *pRect, sfloat *pMag, sfloat *pPhase)
 
 /*! \brief convert spectrum from Rectangular to Polar form
  *              
- * \param sizeSpec         size of spectrum (pMag and pPhase arrays)
- * \param pRect        pointer output spectrum in rectangular form (2x sizeSpec)
- * \param pMag         pointer to sfloat array of magnitude spectrum
- * \param pPhase           pointer to sfloat array of phase spectrum
+ * \param sizeSpec size of spectrum (pMag and pPhase arrays)
+ * \param pRect    pointer output spectrum in rectangular form (2x sizeSpec)
+ * \param pMag     pointer to sfloat array of magnitude spectrum
+ * \param pPhase   pointer to sfloat array of phase spectrum
  */ 
 void sms_PolarToRect(int sizeSpec, sfloat *pRect, sfloat *pMag, sfloat *pPhase)
 {
@@ -218,9 +217,9 @@ void sms_PolarToRect(int sizeSpec, sfloat *pRect, sfloat *pMag, sfloat *pPhase)
 
 /*! \brief compute magnitude spectrum of a DFT in rectangular coordinates
  *              
- * \param sizeMag          size of output Magnitude (half of input real FFT)
- * \param pInRect          pointer to input DFT array (real/imag sfloats)
- * \param pOutMag          pointer to of magnitude spectrum array
+ * \param sizeMag size of output Magnitude (half of input real FFT)
+ * \param pInRect pointer to input DFT array (real/imag sfloats)
+ * \param pOutMag pointer to of magnitude spectrum array
  */
 void sms_spectrumRMS(int sizeMag, sfloat *pInRect, sfloat *pOutMag)
 {

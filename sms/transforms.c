@@ -1,6 +1,6 @@
 /* 
  * Copyright (c) 2008 MUSIC TECHNOLOGY GROUP (MTG)
- *                         UNIVERSITAT POMPEU FABRA 
+ *                    UNIVERSITAT POMPEU FABRA 
  * 
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -32,26 +32,26 @@ static sfloat w[NMAX * 5 / 4];
 /*! \brief Forward Fast Fourier Transform
  *
  * function to call the OOURA routines to calculate
- * the forward FFT.  Operation is in place.
+ * the forward FFT. Operation is in place.
  * \todo if sizeFft != power of 2, there is a silent crash.. cuidado!
  *
- * \param sizeFft         size of the FFT in samples (must be a power of 2 >= 2)
- * \param pArray         pointer to real array (n >= 2, n = power of 2)
+ * \param sizeFft size of the FFT in samples (must be a power of 2 >= 2)
+ * \param pArray  pointer to real array (n >= 2, n = power of 2)
  */
-void sms_fft(  int sizeFft, sfloat *pArray)
+void sms_fft(int sizeFft, sfloat *pArray)
 { 
-        rdft( sizeFft, 1, pArray, ip, w);
+    rdft(sizeFft, 1, pArray, ip, w);
 }
 
 /*! \brief Inverse Forward Fast Fourier Transform
  *
  * function to call the OOURA routines to calculate
- * the Inverse FFT.  Operation is in place.
+ * the Inverse FFT. Operation is in place.
  *
- * \param sizeFft         size of the FFT in samples (must be a power of 2 >= 2)
- * \param pArray         pointer to real array (n >= 2, n = power of 2)
+ * \param sizeFft size of the FFT in samples (must be a power of 2 >= 2)
+ * \param pArray  pointer to real array (n >= 2, n = power of 2)
  */
-void sms_ifft(  int sizeFft, sfloat *pArray)
+void sms_ifft(int sizeFft, sfloat *pArray)
 { 
-        rdft( sizeFft, -1, pArray, ip, w);
+    rdft(sizeFft, -1, pArray, ip, w);
 }

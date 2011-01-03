@@ -53,10 +53,6 @@ int sms_spectralApprox(sfloat *pFSpec1, int sizeSpec1, int sizeSpec1Used,
     }
 
     /* calculate the hop size */
-    /*if(sizeSpec1 != sizeSpec1Used)*/
-        /*fHopSize = (sfloat) sizeSpec1Used / nCoefficients;*/
-    /*else //why is this here, would be the same as sizeSpec1Used / nCoefficients*/
-        /*fHopSize = (sfloat) sizeSpec1 / nCoefficients;*/
     if(nCoefficients > sizeSpec1)
         nCoefficients = sizeSpec1;
 

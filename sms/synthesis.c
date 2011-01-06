@@ -120,14 +120,12 @@ static int StocSynthApprox(SMS_Data *pSmsData, SMS_SynthParams *pSynthParams)
     int sizeSpec1 = pSmsData->nCoeff;
     int sizeSpec2 = pSynthParams->sizeHop;
     int sizeFft = pSynthParams->sizeHop << 1; /* 50% overlap, so sizeFft is 2x sizeHop */
-    sfloat fStocGain;
 
     /* if no gain or no coefficients return  */
-    if (*(pSmsData->pFStocGain) <= 0)
+    if(*(pSmsData->pFStocGain) <= 0)
         return 0;
 
-    sizeSpec1Used = sizeSpec1 * pSynthParams->iSamplingRate /
-                    pSynthParams->iOriginalSRate;
+    sizeSpec1Used = sizeSpec1 * pSynthParams->iSamplingRate / pSynthParams->iOriginalSRate;
 
     /* sizeSpec1Used cannot be more than what is available  \todo check by graph */
     if(sizeSpec1Used  > sizeSpec1) sizeSpec1Used = sizeSpec1;
@@ -150,74 +148,79 @@ static int StocSynthApprox(SMS_Data *pSmsData, SMS_SynthParams *pSynthParams)
  *
  * \param residualParams Parameters and memory for residual synthesis
  */
-void sms_approxResidual(SMS_ResidualParams *residualParams)
+void sms_approxResidual(int sizeResidual, sfloat* residual,
+                        int sizeApprox, sfloat* approx, 
+                        SMS_ResidualParams *residualParams)
 {
-    /* filter residual with a high pass filter */
-    sms_filterHighPass(residualParams->residualSize, 
-                       residualParams->residual, 
-                       residualParams->samplingRate);
+    int i;
 
-    sms_spectrumMag(residualParams->residualSize, 
-                    residualParams->residual, 
-                    residualParams->residualWindow, 
+    /* shift buffers */
+    memcpy(residualParams->residual,
+           residualParams->residual + residualParams->hopSize,
+           sizeof(sfloat) * residualParams->hopSize);
+    memcpy(residualParams->residual + residualParams->hopSize, residual,
+           sizeof(sfloat) * residualParams->hopSize);
+
+    memcpy(residualParams->approx,
+           residualParams->approx + residualParams->hopSize,
+           sizeof(sfloat) * residualParams->hopSize);
+    memset(residualParams->approx + residualParams->hopSize, 0, 
+           sizeof(sfloat) * residualParams->hopSize);
+
+    sms_spectrumMag(residualParams->residualSize,
+                    residualParams->residual,
+                    residualParams->fftWindow,
                     residualParams->sizeStocMagSpectrum,
-                    residualParams->stocMagSpectrum, 
+                    residualParams->stocMagSpectrum,
                     residualParams->fftBuffer);
 
-    sms_spectralApprox(residualParams->stocMagSpectrum, 
-                       residualParams->sizeStocMagSpectrum,
-                       residualParams->sizeStocMagSpectrum, 
-                       residualParams->stocCoeffs,
-                       residualParams->nCoeffs, 
-                       residualParams->nCoeffs,
-                       residualParams->approxEnvelope);
+    if(residualParams->sizeStocMagSpectrum != residualParams->nCoeffs)
+    {
+        sms_spectralApprox(residualParams->stocMagSpectrum,
+                           residualParams->sizeStocMagSpectrum,
+                           residualParams->sizeStocMagSpectrum,
+                           residualParams->stocCoeffs,
+                           residualParams->nCoeffs,
+                           residualParams->nCoeffs,
+                           residualParams->approxEnvelope);
 
-    /* get energy of spectrum  */
-    int i;
-    sfloat fMag = 0.0;
+        sms_spectralApprox(residualParams->stocCoeffs,
+                           residualParams->nCoeffs,
+                           residualParams->nCoeffs,
+                           residualParams->stocMagSpectrum,
+                           residualParams->sizeStocMagSpectrum,
+                           residualParams->sizeStocMagSpectrum,
+                           residualParams->approxEnvelope);
+    }
+
+    /* generate random phases */
     for(i = 0; i < residualParams->sizeStocMagSpectrum; i++)
-        fMag += (residualParams->stocMagSpectrum[i] * pAnalParams->stocMagSpectrum[i]);
+        residualParams->stocPhaseSpectrum[i] =  TWO_PI * sms_random();
 
-    /* if no gain or no coefficients return  */
-    sfloat stocGain = fMag / residualParams->sizeStocMagSpectrum;
-    if(stocGain <= 0)
-       return;
+    /* IFFT with 50% overlap */
+    sms_invQuickSpectrumW(residualParams->stocMagSpectrum,
+                          residualParams->stocPhaseSpectrum,
+                          residualParams->sizeStocMagSpectrum*2,
+                          residualParams->approx,
+                          residualParams->residualSize,
+                          residualParams->ifftWindow,
+                          residualParams->fftBuffer);
 
-    int i, sizeSpec1Used;
-    int sizeSpec1 = residualParams->nCoeffs;
-    /*int sizeSpec2 = pSynthParams->sizeHop;*/
-    int sizeSpec2 = residualParams->residualSize;
-    int sizeFft = sizeSpec2 << 1; /* 50% overlap, so sizeFft is 2x sizeHop */
-
-    /*sizeSpec1Used = sizeSpec1 * pSynthParams->iSamplingRate / pSynthParams->iOriginalSRate;*/
-
-    /*[> sizeSpec1Used cannot be more than what is available  \todo check by graph <]*/
-    /*if(sizeSpec1Used  > sizeSpec1) sizeSpec1Used = sizeSpec1;*/
-
-    /*sms_spectralApprox(pSmsData->pFStocCoeff, sizeSpec1, sizeSpec1Used,*/
-    /*                   pSynthParams->pMagBuff, sizeSpec2, sizeSpec1Used,*/
-    /*                   pSynthParams->approxEnvelope);*/
-
-    /*[> generate random phases <]*/
-    /*for(i = 0; i < sizeSpec2; i++)*/
-    /*    pSynthParams->pPhaseBuff[i] =  TWO_PI * sms_random();*/
-
-    /*sms_invQuickSpectrumW(pSynthParams->pMagBuff, pSynthParams->pPhaseBuff,*/
-    /*                      sizeFft, pSynthParams->pSynthBuff, sizeFft,*/
-    /*                      pSynthParams->pFStocWindow, pSynthParams->pSpectra);*/
+    /* output */
+    for(i = 0; i < sizeApprox; i++)
+        approx[i] = residualParams->approx[i] * residualParams->windowScale;
 }
 
 /*! \brief  synthesizes one frame of SMS data
  *
- * \param pSmsData      input SMS data
- * \param pFSynthesis      output sound buffer  
- * \param pSynthParams   synthesis parameters
+ * \param pSmsData     input SMS data
+ * \param pFSynthesis  output sound buffer  
+ * \param pSynthParams synthesis parameters
  */
 void sms_synthesize(SMS_Data *pSmsData, sfloat *pFSynthesis,  SMS_SynthParams *pSynthParams)
 {
-    int i, k;
+    int i;
     int sizeHop = pSynthParams->sizeHop;
-    int sizeFft = sizeHop << 1;
 
     memcpy(pSynthParams->pSynthBuff, (sfloat *)(pSynthParams->pSynthBuff+sizeHop), 
            sizeof(sfloat) * sizeHop);

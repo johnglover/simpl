@@ -319,7 +319,7 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
     }
 
     /* memory for residual */
-    pAnalParams->residualParams.residualSize = pAnalParams->sizeHop * 2;
+    pAnalParams->residualParams.hopSize = pAnalParams->sizeHop;
     sms_initResidual(&pAnalParams->residualParams);
 
     /* memory for guide states */
@@ -467,15 +467,20 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
 void sms_initResidualParams(SMS_ResidualParams *residualParams)
 {
     residualParams->samplingRate = 44100;
+    residualParams->hopSize = 256;
     residualParams->residualSize = 0;
     residualParams->residual = NULL;
-    residualParams->residualWindow = NULL;
+    residualParams->fftWindow = NULL;
+    residualParams->ifftWindow = NULL;
+    residualParams->windowScale = 0.0;
     residualParams->residualMag = 0.0;
     residualParams->originalMag = 0.0;
     residualParams->nCoeffs = 128;
     residualParams->stocCoeffs = NULL;
     residualParams->sizeStocMagSpectrum = 0;
     residualParams->stocMagSpectrum = NULL;
+    residualParams->stocPhaseSpectrum = NULL;
+    residualParams->approx = NULL;
     residualParams->approxEnvelope = NULL;
     int i;
     for(i = 0; i < SMS_MAX_SPEC; i++)
@@ -492,13 +497,14 @@ void sms_initResidualParams(SMS_ResidualParams *residualParams)
  */
 int sms_initResidual(SMS_ResidualParams *residualParams)
 {
-    if(residualParams->residualSize <= 0)
+    if(residualParams->hopSize <= 0)
     {
-        sms_error("Residual size must be a positive integer");
+        sms_error("Residual hop size must be a positive integer");
         return -1;
     }
 
     /* residual signal */
+    residualParams->residualSize = residualParams->hopSize * 2;
     residualParams->residual = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
     if(residualParams->residual == NULL)
     {
@@ -506,15 +512,34 @@ int sms_initResidual(SMS_ResidualParams *residualParams)
         return -1;
     }
 
-    /* residual window */
-    residualParams->residualWindow = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
-    if(residualParams->residualWindow == NULL)
+    /* residual fft/ifft windows */
+    residualParams->fftWindow = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
+    if(residualParams->fftWindow == NULL)
     {
-        sms_error("Could not allocate memory for residualWindow");
+        sms_error("Could not allocate memory for residual FFT window");
         return -1;
     }
-    sms_getWindow(residualParams->residualSize, residualParams->residualWindow, SMS_WIN_HAMMING);
-    sms_scaleWindow(residualParams->residualSize, residualParams->residualWindow);
+    sms_getWindow(residualParams->residualSize, residualParams->fftWindow, SMS_WIN_BH_70);
+    sms_scaleWindow(residualParams->residualSize, residualParams->fftWindow);
+
+    residualParams->ifftWindow = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
+    if(residualParams->ifftWindow == NULL)
+    {
+        sms_error("Could not allocate memory for residual IFFT window");
+        return -1;
+    }
+    sms_getWindow(residualParams->residualSize, residualParams->ifftWindow, SMS_WIN_HANNING);
+    /* compute IFFT window scaling:
+     * windows per hop = hop size / window size = 0.5
+     * overlap = 50% => 1 window total in each hop/frame
+     * => windowScale = window size / sum(window samples) = 1.85
+     *    for a 1024 sized hamming window
+     */
+    int i;
+    sfloat sum = 0.0;
+    for(i = 0; i < residualParams->residualSize; i++)
+        sum += residualParams->ifftWindow[i];
+    residualParams->windowScale = (sfloat)residualParams->residualSize / sum;
 
     /* stochastic analysis */
     residualParams->stocCoeffs = (sfloat *)calloc(residualParams->nCoeffs, sizeof(sfloat));
@@ -531,7 +556,19 @@ int sms_initResidual(SMS_ResidualParams *residualParams)
         sms_error("Could not allocate memory for stochastic magnitude spectrum");
         return -1;
     }
+    residualParams->stocPhaseSpectrum = (sfloat *)calloc(residualParams->sizeStocMagSpectrum, sizeof(sfloat));
+    if(residualParams->stocPhaseSpectrum == NULL)
+    {
+        sms_error("Could not allocate memory for stochastic magnitude spectrum");
+        return -1;
+    }
 
+    residualParams->approx = (sfloat *)calloc(residualParams->residualSize, sizeof(sfloat));
+    if(residualParams->approx == NULL)
+    {
+        sms_error("Could not allocate memory for spectral approximation");
+        return -1;
+    }
     residualParams->approxEnvelope = (sfloat *)calloc(residualParams->nCoeffs, sizeof(sfloat));
     if(residualParams->approxEnvelope == NULL)
     {
@@ -553,19 +590,28 @@ void sms_freeResidual(SMS_ResidualParams *residualParams)
 {
     if(residualParams->residual)
         free(residualParams->residual);
-    if(residualParams->residualWindow)
-        free(residualParams->residualWindow);
+    if(residualParams->fftWindow)
+        free(residualParams->fftWindow);
+    if(residualParams->ifftWindow)
+        free(residualParams->ifftWindow);
     if(residualParams->stocCoeffs)
         free(residualParams->stocCoeffs);
     if(residualParams->stocMagSpectrum)
         free(residualParams->stocMagSpectrum);
+    if(residualParams->stocPhaseSpectrum)
+        free(residualParams->stocPhaseSpectrum);
+    if(residualParams->approx)
+        free(residualParams->approx);
     if(residualParams->approxEnvelope)
         free(residualParams->approxEnvelope);
 
     residualParams->residual = NULL;
-    residualParams->residualWindow = NULL;
+    residualParams->fftWindow = NULL;
+    residualParams->ifftWindow = NULL;
     residualParams->stocCoeffs = NULL;
     residualParams->stocMagSpectrum = NULL;
+    residualParams->stocPhaseSpectrum = NULL;
+    residualParams->approx = NULL;
     residualParams->approxEnvelope = NULL;
 }
 

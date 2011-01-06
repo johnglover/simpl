@@ -353,6 +353,23 @@ class Residual(object):
         self._hop_size = 512
         self._frame_size = 512
 
+    frame_size = property(lambda self: self.get_frame_size(),
+                          lambda self, x: self.set_frame_size(x))
+    hop_size = property(lambda self: self.get_hop_size(),
+                        lambda self, x: self.set_hop_size(x))
+
+    def get_frame_size(self):
+        return self._frame_size
+    
+    def set_frame_size(self, frame_size):
+        self._frame_size = frame_size
+
+    def get_hop_size(self):
+        return self._hop_size
+    
+    def set_hop_size(self, hop_size):
+        self._hop_size = hop_size
+
     def residual_frame(self, synth, original):
         "Computes the residual signal for a frame of audio"
         raise Exception("NotYetImplemented")
@@ -360,21 +377,21 @@ class Residual(object):
     def find_residual(self, synth, original):
         "Calculate and return the residual signal"
         # pad the signals if necessary
-        if len(synth) % self._hop_size != 0:
-            synth = np.hstack((synth, np.zeros(self._hop_size - (len(synth) % self._hop_size))))
-        if len(original) % self._hop_size != 0:
-            original = np.hstack((original, np.zeros(self._hop_size - (len(original) % self._hop_size))))
+        if len(synth) % self.hop_size != 0:
+            synth = np.hstack((synth, np.zeros(self.hop_size - (len(synth) % self.hop_size))))
+        if len(original) % self.hop_size != 0:
+            original = np.hstack((original, np.zeros(self.hop_size - (len(original) % self.hop_size))))
 
-        num_frames = len(original) / self._hop_size
+        num_frames = len(original) / self.hop_size
         residual = simpl.array([])
         sample_offset = 0
 
         for i in range(num_frames):
-            synth_frame = synth[sample_offset:sample_offset+self._hop_size]
-            original_frame = original[sample_offset:sample_offset+self._hop_size]
+            synth_frame = synth[sample_offset:sample_offset+self.hop_size]
+            original_frame = original[sample_offset:sample_offset+self.hop_size]
             residual = np.hstack((residual, 
                                   self.residual_frame(synth_frame, original_frame)))
-            sample_offset += self._hop_size
+            sample_offset += self.hop_size
         return residual
 
     def synth_frame(self, synth, original):
@@ -384,20 +401,20 @@ class Residual(object):
     def synth(self, synth, original):
         "Calculate and return a synthesised residual signal"
         # pad the signals if necessary
-        if len(synth) % self._hop_size != 0:
-            synth = np.hstack((synth, np.zeros(self._hop_size - (len(synth) % self._hop_size))))
-        if len(original) % self._hop_size != 0:
-            original = np.hstack((original, np.zeros(self._hop_size - (len(original) % self._hop_size))))
+        if len(synth) % self.hop_size != 0:
+            synth = np.hstack((synth, np.zeros(self.hop_size - (len(synth) % self.hop_size))))
+        if len(original) % self.hop_size != 0:
+            original = np.hstack((original, np.zeros(self.hop_size - (len(original) % self.hop_size))))
 
-        num_frames = len(original) / self._hop_size
+        num_frames = len(original) / self.hop_size
         residual = simpl.array([])
         sample_offset = 0
 
         for i in range(num_frames):
-            synth_frame = synth[sample_offset:sample_offset+self._hop_size]
-            original_frame = original[sample_offset:sample_offset+self._hop_size]
+            synth_frame = synth[sample_offset:sample_offset+self.hop_size]
+            original_frame = original[sample_offset:sample_offset+self.hop_size]
             residual = np.hstack((residual, 
                                   self.synth_frame(synth_frame, original_frame)))
-            sample_offset += self._hop_size
+            sample_offset += self.hop_size
         return residual
 

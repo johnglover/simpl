@@ -210,7 +210,6 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
                 pSpectralPeaks->pSpectralPeaks[i].fPhase = 0.0;
             }
         }
-        /*printf("\n");*/
         return pSpectralPeaks->nPeaks;
     }
     else
@@ -328,13 +327,16 @@ int sms_findResidual(int sizeSynthesis, sfloat* pSynthesis,
                      int sizeOriginal, sfloat* pOriginal,
                      SMS_ResidualParams *residualParams)
 {
-    if(residualParams->residualSize < sizeOriginal)
+    if(residualParams->hopSize < sizeOriginal)
     {
         sms_error("Residual signal length is smaller than the original signal length");
         return -1;
     }
 
-    sms_residual(residualParams->residualSize, pSynthesis, pOriginal, residualParams);
+    sms_residual(residualParams->hopSize, pSynthesis, pOriginal, residualParams);
+    sms_filterHighPass(residualParams->hopSize,
+                       residualParams->residual,
+                       residualParams->samplingRate);
     return 0;
 }
 
@@ -467,8 +469,9 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
             else if(sizeData < pAnalParams->residualParams.residualSize)
             {
                 /* should only happen if we're at the end of a sound, unless hop size changes */
-                sms_getWindow(sizeData, pAnalParams->residualParams.residualWindow, SMS_WIN_HAMMING);
-                sms_scaleWindow(sizeData, pAnalParams->residualParams.residualWindow);
+                /* TODO: should the window type be set to pAnalParams->iWindowType? */
+                sms_getWindow(sizeData, pAnalParams->residualParams.fftWindow, SMS_WIN_HAMMING);
+                sms_scaleWindow(sizeData, pAnalParams->residualParams.fftWindow);
             }
 
             /* obtain residual sound from original and synthesized sounds.  accumulate the residual percentage.*/
@@ -483,13 +486,13 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
                 sms_filterHighPass(sizeData, pAnalParams->residualParams.residual, pAnalParams->iSamplingRate);
 
                 /* approximate residual */
-                sms_stocAnalysis(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.residualWindow, 
+                sms_stocAnalysis(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.fftWindow, 
                                  pSmsData, pAnalParams);
             }
             else if(pAnalParams->iStochasticType == SMS_STOC_IFFT)
             {
                 int sizeMag = sms_power2(sizeData >> 1);
-                sms_spectrum(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.residualWindow, 
+                sms_spectrum(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.fftWindow, 
                              sizeMag, pSmsData->pFStocCoeff, pSmsData->pResPhase,
                              pAnalParams->fftBuffer);
             }

@@ -37,7 +37,6 @@ int sms_spectrum(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag
                  sfloat *pMag, sfloat *pPhase, sfloat *pFftBuffer)
 {
     int i, it2;
-    int err = 0;
     sfloat fReal, fImag;
     
     int sizeFft = sizeMag << 1;
@@ -55,6 +54,38 @@ int sms_spectrum(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag
         fImag = pFftBuffer[it2 + 1]; /*even numbers 2->N+2 */
         pMag[i] = sqrt(fReal * fReal + fImag * fImag);
         pPhase[i] = atan2(-fImag, fReal); /* \todo why is fImag negated? */
+        /*pPhase[i] = atan2(fImag, fReal);*/
+    }
+
+    return sizeFft;
+}
+
+/* sms_spectrum, but without zero-phase windowing, and with phase calculated
+ * according by arctan(imag/real) instead of arctan2(-imag/real)
+ */
+int sms_spectrumW(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag, 
+                  sfloat *pMag, sfloat *pPhase, sfloat *pFftBuffer)
+{
+    int i, it2;
+    sfloat fReal, fImag;
+    
+    int sizeFft = sizeMag << 1;
+    memset(pFftBuffer, 0, sizeFft * sizeof(sfloat));
+
+    /* apply window to waveform */
+    for(i = 0; i < sizeWindow; i++)
+        pFftBuffer[i] = pWaveform[i] * pWindow[i];
+
+    sms_fft(sizeFft, pFftBuffer);
+
+    /* convert from rectangular to polar coordinates */
+    for(i = 0; i < sizeMag; i++)
+    { 
+        it2 = i << 1; //even numbers 0-N
+        fReal = pFftBuffer[it2]; /*odd numbers 1->N+1 */
+        fImag = pFftBuffer[it2 + 1]; /*even numbers 2->N+2 */
+        pMag[i] = sqrt(fReal * fReal + fImag * fImag);
+        pPhase[i] = atan2(fImag, fReal);
     }
 
     return sizeFft;
@@ -81,8 +112,8 @@ int sms_spectrumMag(int sizeWindow, sfloat *pWaveform, sfloat *pWindow,
     sfloat fReal, fImag;
 
     /* apply window to waveform, zero the rest of the array */
-    for (i = 0; i < sizeWindow; i++)
-        pFftBuffer[i] =  pWindow[i] * pWaveform[i];
+    for(i = 0; i < sizeWindow; i++)
+        pFftBuffer[i] =  pWaveform[i] * pWindow[i];
     for(i = sizeWindow; i < sizeFft; i++)
         pFftBuffer[i]  = 0.;
 
@@ -90,7 +121,7 @@ int sms_spectrumMag(int sizeWindow, sfloat *pWaveform, sfloat *pWindow,
     sms_fft(sizeFft, pFftBuffer); 
 
     /* convert from rectangular to polar coordinates */
-    for (i=0; i<sizeMag; i++)
+    for(i = 0; i < sizeMag; i++)
     {
         it2 = i << 1;
         fReal = pFftBuffer[it2];
@@ -123,7 +154,7 @@ int sms_invSpectrum(int sizeWaveform, sfloat *pWaveform, sfloat *pWindow,
     sms_PolarToRect(sizeMag, pFftBuffer, pMag, pPhase);
     sms_ifft(sizeFft, pFftBuffer); 
 
-    /* assume the output array has been taken care off */
+    /* assume that the output array does not need to be cleared */
     /* before, this was multiplied by .5, why? */
     for(i = 0; i < sizeWaveform; i++)
         //pWaveform[i] +=  pFftBuffer[i] * pWindow[i];
@@ -145,25 +176,21 @@ int sms_invQuickSpectrumW(sfloat *pFMagSpectrum, sfloat *pFPhaseSpectrum,
                           int sizeFft, sfloat *pFWaveform, int sizeWave,
                           sfloat *pFWindow, sfloat* pFftBuffer)
 {
-    int sizeMag = sizeFft >> 1, i, it2;
-    sfloat fPower;
+    int i, it2;
+    int sizeMag = sizeFft >> 1;
 
-    /* convert from polar coordinates to rectangular  */
-    for(i = 0; i<sizeMag; i++)
+    /* convert from polar coordinates to rectangular */
+    for(i = 0; i < sizeMag; i++)
     {
         it2 = i << 1;
-        fPower = pFMagSpectrum[i];
-        pFftBuffer[it2] =  fPower * cos (pFPhaseSpectrum[i]);
-        pFftBuffer[it2+1] = fPower * sin (pFPhaseSpectrum[i]);
+        pFftBuffer[it2] = pFMagSpectrum[i] * cos(pFPhaseSpectrum[i]);
+        pFftBuffer[it2+1] = pFMagSpectrum[i] * sin(pFPhaseSpectrum[i]);
     }    
 
     /* compute IFFT */
     sms_ifft(sizeFft, pFftBuffer); 
 
-    /* assume the output array has been taken care off */
-    /* \todo is a seperate pFftBuffer necessary here?
-       it seems like multiplying the window into the waveform
-       would be fine, without pFftBuffer */
+    /* assume that the output array does not need to be cleared */
     for(i = 0; i < sizeWave; i++)
         pFWaveform[i] +=  (pFftBuffer[i] * pFWindow[i] * .5);
 

@@ -45,18 +45,18 @@ static void SinePhaSynth(sfloat fFreq, sfloat fMag, sfloat fPhase,
     sfloat fAlpha, fBeta, fTmp1, fTmp2;
 
     /* if no mag in last frame copy freq from current and make phase */
-    if (pLastFrame->pFSinAmp[iTrack] <= 0)
+    if(pLastFrame->pFSinAmp[iTrack] <= 0)
     {
         pLastFrame->pFSinFreq[iTrack] = fFreq;
         fTmp = fPhase - (fFreq * sizeBuffer);
         pLastFrame->pFSinPha[iTrack] = fTmp - floor(fTmp / TWO_PI) * TWO_PI;
     }
     /* and the other way */
-    else if (fMag <= 0)
+    else if(fMag <= 0)
     {
         fFreq = pLastFrame->pFSinFreq[iTrack];
         fTmp = pLastFrame->pFSinPha[iTrack] + 
-            (pLastFrame->pFSinFreq[iTrack] * sizeBuffer);
+               (pLastFrame->pFSinFreq[iTrack] * sizeBuffer);
         fPhase = fTmp - floor(fTmp / TWO_PI) * TWO_PI;
     }
 
@@ -67,27 +67,27 @@ static void SinePhaSynth(sfloat fFreq, sfloat fMag, sfloat fPhase,
     /* create instantaneous phase from freq. and phase values */
     fTmp1 = fFreq - pLastFrame->pFSinFreq[iTrack];
     fTmp2 = ((pLastFrame->pFSinPha[iTrack] + 
-                pLastFrame->pFSinFreq[iTrack] * sizeBuffer - fPhase) +
-            fTmp1 * sizeBuffer / 2.0) / TWO_PI;
-    iM = (int) (fTmp2 + .5);
+              pLastFrame->pFSinFreq[iTrack] * sizeBuffer - fPhase) +
+             fTmp1 * sizeBuffer / 2.0) / TWO_PI;
+    iM = (int)(fTmp2 + .5);
     fTmp2 = fPhase - pLastFrame->pFSinPha[iTrack] - 
-        pLastFrame->pFSinFreq[iTrack] * sizeBuffer +
-        TWO_PI * iM;
+            pLastFrame->pFSinFreq[iTrack] * sizeBuffer + TWO_PI * iM;
     fAlpha = (3.0 / (sfloat)(sizeBuffer * sizeBuffer)) * 
-        fTmp2 - fTmp1 / sizeBuffer;
+             fTmp2 - fTmp1 / sizeBuffer;
     fBeta = (-2.0 / ((sfloat) (sizeBuffer * sizeBuffer * sizeBuffer))) * 
-        fTmp2 + fTmp1 / ((sfloat) (sizeBuffer * sizeBuffer));
+            fTmp2 + fTmp1 / ((sfloat) (sizeBuffer * sizeBuffer));
 
     for(i=0; i<sizeBuffer; i++)
     {
         fInstMag += fMagIncr;
         fInstPhase = pLastFrame->pFSinPha[iTrack] + 
-            pLastFrame->pFSinFreq[iTrack] * i + 
-            fAlpha * i * i + fBeta * i * i * i;
+                     pLastFrame->pFSinFreq[iTrack] * i + 
+                     fAlpha * i * i + fBeta * i * i * i;
 
-        /*     pFWaveform[i] += sms_dBToMag(fInstMag) * sms_sine(fInstPhase + PI_2); */
+        /*pFWaveform[i] += sms_dBToMag(fInstMag) * sms_sine(fInstPhase + PI_2);*/
         pFWaveform[i] += sms_dBToMag(fInstMag) * sinf(fInstPhase + PI_2);
     }
+
     /* save current values into buffer */
     pLastFrame->pFSinFreq[iTrack] = fFreq;
     pLastFrame->pFSinAmp[iTrack] = fMag;
@@ -110,14 +110,13 @@ static void SineSynth(sfloat fFreq, sfloat fMag, SMS_Data *pLastFrame,
     int i;
 
     /* if no mag in last frame copy freq from current */
-    if (pLastFrame->pFSinAmp[iTrack] <= 0)
+    if(pLastFrame->pFSinAmp[iTrack] <= 0)
     {
         pLastFrame->pFSinFreq[iTrack] = fFreq;
-        pLastFrame->pFSinPha[iTrack] = 
-            TWO_PI * sms_random();
+        pLastFrame->pFSinPha[iTrack] = TWO_PI * sms_random();
     }
     /* and the other way */
-    else if (fMag <= 0)
+    else if(fMag <= 0)
         fFreq = pLastFrame->pFSinFreq[iTrack];
 
     /* calculate the instantaneous amplitude */
@@ -129,20 +128,18 @@ static void SineSynth(sfloat fFreq, sfloat fMag, SMS_Data *pLastFrame,
     fInstPhase = pLastFrame->pFSinPha[iTrack];
 
     /* generate all the samples */    
-    for (i = 0; i < sizeBuffer; i++)
+    for(i = 0; i < sizeBuffer; i++)
     {
         fInstMag += fMagIncr;
         fInstFreq += fFreqIncr;
         fInstPhase += fInstFreq;
-
         pFBuffer[i] += sms_dBToMag(fInstMag) * sms_sine(fInstPhase);
     }
 
     /* save current values into last values */
     pLastFrame->pFSinFreq[iTrack] = fFreq;
     pLastFrame->pFSinAmp[iTrack] = fMag;
-    pLastFrame->pFSinPha[iTrack] = fInstPhase - 
-        floor(fInstPhase / TWO_PI) * TWO_PI;
+    pLastFrame->pFSinPha[iTrack] = fInstPhase - floor(fInstPhase / TWO_PI) * TWO_PI;
 }
 
 /*! \brief generate all the sinusoids for a given frame
@@ -191,4 +188,3 @@ void sms_sineSynthFrame(SMS_Data *pSmsData, sfloat *pFBuffer,
         }
     }
 }     
-

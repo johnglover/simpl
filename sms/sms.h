@@ -196,15 +196,20 @@ typedef struct
 typedef struct
 {
     int samplingRate;
+    int hopSize;
     int residualSize;
     sfloat *residual;
-    sfloat *residualWindow;
+    sfloat *fftWindow;
+    sfloat *ifftWindow;
+    sfloat windowScale;
     sfloat residualMag;
     sfloat originalMag;
     int nCoeffs;
     sfloat *stocCoeffs;
     int sizeStocMagSpectrum;
     sfloat *stocMagSpectrum;
+    sfloat *stocPhaseSpectrum;
+    sfloat *approx;
     sfloat *approxEnvelope;
     sfloat fftBuffer[SMS_MAX_SPEC * 2];
 } SMS_ResidualParams;
@@ -589,13 +594,17 @@ void sms_arrayScalarTempered(int sizeArray, sfloat *pArray);
 /* function declarations */ 
 void sms_setPeaks(SMS_AnalParams *pAnalParams, int numamps, sfloat* amps,
                   int numfreqs, sfloat* freqs, int numphases, sfloat* phases);
-int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalParams, SMS_SpectralPeaks *pSpectralPeaks);
+int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, 
+                  SMS_AnalParams *pAnalParams, SMS_SpectralPeaks *pSpectralPeaks);
 int sms_findPartials(SMS_Data *pSmsFrame, SMS_AnalParams *pAnalParams);
 int sms_findResidual(int sizeSynthesis, sfloat* pSynthesis,
                      int sizeOriginal, sfloat* pOriginal,
                      SMS_ResidualParams *residualParams);
-void sms_approxResidual(SMS_ResidualParams *residualParams);
-int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_AnalParams *pAnalParams);
+void sms_approxResidual(int sizeResidual, sfloat* residual,
+                        int sizeApprox, sfloat* approx, 
+                        SMS_ResidualParams *residualParams);
+int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, 
+                SMS_AnalParams *pAnalParams);
 void sms_analyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, sfloat fRefFundamental);
 
 int sms_init();  
@@ -615,6 +624,8 @@ void sms_getWindow(int sizeWindow, sfloat *pWindow, int iWindowType);
 void sms_scaleWindow(int sizeWindow, sfloat *pWindow);
 int sms_spectrum(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag, 
                  sfloat *pMag, sfloat *pPhase, sfloat *pFftBuffer);
+int sms_spectrumW(int sizeWindow, sfloat *pWaveform, sfloat *pWindow, int sizeMag, 
+                  sfloat *pMag, sfloat *pPhase, sfloat *pFftBuffer);
 int sms_invSpectrum(int sizeWaveform, sfloat *pWaveform, sfloat *pWindow ,
                     int sizeMag, sfloat *pMag, sfloat *pPhase, sfloat *pFftBuffer);
 /* \todo remove this once invSpectrum is completely implemented */

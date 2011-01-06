@@ -39,6 +39,7 @@ class SMSPeakDetection(simpl.PeakDetection):
         self._analysis_params.nTracks = self._max_peaks
         self._analysis_params.maxPeaks = self._max_peaks
         self._analysis_params.nGuides = self._max_peaks
+        self._analysis_params.preEmphasis = 0
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
         self._peaks = simplsms.SMS_SpectralPeaks(self._max_peaks)
@@ -199,7 +200,10 @@ class SMSPeakDetection(simpl.PeakDetection):
         self._analysis_params.iSizeSound = len(audio)
         self.frames = []
         pos = 0
-        while pos < len(audio):
+        # account for SMS analysis delay
+        # need an extra (max_frame_delay - 1) frames
+        num_samples = (len(audio) - self.hop_size) + ((self.max_frame_delay -1) * self.hop_size)
+        while pos < num_samples:
             # get the next frame size
             if not self._static_frame_size:
                 self.frame_size = self.get_next_frame_size()
@@ -231,6 +235,7 @@ class SMSPartialTracking(simpl.PartialTracking):
         self._analysis_params.iFormat = simplsms.SMS_FORMAT_HP
         self._analysis_params.nTracks = self._max_partials
         self._analysis_params.nGuides = self._max_partials
+        self._analysis_params.preEmphasis = 0
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
         self._sms_header = simplsms.SMS_Header()
@@ -242,6 +247,36 @@ class SMSPartialTracking(simpl.PartialTracking):
         simplsms.sms_freeAnalysis(self._analysis_params)
         simplsms.sms_freeFrame(self._analysis_frame)
         simplsms.sms_free()
+
+    # properties
+    # TODO: make properties for the remaining analysis parameters
+    max_frequency = property(lambda self: self.get_max_frequency(),
+                             lambda self, x: self.set_max_frequency(x))
+    default_fundamental = property(lambda self: self.get_default_fundamental(),
+                                   lambda self, x: self.set_default_fundamental(x))
+    max_frame_delay = property(lambda self: self.get_max_frame_delay(),
+                               lambda self, x: self.set_max_frame_delay(x))
+
+    def get_max_frequency(self):
+        return self._analysis_params.fHighestFreq
+    
+    def set_max_frequency(self, max_frequency):
+        self._analysis_params.fHighestFreq = max_frequency
+        
+    def get_default_fundamental(self):
+        return self._analysis_params.fDefaultFundamental
+    
+    def set_default_fundamental(self, default_fundamental):
+        self._analysis_params.fDefaultFundamental = default_fundamental
+        
+    def get_max_frame_delay(self):
+        return self._analysis_params.iMaxDelayFrames
+    
+    def set_max_frame_delay(self, max_frame_delay):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.iMaxDelayFrames = max_frame_delay
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
 
     def get_max_partials(self):
         return self._analysis_params.nTracks
@@ -290,6 +325,17 @@ class SMSPartialTracking(simpl.PartialTracking):
             peaks.append(p)
         return peaks
     
+    def find_partials(self, frames):
+        """Find partials from the sinusoidal peaks in a list of Frames"""
+        self.frames = []
+        for frame in frames:
+            frame.partials = self.update_partials(frame)
+            self.frames.append(frame)
+        # account for SMS analysis delay
+        # the first extra (max_frame_delay) frames are blank
+        if len(self.frames) > (self.max_frame_delay):
+            self.frames = self.frames[self.max_frame_delay:]
+        return self.frames
 
 class SMSSynthesis(simpl.Synthesis):
     "Sinusoidal resynthesis using SMS"
@@ -299,13 +345,15 @@ class SMSSynthesis(simpl.Synthesis):
         simplsms.sms_init()
         self._synth_params = simplsms.SMS_SynthParams() 
         simplsms.sms_initSynthParams(self._synth_params)
-        self._synth_params.iDetSynthType = simplsms.SMS_DET_IFFT
+        self._synth_params.iSamplingRate = self._sampling_rate
+        self._synth_params.iDetSynthType = simplsms.SMS_DET_SIN
         self._synth_params.iSynthesisType = simplsms.SMS_STYPE_DET
         self._synth_params.iStochasticType = simplsms.SMS_STOC_NONE
-        # use the default simpl hop size instead of the default SMS hop size
         self._synth_params.sizeHop = self._hop_size 
+        self._synth_params.nTracks = self._max_partials
+        self._synth_params.deEmphasis = 0
         simplsms.sms_initSynth(self._synth_params)
-        self._current_frame = simpl.zeros(self.hop_size)
+        self._current_frame = simpl.zeros(self._hop_size)
         self._analysis_frame = simplsms.SMS_Data()
         simplsms.sms_allocFrame(self._analysis_frame, self.max_partials, 
                                 self.num_stochastic_coeffs, 1, self.stochastic_type, 0)
@@ -336,7 +384,7 @@ class SMSSynthesis(simpl.Synthesis):
         simplsms.sms_freeSynth(self._synth_params)
         self._synth_params.sizeHop = hop_size
         simplsms.sms_initSynth(self._synth_params)
-        self._current_frame = simpl.zeros(self.hop_size)
+        self._current_frame = simpl.zeros(hop_size)
         
     def get_max_partials(self):
         return self._synth_params.nTracks
@@ -365,7 +413,7 @@ class SMSSynthesis(simpl.Synthesis):
         return self._synth_params.iDetSynthesisType
     
     def set_det_synthesis_type(self, det_synthesis_type):
-        self._synth_params.iDetSynthesisType = det_synthesis_type
+        self._synth_params.iDetSynthType = det_synthesis_type
 
     def get_num_stochastic_coeffs(self):
         return self._synth_params.nStochasticCoeff
@@ -404,7 +452,8 @@ class SMSSynthesis(simpl.Synthesis):
         amps = simpl.zeros(self.max_partials)
         freqs = simpl.zeros(self.max_partials)
         phases = simpl.zeros(self.max_partials)
-        for i in range(len(frame.partials)):
+        num_partials = min(self.max_partials, len(frame.partials))
+        for i in range(num_partials):
             amps[i] = frame.partials[i].amplitude
             freqs[i] = frame.partials[i].frequency
             phases[i] = frame.partials[i].phase
@@ -423,25 +472,53 @@ class SMSResidual(simpl.Residual):
         simplsms.sms_init()
         self._residual_params = simplsms.SMS_ResidualParams()
         simplsms.sms_initResidualParams(self._residual_params)
-        self._residual_params.residualSize = self._hop_size# * 2
+        self._residual_params.hopSize = self._hop_size
         simplsms.sms_initResidual(self._residual_params)
         
     def __del__(self):
         simplsms.sms_freeResidual(self._residual_params)
         simplsms.sms_free()
+
+    def get_hop_size(self):
+        return self._residual_params.hopSize
+    
+    def set_hop_size(self, hop_size):
+        simplsms.sms_freeResidual(self._residual_params)
+        self._residual_params.hopSize = hop_size
+        simplsms.sms_initResidual(self._residual_params)
         
     def residual_frame(self, synth, original):
         "Computes the residual signal for a frame of audio"
         simplsms.sms_findResidual(synth, original, self._residual_params)
-        residual = simpl.zeros(self._residual_params.residualSize)
+        residual = simpl.zeros(self._residual_params.hopSize)
         self._residual_params.getResidual(residual)
+        return residual
+
+    def find_residual(self, synth, original):
+        "Calculate and return the residual signal"
+        import numpy as np
+        # pad the signals if necessary
+        if len(synth) % self.hop_size != 0:
+            synth = np.hstack((synth, np.zeros(self.hop_size - (len(synth) % self.hop_size))))
+        if len(original) % self.hop_size != 0:
+            original = np.hstack((original, np.zeros(self.hop_size - (len(original) % self.hop_size))))
+
+        num_frames = len(original) / self.hop_size
+        residual = simpl.array([])
+        sample_offset = 0
+
+        for i in range(num_frames):
+            synth_frame = synth[sample_offset:sample_offset+self.hop_size]
+            original_frame = original[sample_offset:sample_offset+self.hop_size]
+            residual = np.hstack((residual, 
+                                  self.residual_frame(synth_frame, original_frame)))
+            sample_offset += self.hop_size
         return residual
 
     def synth_frame(self, synth, original):
         "Calculate and return one frame of the synthesised residual signal"
-        self.residual_frame(synth, original)
-        simplsms.sms_approxResidual(self._residual_params)
-        residual_approx = simpl.zeros(self._residual_params.residualSize)
-        self._residual_params.getApprox(residual_approx)
-        return residual_approx
+        residual = self.residual_frame(synth, original)
+        approx = simpl.zeros(self._residual_params.hopSize)
+        simplsms.sms_approxResidual(residual, approx, self._residual_params)
+        return approx
 

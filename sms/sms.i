@@ -31,7 +31,6 @@
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeAmp, double* pAmp)};
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeMag, double* pMag)};
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizePhase, double* pPhase)};
-%apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeRes, double* pRes)};
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeCepstrum, double* pCepstrum)};
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeEnv, double* pEnv)};
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeTrack, double* pTrack)};
@@ -39,6 +38,11 @@
 %apply(int DIM1, double* IN_ARRAY1) {(int sizeInArray, double* pInArray)};
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeOutArray, double* pOutArray)};
 %apply(int DIM1, double* INPLACE_ARRAY1) {(int sizeHop, double* pSynthesis)};
+%apply(int DIM1, double* INPLACE_ARRAY1)
+{
+    (int sizeResidual, double* residual),
+    (int sizeApprox, double* approx)
+}
 %apply(int DIM1, double* IN_ARRAY1)
 {
     (int numamps, double* amps),
@@ -504,25 +508,14 @@
 {
     void getResidual(int sizeArray, sfloat *pArray)
     {
-        if(sizeArray < $self->residualSize)
+        if(sizeArray < $self->hopSize)
         {
             sms_error("numpy array not big enough");
             return;
         }
         int i;
-        for(i = 0; i < $self->residualSize; i++)
+        for(i = 0; i < $self->hopSize; i++)
             pArray[i] = $self->residual[i];
-    }
-    void getApprox(int sizeArray, sfloat *pArray)
-    {
-        if(sizeArray < $self->nCoeffs)
-        {
-            sms_error("numpy array not big enough");
-            return;
-        }
-        int i;
-        for(i = 0; i < $self->nCoeffs; i++)
-            pArray[i] = $self->approxEnvelope[i];
     }
 }
 

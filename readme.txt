@@ -95,7 +95,6 @@ general:
   are useful for testing though.
 
 sndobj:
-- fix inaccuracy in the simplsndobj algorithms
 - create exception objects
 - add a set_synthesis_type property to SndObjSynthesis
 - create properties for threshold and num_bins in SndObjPartialTracking class
@@ -103,6 +102,4 @@ sndobj:
 - make peak detection use the new window_size property
 
 sms:
-- can sms_scaleDet be moved to the harmonic analysis phase?
-- include stochastic residual synthesis in SMSResidual
-
+- move sms_scaleDet to the harmonic analysis phase

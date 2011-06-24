@@ -18,7 +18,7 @@ import simpl
 import matplotlib.pyplot as plt
 from scipy.io.wavfile import read
 
-input_file = '../tests/audio/flute.wav'
+input_file = '../../tests/audio/flute.wav'
 audio_in_data = read(input_file)
 audio_in = simpl.asarray(audio_in_data[1]) / 32768.0  # values between -1 and 1
 sample_rate = audio_in_data[0]
@@ -34,4 +34,3 @@ pt.max_partials = 60
 partials = pt.find_partials(peaks)
 simpl.plot.plot_partials(partials)
 plt.show()
-

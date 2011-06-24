@@ -18,7 +18,7 @@ import simpl
 import numpy as np
 from scipy.io.wavfile import read, write
 
-input_file = '../tests/audio/flute.wav'
+input_file = '../../tests/audio/flute.wav'
 output_file = 'residual.wav'
 
 audio_data = read(input_file)

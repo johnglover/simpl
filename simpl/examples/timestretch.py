@@ -19,7 +19,7 @@ from simpl.fx import time_stretch
 from scipy.io.wavfile import read, write
 import numpy as np
 
-input_file = '../tests/audio/flute.wav'
+input_file = '../../tests/audio/flute.wav'
 output_file = 'flute_2x.wav'
 time_stretch_factor = 2
 
@@ -40,4 +40,3 @@ audio_out = sndobj_synth.synth(partials)
 audio_out = np.asarray(audio_out * 32768, np.int16)
 print "Writing output to", output_file
 write(output_file, 44100, audio_out)
-

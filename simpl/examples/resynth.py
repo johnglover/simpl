@@ -18,7 +18,7 @@ import simpl
 import numpy as np
 from scipy.io.wavfile import read, write
 
-input_file = '../tests/audio/flute.wav'
+input_file = '../../tests/audio/flute.wav'
 output_file = 'resynth.wav'
 
 audio_data = read(input_file)
@@ -36,4 +36,3 @@ synth = simpl.SndObjSynthesis()
 audio_out = synth.synth(partials)
 audio_out = np.asarray(audio_out * 32768, np.int16)
 write(output_file, 44100, audio_out)
-

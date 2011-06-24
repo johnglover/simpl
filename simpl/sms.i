@@ -1,10 +1,10 @@
 %module simplsms
 %{
-    #include "sms.h"
+    #include "../src/sms/sms.h"
     #define SWIG_FILE_WITH_INIT
 %}
 
-%include "../common/numpy.i"
+%include "numpy.i"
 
 %init 
 %{
@@ -56,7 +56,7 @@
     (int sizeResidual, double* pResidual)
 }
 
-%include "sms.h" 
+%include "../src/sms/sms.h" 
 
 /* overload the functions that will be wrapped to fit numpy typmaps (defined below)
  * by renaming the wrapped names back to originals 

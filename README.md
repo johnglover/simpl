@@ -46,6 +46,7 @@ Dependencies
 * Python (>= 2.6.*)
 * NumPy
 * SciPy
+* GNU Scientific Library (for libsms)
 * Developers who wish to run the unit tests also need the original open source libraries:
     * sndobj: http://sndobj.sourceforge.net/
     * libsms: http://mtg.upf.edu/static/libsms/

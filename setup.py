@@ -38,7 +38,6 @@ include_dirs = [numpy_include, '/usr/local/include']
 # SndObj Library
 # ------------------------------------------------------------------------------
 
-# sources
 sndobj_sources = """
 	SndObj.cpp SndIO.cpp FFT.cpp IFFT.cpp PVA.cpp PVS.cpp IFGram.cpp 
     SinAnal.cpp SinSyn.cpp AdSyn.cpp ReSyn.cpp HarmTable.cpp HammingTable.cpp
@@ -82,8 +81,36 @@ sndobj = Extension("simpl/_simplsndobj",
                    sources=sndobj_sources,
                    include_dirs=sndobj_include_dirs,
                    define_macros=sndobj_macros,
-                   # libraries=['m', 'fftw3'],
                    swig_opts=sndobj_swig_opts)
+
+# ------------------------------------------------------------------------------
+# SMS
+# ------------------------------------------------------------------------------
+
+sms_sources = """
+    OOURA.c cepstrum.c peakContinuation.c soundIO.c tables.c
+    fileIO.c peakDetection.c spectralApprox.c transforms.c
+    filters.c residual.c spectrum.c windows.c SFMT.c fixTracks.c
+    sineSynth.c stocAnalysis.c harmDetection.c sms.c synthesis.c
+    analysis.c modify.c
+    """.split()
+
+sms_sources = map(lambda x: 'src/sms/' + x, sms_sources) 
+sms_sources.append("simpl/sms.i")
+
+# sms_macros = []
+# sms_macros.extend(macros)
+# sms_swig_opts = []
+# sms_swig_opts.extend(swig_opts)
+sms_include_dirs = ['src/sms']
+sms_include_dirs.extend(include_dirs)
+
+sndobj = Extension("simpl/_simplsms", 
+                   sources=sms_sources,
+                   include_dirs=sms_include_dirs,
+                   libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
+                   extra_compile_args=['-DMERSENNE_TWISTER'])
+
 
 # ------------------------------------------------------------------------------
 # Package

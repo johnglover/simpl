@@ -19,7 +19,6 @@
 
 #include <fftw3.h>
 #include <math.h>
-#include "detectionfunctions.h"
 
 typedef double sample;
 

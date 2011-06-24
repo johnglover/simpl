@@ -470,4 +470,3 @@ void print_list(PeakList* p)
         i++;
     }
 }
-

@@ -122,16 +122,5 @@ class TestInit(unittest.TestCase):
         self.assert_(sms_allocFrameH(self.sms_header, self.data) == 0)
         delete_test_audio_file()
 
-class TestAnalysis(unittest.TestCase):
-    pass
-# sms_analyze:
-#   if called less than delay times should return 0
-# sms_fundDeviation
-# sms_peakContinuation
-# sms_cleanTracks
-# sms_getWindow
-# sms_residual
-# sms_stocAnalysis   
-
 if __name__ == '__main__':
     unittest.main()

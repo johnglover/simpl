@@ -22,4 +22,3 @@ class TestPeakDetection(object):
     frame_size = 2048
     hop_size = 512
     max_peaks = 10
-

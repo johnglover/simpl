@@ -27,4 +27,3 @@ def print_partials(partials):
         for peak_number, peak in enumerate(partial.peaks):
             print peak.frequency,
         print
-

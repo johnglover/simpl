@@ -1,12 +1,16 @@
 Sinusoidal Modelling - A Python Library (SiMPL)
-Version 0.2 (first released in December 2010)
+===============================================
 
-Copyright (c) 2009 John Glover, National University of Ireland, Maynooth
+Version 0.3
+
+Copyright (c) 2011 John Glover, National University of Ireland, Maynooth
 http://simplsound.sourceforge.net
-john.c.glover@nuim.ie
+j@johnglover.net
 
------------------------------------------------------------------------------------------
- 
+
+License
+-------
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -21,7 +25,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
------------------------------------------------------------------------------------------
 
 Introduction
 ------------
@@ -39,27 +42,26 @@ analysis/synthesis algorithms.
 Dependencies
 ------------
 
-- C/C++ compiler
-- Python (>= 2.6.*)
-- SCons (>= 1.2.0)
-- NumPy
-- SciPy
-- Developers who wish to run the unit tests also need the original open source libraries:
-    - sndobj: http://sndobj.sourceforge.net/
-    - libsms: http://mtg.upf.edu/static/libsms/
+* C/C++ compiler
+* Python (>= 2.6.*)
+* NumPy
+* SciPy
+* Developers who wish to run the unit tests also need the original open source libraries:
+    * sndobj: http://sndobj.sourceforge.net/
+    * libsms: http://mtg.upf.edu/static/libsms/
 
 
 Installation
 ------------
 
-To compile, in the root directory, run:
-> scons
+First build the extension module (so that the SWIG wrapper files are created) by running
+the following command in the root folder:
 
-To install, run:
-> sudo scons install
+    $ python setup.py build
 
-For a full list of options:
-> scons --help
+Then to install the module in your Python site-packages directory:
+
+    $ python setup.py install
 
 
 Usage
@@ -87,19 +89,22 @@ To Do
 -----
 
 general:
-- include new RT Audio code
-- tidy up code for HMM/LP partial tracking and Loris integration
-- include binaries for Mac OS X and Windows so compilation from source is not needed
-- performance issues: MQ, LP and HMM algorithms need to be coded in C/C++ really,
+
+* include new RT Audio code
+* tidy up code for HMM/LP partial tracking and Loris integration
+* include binaries for Mac OS X and Windows so compilation from source is not needed
+* performance issues: MQ, LP and HMM algorithms need to be coded in C/C++ really,
   Python is just too slow, particularly for real-time use. The pure Python implementations
   are useful for testing though.
 
 sndobj:
-- create exception objects
-- add a set_synthesis_type property to SndObjSynthesis
-- create properties for threshold and num_bins in SndObjPartialTracking class
-- make sndobjs use self.sampling_rate
-- make peak detection use the new window_size property
+
+* create exception objects
+* add a set_synthesis_type property to SndObjSynthesis
+* create properties for threshold and num_bins in SndObjPartialTracking class
+* make sndobjs use self.sampling_rate
+* make peak detection use the new window_size property
 
 sms:
-- move sms_scaleDet to the harmonic analysis phase
+
+* move sms_scaleDet to the harmonic analysis phase

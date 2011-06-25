@@ -105,12 +105,11 @@ sms_sources.append("simpl/sms.i")
 sms_include_dirs = ['src/sms']
 sms_include_dirs.extend(include_dirs)
 
-sndobj = Extension("simpl/_simplsms", 
-                   sources=sms_sources,
-                   include_dirs=sms_include_dirs,
-                   libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
-                   extra_compile_args=['-DMERSENNE_TWISTER'])
-
+sms = Extension("simpl/_simplsms", 
+                sources=sms_sources,
+                include_dirs=sms_include_dirs,
+                libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
+                extra_compile_args=['-DMERSENNE_TWISTER'])
 
 # ------------------------------------------------------------------------------
 # Package
@@ -128,5 +127,5 @@ setup(name='simpl',
       author_email='j@johnglover.net',
       platforms=["Linux", "Mac OS-X", "Unix", "Windows"],
       version='0.3',
-      ext_modules=[sndobj],
+      ext_modules=[sndobj, sms],
       packages=['simpl', 'simpl.plot'])

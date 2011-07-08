@@ -14,23 +14,23 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from basetypes import Frame, Peak, Partial
-from basetypes import PeakDetection, PartialTracking, Synthesis, Residual
-from basetypes import compare_peak_amps, compare_peak_freqs
-from sndobj import SndObjPeakDetection, SndObjPartialTracking, SndObjSynthesis
-from sms import SMSPeakDetection, SMSPartialTracking, SMSSynthesis, SMSResidual
-from loris import LorisPeakDetection, LorisPartialTracking, LorisSynthesis
-from mq import MQPeakDetection, MQPartialTracking, MQSynthesis
-from plot import plot_peaks, plot_partials
-from audio import read_wav
-
+import simpl
+from simpl import simplloris
 import numpy as np
 
-def array (n, type=float):
-    return(np.array(n, dtype=type))
+class LorisPeakDetection(simpl.PeakDetection):
+    "Sinusoidal peak detection using Loris"
+    def __init__(self):
+        simpl.PeakDetection.__init__(self)
+        
 
-def asarray (n, type=float):
-    return(np.asarray(n, dtype=type))
-
-def zeros (n, type=float):
-    return(np.zeros(n, dtype=type))
+class LorisPartialTracking(simpl.PartialTracking):
+    "Partial tracking using the algorithm from Loris"
+    def __init__(self):
+        simpl.PartialTracking.__init__(self)
+        
+        
+class LorisSynthesis(simpl.Synthesis):
+    "Sinusoidal resynthesis using Loris"
+    def __init__(self, synthesis_type='adsyn'):
+        simpl.Synthesis.__init__(self)

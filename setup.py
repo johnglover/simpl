@@ -10,6 +10,7 @@ analysis/synthesis algorithms.
 """
 from distutils.core import setup, Extension
 import os
+from glob import glob
 
 # ------------------------------------------------------------------------------
 # Global
@@ -31,7 +32,7 @@ except ImportError:
 
 macros = []
 link_args = [] 
-swig_opts = ['-c++', '-Isrc']
+swig_opts = ['-c++']
 include_dirs = [numpy_include, '/usr/local/include'] 
 
 # ------------------------------------------------------------------------------
@@ -97,11 +98,6 @@ sms_sources = """
 
 sms_sources = map(lambda x: 'src/sms/' + x, sms_sources) 
 sms_sources.append("simpl/sms.i")
-
-# sms_macros = []
-# sms_macros.extend(macros)
-# sms_swig_opts = []
-# sms_swig_opts.extend(swig_opts)
 sms_include_dirs = ['src/sms']
 sms_include_dirs.extend(include_dirs)
 
@@ -110,6 +106,21 @@ sms = Extension("simpl/_simplsms",
                 include_dirs=sms_include_dirs,
                 libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
                 extra_compile_args=['-DMERSENNE_TWISTER'])
+
+# ------------------------------------------------------------------------------
+# Loris
+# ------------------------------------------------------------------------------
+
+loris_sources = glob('src/loris/*.C')
+loris_sources.extend(glob('src/loris/*.c'))
+loris_sources.append('simpl/loris.i')
+loris_include_dirs = ['src/loris'] 
+loris_include_dirs.extend(include_dirs)
+
+loris = Extension("simpl/_simplloris", 
+                  sources=loris_sources,
+                  include_dirs=loris_include_dirs,
+                  swig_opts=swig_opts)
 
 # ------------------------------------------------------------------------------
 # Package
@@ -127,5 +138,5 @@ setup(name='simpl',
       author_email='j@johnglover.net',
       platforms=["Linux", "Mac OS-X", "Unix", "Windows"],
       version='0.3',
-      ext_modules=[sndobj, sms],
+      ext_modules=[sndobj, sms, loris],
       packages=['simpl', 'simpl.plot'])

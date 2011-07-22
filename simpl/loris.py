@@ -18,6 +18,8 @@ import simpl
 from simpl import simplloris
 import numpy as np
 
+Analyzer = simplloris.Analyzer
+
 class LorisPeakDetection(simpl.PeakDetection):
     "Sinusoidal peak detection using Loris"
     def __init__(self):

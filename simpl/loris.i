@@ -1724,6 +1724,12 @@ Partial formation.") analyze;
 			return partials;
 		}
 	}
+
+%feature("docstring",
+"Analyze a vector of (mono) samples at the given sample rate 	  	
+(in Hz) and return the resulting peaks in a Peaks object.");
+    
+    void analyze_peaks( const std::vector<double> & vec, double srate );
 	
 %feature("docstring",
 "Return the amplitude floor (lowest detected spectral amplitude),              

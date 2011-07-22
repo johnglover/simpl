@@ -732,6 +732,11 @@ Analyzer::analyze( const double * bufBegin, const double * bufEnd, double srate,
     }
 }
 
+void 
+Analyzer::analyze_peaks( const std::vector<double> & vec, double srate )
+{
+    printf("analyze_peaks\n");
+}
 // -- parameter access --
 
 // ---------------------------------------------------------------------------

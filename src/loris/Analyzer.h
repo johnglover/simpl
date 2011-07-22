@@ -37,18 +37,16 @@
 #include "LinearEnvelope.h"
 #include "Partial.h"
 #include "PartialList.h"
-// #include "SpectralPeaks.h"
+#include "SpectralPeaks.h"
 
 //  begin namespace
 namespace Loris {
 
 class Envelope;
 class LinearEnvelopeBuilder;
-// class Peaks;
-// class Peaks::iterator;
 //  oooo, this is nasty, need to fix it!
-class SpectralPeak;
-typedef std::vector< SpectralPeak > Peaks;
+// class SpectralPeak;
+// typedef std::vector< SpectralPeak > Peaks;
 
 // ---------------------------------------------------------------------------
 //  class Analyzer
@@ -251,6 +249,8 @@ public:
     //!         frequency contour expected of the resulting Partials.
     void analyze( const double * bufBegin, const double * bufEnd, double srate,
                   const Envelope & reference );
+
+    void analyze_peaks( const std::vector<double> & vec, double srate );
     
 //  -- parameter access --
 

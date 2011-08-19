@@ -60,7 +60,8 @@ public:
     //  --- lifecycle ---
     
     SpectralPeak( double t, const Breakpoint & bp ) : m_time( t ), m_breakpoint( bp ) {}
-    
+    SpectralPeak() {}
+    ~SpectralPeak() {}
     
     //  --- access ---
     

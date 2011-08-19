@@ -1,4 +1,5 @@
 %include exception.i 
+%include std_string.i
 %include "numpy.i"
 
 %exception 

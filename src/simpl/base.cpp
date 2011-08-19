@@ -40,7 +40,7 @@ Peak::~Peak()
 }
 
 // Returns true iff this peak is unmatched in the given direction, and has positive amplitude
-bool Peak::is_free(const char* direction)
+bool Peak::is_free(string direction)
 {
     if(amplitude <= 0.0)
     {

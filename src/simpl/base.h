@@ -20,8 +20,11 @@
  */
 
 #include <vector>
+#include <string>
 
 #include "exceptions.h"
+
+using namespace std;
 
 namespace Simpl 
 {
@@ -48,7 +51,7 @@ public:
     {
         return previous_peak == NULL;
     };
-    bool is_free(const char* direction="forwards");
+    bool is_free(string direction = string("forwards"));
 };
 
 typedef std::vector<Peak> Peaks;

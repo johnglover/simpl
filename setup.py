@@ -8,7 +8,7 @@ to be released in software. Simpl is primarily intended as a tool for other rese
 in the field, allowing them to easily combine, compare and contrast many of the published
 analysis/synthesis algorithms.
 """
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import os
 from glob import glob
 
@@ -107,20 +107,22 @@ sms = Extension("simpl/_simplsms",
                 libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
                 extra_compile_args=['-DMERSENNE_TWISTER'])
 
+
 # ------------------------------------------------------------------------------
-# Loris
+# SIMPL
 # ------------------------------------------------------------------------------
 
-loris_sources = glob('src/loris/*.C')
-loris_sources.extend(glob('src/loris/*.c'))
-loris_sources.append('simpl/loris.i')
-loris_include_dirs = ['src/loris'] 
-loris_include_dirs.extend(include_dirs)
+simpl_sources = glob('src/simpl/*.cpp')
+simpl_include_dirs = ['src/simpl'] 
+simpl_include_dirs.extend(include_dirs)
 
-loris = Extension("simpl/_simplloris", 
-                  sources=loris_sources,
-                  include_dirs=loris_include_dirs,
-                  swig_opts=swig_opts)
+simplloris_sources = ['simpl/simplloris.i']
+simplloris_sources.extend(simpl_sources)
+
+simplloris = Extension("simpl/_simplloris", 
+                       sources=simplloris_sources,
+                       include_dirs=simpl_include_dirs,
+                       swig_opts=swig_opts)
 
 # ------------------------------------------------------------------------------
 # Package
@@ -138,5 +140,5 @@ setup(name='simpl',
       author_email='j@johnglover.net',
       platforms=["Linux", "Mac OS-X", "Unix", "Windows"],
       version='0.3',
-      ext_modules=[sndobj, sms, loris],
+      ext_modules=[sndobj, sms, simplloris],
       packages=['simpl', 'simpl.plot'])

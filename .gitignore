@@ -1,3 +1,16 @@
+# OS generated files
+.DS_Store?
+Icon?
+Thumbs.db
+
+# Editor/IDE files
+.settings
+*.swp
+
+# Distutils/pip files
+build
+*.egg-info
+
 # Compiled source
 *.pyc
 *.o
@@ -13,18 +26,6 @@ simpl/simplsndobj.py
 simpl/simplsms.py
 simpl/simplloris.py
 
-# OS generated files
-.DS_Store?
-Icon?
-Thumbs.db
-
-# Editor/IDE files
-.settings
-*.swp
-
-# Test audio files
+# Test files
 tests/audio
-
-# Distutils/pip files
-build
-*.egg-info
+tests/testbase

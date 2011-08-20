@@ -8,7 +8,6 @@
 
 %include "common.i"
 
-%feature("director") Simpl::Peak;
 %feature("director") Simpl::LorisPeakDetection;
 
 %init 

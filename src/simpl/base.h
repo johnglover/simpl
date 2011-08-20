@@ -31,7 +31,11 @@ namespace Simpl
 
 typedef double number;
 
-// A Spectral Peak
+// ---------------------------------------------------------------------------
+// Peak
+//
+// A spectral Peak
+// ---------------------------------------------------------------------------
 class Peak
 {
 public:
@@ -55,6 +59,51 @@ public:
 };
 
 typedef std::vector<Peak> Peaks;
+
+// ---------------------------------------------------------------------------
+// Partial
+// ---------------------------------------------------------------------------
+class Partial {};
+
+typedef std::vector<Partial> Partials;
+
+// ---------------------------------------------------------------------------
+// Frame
+// 
+// Represents a frame of audio information.
+// This can be: - raw audio samples 
+//              - an unordered list of sinusoidal peaks 
+//              - an ordered list of partials
+//              - synthesised audio samples
+//              - residual samples
+//              - synthesised residual samples
+// ---------------------------------------------------------------------------
+class Frame
+{
+protected:
+    int size;
+    int max_peaks;
+    int max_partials;
+    void init();
+
+public:
+    Peaks peaks;
+    Partials partials;
+    std::vector<number> audio;
+    std::vector<number> synth;
+    std::vector<number> residual;
+    std::vector<number> synth_residual;
+
+    Frame();
+    Frame(int frame_size);
+    ~Frame();
+    int get_size();
+    int get_max_peaks();
+    int get_max_partials();
+    void set_size(int new_size);
+    void set_max_peaks(int new_max_peaks);
+    void set_max_partials(int new_max_partials);
+};
 
 } // end of namespace Simpl
 

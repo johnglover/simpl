@@ -23,6 +23,9 @@ using namespace std;
 
 namespace Simpl {
 
+// ---------------------------------------------------------------------------
+//	Peak
+// ---------------------------------------------------------------------------
 Peak::Peak()
 {
     amplitude = 0.0;
@@ -67,6 +70,73 @@ bool Peak::is_free(string direction)
     }
 
     return true;
+}
+
+// ---------------------------------------------------------------------------
+//	Frame
+// ---------------------------------------------------------------------------
+Frame::Frame()
+{
+    size = 512;
+    init();
+}
+
+Frame::Frame(int frame_size)
+{
+    size = frame_size;
+    init();
+}
+
+Frame::~Frame()
+{
+}
+
+void Frame::init()
+{
+    audio.resize(size);
+    synth.resize(size);
+    residual.resize(size);
+    synth_residual.resize(size);
+    max_peaks = 100;
+    peaks.resize(max_peaks);
+    max_partials = 100;
+    partials.resize(max_partials);
+}
+
+int Frame::get_size()
+{
+    return size;
+}
+
+int Frame::get_max_peaks()
+{
+    return max_peaks;
+}
+
+int Frame::get_max_partials()
+{
+    return max_partials;
+}
+
+void Frame::set_size(int new_size)
+{
+    size = new_size;
+    audio.resize(size);
+    synth.resize(size);
+    residual.resize(size);
+    synth_residual.resize(size);
+}
+
+void Frame::set_max_peaks(int new_max_peaks)
+{
+    max_peaks = new_max_peaks;
+    peaks.resize(max_peaks);
+}
+
+void Frame::set_max_partials(int new_max_partials)
+{
+    max_partials = new_max_partials;
+    partials.resize(max_partials);
 }
 
 } // end of namespace Simpl

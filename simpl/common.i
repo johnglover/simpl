@@ -1,6 +1,10 @@
 %include exception.i 
 %include std_string.i
+%include std_vector.i
+%include std_list.i
 %include "numpy.i"
+
+%template(DoubleVector) std::vector<Simpl::number>;
 
 %exception 
 {

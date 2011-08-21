@@ -136,6 +136,7 @@ public:
     void frame_size(int new_frame_size);
     bool static_frame_size();
     void static_frame_size(bool new_static_frame_size);
+    int next_frame_size();
     int hop_size();
     void hop_size(int new_hop_size);
     int max_peaks();

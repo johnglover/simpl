@@ -183,6 +183,7 @@ class TestPeakDetection : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(test_constructor);
     CPPUNIT_TEST(test_frame_size);
     CPPUNIT_TEST(test_static_frame_size);
+    CPPUNIT_TEST(test_next_frame_size);
     CPPUNIT_TEST(test_hop_size);
     CPPUNIT_TEST(test_max_peaks);
     CPPUNIT_TEST(test_window_type);
@@ -226,6 +227,11 @@ protected:
         pd->static_frame_size(false);
         CPPUNIT_ASSERT(!pd->static_frame_size());
         pd->static_frame_size(true);
+    }
+
+    void test_next_frame_size()
+    {
+        CPPUNIT_ASSERT(pd->next_frame_size() == pd->frame_size());
     }
 
     void test_hop_size()

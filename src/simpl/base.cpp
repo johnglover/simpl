@@ -188,6 +188,11 @@ void PeakDetection::static_frame_size(bool new_static_frame_size)
     _static_frame_size = new_static_frame_size;
 }
 
+int PeakDetection::next_frame_size()
+{
+    return _frame_size;
+}
+
 int PeakDetection::hop_size()
 {
     return _hop_size;

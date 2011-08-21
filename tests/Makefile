@@ -16,4 +16,4 @@ exceptions.o: ../src/simpl/exceptions.cpp
 	$(CC) $(CFLAGS) ../src/simpl/exceptions.cpp
 
 clean:
-	rm -rf *o testbase
+	rm -rf *.o testbase

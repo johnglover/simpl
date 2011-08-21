@@ -77,13 +77,13 @@ bool Peak::is_free(string direction)
 // ---------------------------------------------------------------------------
 Frame::Frame()
 {
-    size = 512;
+    _size = 512;
     init();
 }
 
 Frame::Frame(int frame_size)
 {
-    size = frame_size;
+    _size = frame_size;
     init();
 }
 
@@ -93,50 +93,154 @@ Frame::~Frame()
 
 void Frame::init()
 {
-    audio.resize(size);
-    synth.resize(size);
-    residual.resize(size);
-    synth_residual.resize(size);
-    max_peaks = 100;
-    peaks.resize(max_peaks);
-    max_partials = 100;
-    partials.resize(max_partials);
+    audio.resize(_size);
+    synth.resize(_size);
+    residual.resize(_size);
+    synth_residual.resize(_size);
+    _max_peaks = 100;
+    peaks.resize(_max_peaks);
+    _max_partials = 100;
+    partials.resize(_max_partials);
 }
 
-int Frame::get_size()
+int Frame::size()
 {
-    return size;
+    return _size;
 }
 
-int Frame::get_max_peaks()
+void Frame::size(int new_size)
 {
-    return max_peaks;
+    _size = new_size;
+    audio.resize(_size);
+    synth.resize(_size);
+    residual.resize(_size);
+    synth_residual.resize(_size);
 }
 
-int Frame::get_max_partials()
+int Frame::max_peaks()
 {
-    return max_partials;
+    return _max_peaks;
 }
 
-void Frame::set_size(int new_size)
+void Frame::max_peaks(int new_max_peaks)
 {
-    size = new_size;
-    audio.resize(size);
-    synth.resize(size);
-    residual.resize(size);
-    synth_residual.resize(size);
+    _max_peaks = new_max_peaks;
+    peaks.resize(_max_peaks);
 }
 
-void Frame::set_max_peaks(int new_max_peaks)
+int Frame::max_partials()
 {
-    max_peaks = new_max_peaks;
-    peaks.resize(max_peaks);
+    return _max_partials;
 }
 
-void Frame::set_max_partials(int new_max_partials)
+void Frame::max_partials(int new_max_partials)
 {
-    max_partials = new_max_partials;
-    partials.resize(max_partials);
+    _max_partials = new_max_partials;
+    partials.resize(_max_partials);
+}
+
+// ---------------------------------------------------------------------------
+//	PeakDetection
+// ---------------------------------------------------------------------------
+
+PeakDetection::PeakDetection()
+{
+    _sampling_rate = 44100;
+    _frame_size = 2048;
+    _static_frame_size = true;
+    _hop_size = 512;
+    _max_peaks = 100;
+    _window_type = "hamming";
+    _window_size = 2048;
+    _min_peak_separation = 1.0; // in Hz
+}
+
+PeakDetection::~PeakDetection()
+{
+}
+
+int PeakDetection::sampling_rate()
+{
+    return _sampling_rate;
+}
+
+void PeakDetection::sampling_rate(int new_sampling_rate)
+{
+    _sampling_rate = new_sampling_rate;
+}
+
+int PeakDetection::frame_size()
+{
+    return _frame_size;
+}
+void PeakDetection::frame_size(int new_frame_size)
+{
+    _frame_size = new_frame_size;
+}
+
+bool PeakDetection::static_frame_size()
+{
+    return _static_frame_size;
+}
+
+void PeakDetection::static_frame_size(bool new_static_frame_size)
+{
+    _static_frame_size = new_static_frame_size;
+}
+
+int PeakDetection::hop_size()
+{
+    return _hop_size;
+}
+
+void PeakDetection::hop_size(int new_hop_size)
+{
+    _hop_size = new_hop_size;
+}
+
+int PeakDetection::max_peaks()
+{
+    return _max_peaks;
+}
+
+void PeakDetection::max_peaks(int new_max_peaks)
+{
+    _max_peaks = new_max_peaks;
+}
+
+std::string PeakDetection::window_type()
+{
+    return _window_type;
+}
+
+void PeakDetection::window_type(std::string new_window_type)
+{
+    _window_type = new_window_type;
+}
+
+int PeakDetection::window_size()
+{
+    return _window_size;
+}
+
+void PeakDetection::window_size(int new_window_size)
+{
+    _window_size = new_window_size;
+}
+
+number PeakDetection::min_peak_separation()
+{
+    return _min_peak_separation;
+}
+
+void PeakDetection::min_peak_separation(number new_min_peak_separation)
+{
+    _min_peak_separation = new_min_peak_separation;
+}
+
+Frames* PeakDetection::frames()
+{
+    return &_frames;
 }
 
 } // end of namespace Simpl

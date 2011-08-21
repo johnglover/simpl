@@ -81,9 +81,9 @@ typedef std::vector<Partial> Partials;
 class Frame
 {
 protected:
-    int size;
-    int max_peaks;
-    int max_partials;
+    int _size;
+    int _max_peaks;
+    int _max_partials;
     void init();
 
 public:
@@ -97,12 +97,56 @@ public:
     Frame();
     Frame(int frame_size);
     ~Frame();
-    int get_size();
-    int get_max_peaks();
-    int get_max_partials();
-    void set_size(int new_size);
-    void set_max_peaks(int new_max_peaks);
-    void set_max_partials(int new_max_partials);
+    int size();
+    void size(int new_size);
+    int max_peaks();
+    void max_peaks(int new_max_peaks);
+    int max_partials();
+    void max_partials(int new_max_partials);
+};
+
+typedef std::vector<Frame> Frames;
+
+// ---------------------------------------------------------------------------
+// PeakDetection
+// 
+// Detect spectral peaks
+// ---------------------------------------------------------------------------
+
+class PeakDetection
+{
+protected:
+    int _sampling_rate;
+    int _frame_size;
+    bool _static_frame_size;
+    int _hop_size;
+    int _max_peaks;
+    std::string _window_type;
+    int _window_size;
+    number _min_peak_separation;
+    Frames _frames;
+
+public:
+    PeakDetection();
+    ~PeakDetection();
+
+    int sampling_rate();
+    void sampling_rate(int new_sampling_rate);
+    int frame_size();
+    void frame_size(int new_frame_size);
+    bool static_frame_size();
+    void static_frame_size(bool new_static_frame_size);
+    int hop_size();
+    void hop_size(int new_hop_size);
+    int max_peaks();
+    void max_peaks(int new_max_peaks);
+    std::string window_type();
+    void window_type(std::string new_window_type);
+    int window_size();
+    void window_size(int new_window_size);
+    number min_peak_separation();
+    void min_peak_separation(number new_min_peak_separation);
+    Frames* frames();
 };
 
 } // end of namespace Simpl

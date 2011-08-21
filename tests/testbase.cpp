@@ -113,9 +113,9 @@ class TestFrame : public CPPUNIT_NS::TestCase
 {
     CPPUNIT_TEST_SUITE(TestFrame);
     CPPUNIT_TEST(test_constructor);
-    CPPUNIT_TEST(test_set_size);
-    CPPUNIT_TEST(test_set_max_peaks);
-    CPPUNIT_TEST(test_set_max_partials);
+    CPPUNIT_TEST(test_size);
+    CPPUNIT_TEST(test_max_peaks);
+    CPPUNIT_TEST(test_max_partials);
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -124,42 +124,42 @@ protected:
 
     void test_constructor() 
     { 
-        CPPUNIT_ASSERT(frame->get_size() == 512);
+        CPPUNIT_ASSERT(frame->size() == 512);
         CPPUNIT_ASSERT(frame->audio.size() == 512);
         CPPUNIT_ASSERT(frame->synth.size() == 512);
         CPPUNIT_ASSERT(frame->residual.size() == 512);
         CPPUNIT_ASSERT(frame->synth_residual.size() == 512);
-        CPPUNIT_ASSERT(frame->get_max_peaks() == 100);
+        CPPUNIT_ASSERT(frame->max_peaks() == 100);
         CPPUNIT_ASSERT(frame->peaks.size() == 100);
-        CPPUNIT_ASSERT(frame->get_max_partials() == 100);
+        CPPUNIT_ASSERT(frame->max_partials() == 100);
         CPPUNIT_ASSERT(frame->partials.size() == 100);
     }
 
-    void test_set_size()
+    void test_size()
     {
-        frame->set_size(1024);
-        CPPUNIT_ASSERT(frame->get_size() == 1024);
+        frame->size(1024);
+        CPPUNIT_ASSERT(frame->size() == 1024);
         CPPUNIT_ASSERT(frame->audio.size() == 1024);
         CPPUNIT_ASSERT(frame->synth.size() == 1024);
         CPPUNIT_ASSERT(frame->residual.size() == 1024);
         CPPUNIT_ASSERT(frame->synth_residual.size() == 1024);
-        frame->set_size(512);
+        frame->size(512);
     }
 
-    void test_set_max_peaks()
+    void test_max_peaks()
     {
-        frame->set_max_peaks(200);
-        CPPUNIT_ASSERT(frame->get_max_peaks() == 200);
+        frame->max_peaks(200);
+        CPPUNIT_ASSERT(frame->max_peaks() == 200);
         CPPUNIT_ASSERT(frame->peaks.size() == 200);
-        frame->set_max_peaks(100);
+        frame->max_peaks(100);
     }
 
-    void test_set_max_partials()
+    void test_max_partials()
     {
-        frame->set_max_partials(200);
-        CPPUNIT_ASSERT(frame->get_max_partials() == 200);
+        frame->max_partials(200);
+        CPPUNIT_ASSERT(frame->max_partials() == 200);
         CPPUNIT_ASSERT(frame->partials.size() == 200);
-        frame->set_max_partials(100);
+        frame->max_partials(100);
     }
 
 public:
@@ -174,10 +174,112 @@ public:
     } 
 };
 
+// ---------------------------------------------------------------------------
+//	TestPeakDetection
+// ---------------------------------------------------------------------------
+class TestPeakDetection : public CPPUNIT_NS::TestCase
+{
+    CPPUNIT_TEST_SUITE(TestPeakDetection);
+    CPPUNIT_TEST(test_constructor);
+    CPPUNIT_TEST(test_frame_size);
+    CPPUNIT_TEST(test_static_frame_size);
+    CPPUNIT_TEST(test_hop_size);
+    CPPUNIT_TEST(test_max_peaks);
+    CPPUNIT_TEST(test_window_type);
+    CPPUNIT_TEST(test_window_size);
+    CPPUNIT_TEST(test_min_peak_separation);
+    CPPUNIT_TEST_SUITE_END();
+
+protected:
+    static const double PRECISION = 0.001;
+    PeakDetection* pd;
+
+    void test_constructor() 
+    { 
+        CPPUNIT_ASSERT(pd->sampling_rate() == 44100);
+        CPPUNIT_ASSERT(pd->frame_size() == 2048);
+        CPPUNIT_ASSERT(pd->static_frame_size());
+        CPPUNIT_ASSERT(pd->hop_size() == 512);
+        CPPUNIT_ASSERT(pd->max_peaks() == 100);
+        CPPUNIT_ASSERT(pd->window_type() == "hamming");
+        CPPUNIT_ASSERT(pd->window_size() == 2048);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, pd->min_peak_separation(), 0.00001);
+        CPPUNIT_ASSERT(pd->frames()->size() == 0);
+    }
+
+    void test_sampling_rate()
+    {
+        pd->sampling_rate(96000);
+        CPPUNIT_ASSERT(pd->sampling_rate() == 96000);
+        pd->sampling_rate(44100);
+    }
+
+    void test_frame_size()
+    {
+        pd->frame_size(1024);
+        CPPUNIT_ASSERT(pd->frame_size() == 1024);
+        pd->frame_size(2048);
+    }
+
+    void test_static_frame_size()
+    {
+        pd->static_frame_size(false);
+        CPPUNIT_ASSERT(!pd->static_frame_size());
+        pd->static_frame_size(true);
+    }
+
+    void test_hop_size()
+    {
+        pd->hop_size(128);
+        CPPUNIT_ASSERT(pd->hop_size() == 128);
+        pd->hop_size(512);
+    }
+
+    void test_max_peaks()
+    {
+        pd->max_peaks(20);
+        CPPUNIT_ASSERT(pd->max_peaks() == 20);
+        pd->max_peaks(100);
+    }
+
+    void test_window_type()
+    {
+        pd->window_type("hanning");
+        CPPUNIT_ASSERT(pd->window_type() == "hanning");
+        pd->window_type("hamming");
+    }
+
+    void test_window_size()
+    {
+        pd->window_size(2048);
+        CPPUNIT_ASSERT(pd->window_size() == 2048);
+        pd->window_size(2048);
+    }
+
+    void test_min_peak_separation()
+    {
+        pd->min_peak_separation(0.5);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.5, pd->min_peak_separation(), 0.00001);
+        pd->min_peak_separation(1.0);
+    }
+
+public:
+    void setUp() 
+    {
+        pd = new PeakDetection();
+    }
+
+    void tearDown() 
+    {
+        delete pd;
+    } 
+};
+
 } // end of namespace Simpl
 
 CPPUNIT_TEST_SUITE_REGISTRATION(Simpl::TestPeak);
 CPPUNIT_TEST_SUITE_REGISTRATION(Simpl::TestFrame);
+CPPUNIT_TEST_SUITE_REGISTRATION(Simpl::TestPeakDetection);
 
 int main(int arg, char **argv)
 {

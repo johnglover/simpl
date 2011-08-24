@@ -30,6 +30,7 @@ namespace Simpl
 {
 
 typedef double number;
+typedef std::vector<number> samples;
 
 // ---------------------------------------------------------------------------
 // Peak
@@ -89,10 +90,10 @@ protected:
 public:
     Peaks peaks;
     Partials partials;
-    std::vector<number> audio;
-    std::vector<number> synth;
-    std::vector<number> residual;
-    std::vector<number> synth_residual;
+    number* audio;
+    number* synth;
+    number* residual;
+    number* synth_residual;
 
     Frame();
     Frame(int frame_size);

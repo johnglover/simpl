@@ -93,10 +93,6 @@ Frame::~Frame()
 
 void Frame::init()
 {
-    audio.resize(_size);
-    synth.resize(_size);
-    residual.resize(_size);
-    synth_residual.resize(_size);
     _max_peaks = 100;
     peaks.resize(_max_peaks);
     _max_partials = 100;
@@ -111,10 +107,6 @@ int Frame::size()
 void Frame::size(int new_size)
 {
     _size = new_size;
-    audio.resize(_size);
-    synth.resize(_size);
-    residual.resize(_size);
-    synth_residual.resize(_size);
 }
 
 int Frame::max_peaks()

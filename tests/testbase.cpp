@@ -125,10 +125,6 @@ protected:
     void test_constructor() 
     { 
         CPPUNIT_ASSERT(frame->size() == 512);
-        CPPUNIT_ASSERT(frame->audio.size() == 512);
-        CPPUNIT_ASSERT(frame->synth.size() == 512);
-        CPPUNIT_ASSERT(frame->residual.size() == 512);
-        CPPUNIT_ASSERT(frame->synth_residual.size() == 512);
         CPPUNIT_ASSERT(frame->max_peaks() == 100);
         CPPUNIT_ASSERT(frame->peaks.size() == 100);
         CPPUNIT_ASSERT(frame->max_partials() == 100);
@@ -139,10 +135,6 @@ protected:
     {
         frame->size(1024);
         CPPUNIT_ASSERT(frame->size() == 1024);
-        CPPUNIT_ASSERT(frame->audio.size() == 1024);
-        CPPUNIT_ASSERT(frame->synth.size() == 1024);
-        CPPUNIT_ASSERT(frame->residual.size() == 1024);
-        CPPUNIT_ASSERT(frame->synth_residual.size() == 1024);
         frame->size(512);
     }
 

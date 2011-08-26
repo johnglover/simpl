@@ -1,0 +1,19 @@
+# Valgrind suppression file for Simpl 
+
+# On Mac OS X 10.6 Snow Leopard, throwing std::exceptions gives a memory leak
+{
+   simpl.exceptions
+   Memcheck:Leak
+   fun:malloc
+   fun:__cxa_get_globals
+   fun:__cxa_allocate_exception
+   fun:_ZN5Simpl4Peak7is_freeESs
+   fun:_ZN5Simpl8TestPeak29test_is_free_invalid_argumentEv
+   fun:_ZN7CppUnit10TestCallerIN5Simpl8TestPeakEE7runTestEv
+   fun:_ZNK7CppUnit21TestCaseMethodFunctorclEv
+   fun:_ZN7CppUnit16DefaultProtector7protectERKNS_7FunctorERKNS_16ProtectorContextE
+   fun:_ZNK7CppUnit14ProtectorChain14ProtectFunctorclEv
+   fun:_ZN7CppUnit14ProtectorChain7protectERKNS_7FunctorERKNS_16ProtectorContextE
+   fun:_ZN7CppUnit10TestResult7protectERKNS_7FunctorEPNS_4TestERKSs
+   fun:_ZN7CppUnit8TestCase3runEPNS_10TestResultE
+}

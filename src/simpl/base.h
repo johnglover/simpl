@@ -56,7 +56,7 @@ public:
     {
         return previous_peak == NULL;
     };
-    bool is_free(string direction = string("forwards"));
+    bool is_free(const string direction = string("forwards")) throw(InvalidArgument);
 };
 
 typedef std::vector<Peak> Peaks;
@@ -81,29 +81,49 @@ typedef std::vector<Partial> Partials;
 // ---------------------------------------------------------------------------
 class Frame
 {
-protected:
+private:
     int _size;
     int _max_peaks;
     int _max_partials;
+    Peaks _peaks;
+    Partials _partials;
+    const number* _audio;
+    const number* _synth;
+    const number* _residual;
+    const number* _synth_residual;
     void init();
 
 public:
-    Peaks peaks;
-    Partials partials;
-    number* audio;
-    number* synth;
-    number* residual;
-    number* synth_residual;
-
     Frame();
     Frame(int frame_size);
     ~Frame();
-    int size();
-    void size(int new_size);
+
+    // peaks
+    int num_peaks();
     int max_peaks();
     void max_peaks(int new_max_peaks);
+    void add_peak(Peak peak);
+    Peak peak(int peak_number);
+    Peaks::iterator peaks();
+
+    // partials
+    int num_partials();
     int max_partials();
     void max_partials(int new_max_partials);
+    void add_partial(Partial partial);
+    Partials::iterator partials();
+
+    // audio buffers
+    int size();
+    void size(int new_size);
+    void audio(const number* new_audio);
+    const number* audio();
+    void synth(const number* new_synth);
+    const number* synth();
+    void residual(const number* new_residual);
+    const number* residual();
+    void synth_residual(const number* new_synth_residual);
+    const number* synth_residual();
 };
 
 typedef std::vector<Frame> Frames;

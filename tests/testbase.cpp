@@ -38,8 +38,9 @@ class TestPeak : public CPPUNIT_NS::TestCase
 {
     CPPUNIT_TEST_SUITE(TestPeak);
     CPPUNIT_TEST(test_constructor);
-    CPPUNIT_TEST(test_is_free);
     CPPUNIT_TEST(test_is_start_of_partial);
+    CPPUNIT_TEST(test_is_free);
+    CPPUNIT_TEST(test_is_free_invalid_argument);
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -90,8 +91,13 @@ protected:
         peak->previous_peak = NULL;
 
         delete tmp;
+    }
 
+    void test_is_free_invalid_argument()
+    {
+        peak->amplitude = 1.0;
         CPPUNIT_ASSERT_THROW(peak->is_free("random_text"), InvalidArgument);
+        peak->amplitude = 0.0;
     }
 
 public:
@@ -116,6 +122,8 @@ class TestFrame : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(test_size);
     CPPUNIT_TEST(test_max_peaks);
     CPPUNIT_TEST(test_max_partials);
+    CPPUNIT_TEST(test_peaks);
+    CPPUNIT_TEST(test_partials);
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -126,9 +134,9 @@ protected:
     { 
         CPPUNIT_ASSERT(frame->size() == 512);
         CPPUNIT_ASSERT(frame->max_peaks() == 100);
-        CPPUNIT_ASSERT(frame->peaks.size() == 100);
+        CPPUNIT_ASSERT(frame->num_peaks() == 0);
         CPPUNIT_ASSERT(frame->max_partials() == 100);
-        CPPUNIT_ASSERT(frame->partials.size() == 100);
+        CPPUNIT_ASSERT(frame->num_partials() == 0);
     }
 
     void test_size()
@@ -142,7 +150,7 @@ protected:
     {
         frame->max_peaks(200);
         CPPUNIT_ASSERT(frame->max_peaks() == 200);
-        CPPUNIT_ASSERT(frame->peaks.size() == 200);
+        CPPUNIT_ASSERT(frame->num_peaks() == 0);
         frame->max_peaks(100);
     }
 
@@ -150,8 +158,23 @@ protected:
     {
         frame->max_partials(200);
         CPPUNIT_ASSERT(frame->max_partials() == 200);
-        CPPUNIT_ASSERT(frame->partials.size() == 200);
+        CPPUNIT_ASSERT(frame->num_partials() == 0);
         frame->max_partials(100);
+    }
+
+    void test_peaks()
+    {
+        Peak p = Peak();
+        p.amplitude = 1.5;
+        frame->add_peak(p);
+        CPPUNIT_ASSERT(frame->max_peaks() == 100);
+        CPPUNIT_ASSERT(frame->num_peaks() == 1);
+        CPPUNIT_ASSERT(frame->peak(0).amplitude == 1.5);
+    }
+
+    void test_partials()
+    {
+
     }
 
 public:

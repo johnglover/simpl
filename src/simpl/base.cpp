@@ -17,6 +17,7 @@
  *
  */
 
+#include <iostream>
 #include "base.h"
 
 using namespace std;
@@ -24,7 +25,7 @@ using namespace std;
 namespace Simpl {
 
 // ---------------------------------------------------------------------------
-//	Peak
+// Peak
 // ---------------------------------------------------------------------------
 Peak::Peak()
 {
@@ -43,7 +44,8 @@ Peak::~Peak()
 }
 
 // Returns true iff this peak is unmatched in the given direction, and has positive amplitude
-bool Peak::is_free(string direction)
+bool Peak::is_free(const string direction) 
+throw(InvalidArgument)
 {
     if(amplitude <= 0.0)
     {
@@ -66,14 +68,14 @@ bool Peak::is_free(string direction)
     }
     else
     {
-		Throw(InvalidArgument, "Invalid direction");
+        Throw(InvalidArgument, "Invalid direction");
     }
 
     return true;
 }
 
 // ---------------------------------------------------------------------------
-//	Frame
+// Frame
 // ---------------------------------------------------------------------------
 Frame::Frame()
 {
@@ -89,24 +91,26 @@ Frame::Frame(int frame_size)
 
 Frame::~Frame()
 {
+    _peaks.clear();
+    _partials.clear();
 }
 
 void Frame::init()
 {
     _max_peaks = 100;
-    peaks.resize(_max_peaks);
     _max_partials = 100;
-    partials.resize(_max_partials);
+    _audio = NULL;
+    _synth = NULL;
+    _residual = NULL;
+    _synth_residual = NULL;
 }
 
-int Frame::size()
-{
-    return _size;
-}
+// Frame - peaks
+// -------------
 
-void Frame::size(int new_size)
+int Frame::num_peaks()
 {
-    _size = new_size;
+    return _peaks.size();
 }
 
 int Frame::max_peaks()
@@ -117,7 +121,35 @@ int Frame::max_peaks()
 void Frame::max_peaks(int new_max_peaks)
 {
     _max_peaks = new_max_peaks;
-    peaks.resize(_max_peaks);
+
+    // potentially losing data here but the user shouldn't really do this
+    if((int)_peaks.size() > _max_peaks)
+    {
+        _peaks.resize(_max_peaks);
+    }
+}
+
+void Frame::add_peak(Peak peak)
+{
+    _peaks.push_back(peak);
+}
+
+Peak Frame::peak(int peak_number)
+{
+    return _peaks[peak_number];
+}
+
+Peaks::iterator Frame::peaks()
+{
+    return _peaks.begin();
+}
+
+// Frame - partials
+// ----------------
+
+int Frame::num_partials()
+{
+    return _partials.size();
 }
 
 int Frame::max_partials()
@@ -128,11 +160,79 @@ int Frame::max_partials()
 void Frame::max_partials(int new_max_partials)
 {
     _max_partials = new_max_partials;
-    partials.resize(_max_partials);
+
+    // potentially losing data here but the user shouldn't really do this
+    if((int)_partials.size() > _max_partials)
+    {
+        _partials.resize(_max_partials);
+    }
+}
+
+void Frame::add_partial(Partial partial)
+{
+
+}
+
+Partials::iterator Frame::partials()
+{
+    return _partials.begin();
+}
+
+
+// Frame - audio buffers
+// ---------------------
+
+int Frame::size()
+{
+    return _size;
+}
+
+void Frame::size(int new_size)
+{
+    _size = new_size;
+}
+void Frame::audio(const number* new_audio)
+{
+    _audio = new_audio;
+}
+
+const number* Frame::audio()
+{
+    return _audio;
+}
+
+void Frame::synth(const number* new_synth)
+{
+    _synth = new_synth;
+}
+
+const number* Frame::synth()
+{
+    return _synth;
+}
+
+void Frame::residual(const number* new_residual)
+{
+    _residual = new_residual;
+}
+
+const number* Frame::residual()
+{
+    return _residual;
+}
+
+void Frame::synth_residual(const number* new_synth_residual)
+{
+    _synth_residual = new_synth_residual;
+}
+
+const number* Frame::synth_residual()
+{
+    return _synth_residual;
 }
 
 // ---------------------------------------------------------------------------
-//	PeakDetection
+// PeakDetection
 // ---------------------------------------------------------------------------
 
 PeakDetection::PeakDetection()

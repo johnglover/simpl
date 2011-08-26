@@ -29,3 +29,4 @@ simpl/simplloris.py
 # Test files
 tests/audio
 tests/testbase
+tests/testbase.dSYM

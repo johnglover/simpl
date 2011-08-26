@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -c
+CFLAGS=-Wall -c -g
 
 all: testbase
 

@@ -122,8 +122,10 @@ class TestFrame : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(test_size);
     CPPUNIT_TEST(test_max_peaks);
     CPPUNIT_TEST(test_max_partials);
-    CPPUNIT_TEST(test_peaks);
-    CPPUNIT_TEST(test_partials);
+    CPPUNIT_TEST(test_add_peak);
+    CPPUNIT_TEST(test_add_peaks);
+    CPPUNIT_TEST(test_peak_clear);
+    CPPUNIT_TEST(test_peak_iteration);
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -162,19 +164,72 @@ protected:
         frame->max_partials(100);
     }
 
-    void test_peaks()
+    void test_add_peak()
     {
         Peak p = Peak();
         p.amplitude = 1.5;
         frame->add_peak(p);
         CPPUNIT_ASSERT(frame->max_peaks() == 100);
         CPPUNIT_ASSERT(frame->num_peaks() == 1);
-        CPPUNIT_ASSERT(frame->peak(0).amplitude == 1.5);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.5, frame->peak(0).amplitude, PRECISION);
+        frame->clear_peaks();
     }
 
-    void test_partials()
+    void test_add_peaks()
     {
+        Peaks* peaks = new Peaks();
 
+        Peak p1 = Peak();
+        p1.amplitude = 1.0;
+        peaks->push_back(p1);
+
+        Peak p2 = Peak();
+        p2.amplitude = 2.0;
+        peaks->push_back(p2);
+
+        frame->add_peaks(peaks);
+        CPPUNIT_ASSERT(frame->num_peaks() == 2);
+
+        frame->clear_peaks();
+        delete peaks;
+    }
+
+    void test_peak_clear()
+    {
+        Peak p = Peak();
+        p.amplitude = 1.5;
+        frame->add_peak(p);
+        CPPUNIT_ASSERT(frame->num_peaks() == 1);
+        frame->clear_peaks();
+        CPPUNIT_ASSERT(frame->num_peaks() == 0);
+    }
+
+    void test_peak_iteration()
+    {
+        Peak p1 = Peak();
+        p1.amplitude = 1.0;
+        frame->add_peak(p1);
+
+        Peak p2 = Peak();
+        p2.amplitude = 2.0;
+        frame->add_peak(p2);
+
+        CPPUNIT_ASSERT(frame->num_peaks() == 2);
+
+        int peak_num = 0;
+        for(Peaks::iterator i = frame->peaks_begin(); i != frame->peaks_end(); i++)
+        {
+            if(peak_num == 0)
+            {
+                CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, i->amplitude, PRECISION);
+            }
+            else if(peak_num == 1)
+            {
+                CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0, i->amplitude, PRECISION);
+            }
+            peak_num += 1;
+        }
+        frame->clear_peaks();
     }
 
 public:
@@ -204,6 +259,8 @@ class TestPeakDetection : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(test_window_type);
     CPPUNIT_TEST(test_window_size);
     CPPUNIT_TEST(test_min_peak_separation);
+    CPPUNIT_TEST(test_find_peaks_in_frame);
+    CPPUNIT_TEST(test_find_peaks);
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -282,6 +339,20 @@ protected:
         pd->min_peak_separation(0.5);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(0.5, pd->min_peak_separation(), 0.00001);
         pd->min_peak_separation(1.0);
+    }
+
+    void test_find_peaks_in_frame()
+    {
+        Frame* f = new Frame();
+        Peaks* p = pd->find_peaks_in_frame(*f);
+        CPPUNIT_ASSERT(p->size() == 0);
+        delete p;
+        delete f;
+    }
+
+    void test_find_peaks()
+    {
+        
     }
 
 public:

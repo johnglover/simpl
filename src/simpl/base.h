@@ -103,8 +103,11 @@ public:
     int max_peaks();
     void max_peaks(int new_max_peaks);
     void add_peak(Peak peak);
+    void add_peaks(Peaks* peaks);
     Peak peak(int peak_number);
-    Peaks::iterator peaks();
+    void clear_peaks();
+    Peaks::iterator peaks_begin();
+    Peaks::iterator peaks_end();
 
     // partials
     int num_partials();
@@ -136,7 +139,7 @@ typedef std::vector<Frame> Frames;
 
 class PeakDetection
 {
-protected:
+private:
     int _sampling_rate;
     int _frame_size;
     bool _static_frame_size;
@@ -149,7 +152,7 @@ protected:
 
 public:
     PeakDetection();
-    ~PeakDetection();
+    virtual ~PeakDetection();
 
     int sampling_rate();
     void sampling_rate(int new_sampling_rate);
@@ -157,7 +160,7 @@ public:
     void frame_size(int new_frame_size);
     bool static_frame_size();
     void static_frame_size(bool new_static_frame_size);
-    int next_frame_size();
+    virtual int next_frame_size();
     int hop_size();
     void hop_size(int new_hop_size);
     int max_peaks();
@@ -169,6 +172,14 @@ public:
     number min_peak_separation();
     void min_peak_separation(number new_min_peak_separation);
     Frames* frames();
+
+    // Find and return all spectral peaks in a given frame of audio
+    virtual Peaks* find_peaks_in_frame(const Frame& frame);
+
+    // Find and return all spectral peaks in a given audio signal.
+    // If the signal contains more than 1 frame worth of audio, it will be broken
+    // up into separate frames, with a std::vector of peaks returned for each frame.
+    virtual Frames* find_peaks(const samples& audio);
 };
 
 } // end of namespace Simpl

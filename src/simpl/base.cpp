@@ -134,14 +134,32 @@ void Frame::add_peak(Peak peak)
     _peaks.push_back(peak);
 }
 
+void Frame::add_peaks(Peaks* peaks)
+{
+    for(Peaks::iterator i = peaks->begin(); i != peaks->end(); i++)
+    {
+        add_peak(Peak(*i));
+    }
+}
+
 Peak Frame::peak(int peak_number)
 {
     return _peaks[peak_number];
 }
 
-Peaks::iterator Frame::peaks()
+void Frame::clear_peaks()
+{
+    _peaks.clear();
+}
+
+Peaks::iterator Frame::peaks_begin()
 {
     return _peaks.begin();
+}
+
+Peaks::iterator Frame::peaks_end()
+{
+    return _peaks.end();
 }
 
 // Frame - partials
@@ -249,6 +267,12 @@ PeakDetection::PeakDetection()
 
 PeakDetection::~PeakDetection()
 {
+    while(!_frames.empty())
+    {
+        Frame* f = &_frames.back();  
+        _frames.pop_back();
+        delete f;
+    }
 }
 
 int PeakDetection::sampling_rate()
@@ -337,6 +361,42 @@ void PeakDetection::min_peak_separation(number new_min_peak_separation)
 
 Frames* PeakDetection::frames()
 {
+    return &_frames;
+}
+
+// Find and return all spectral peaks in a given frame of audio
+Peaks* PeakDetection::find_peaks_in_frame(const Frame& frame)
+{
+    Peaks* peaks = new Peaks();
+    return peaks;
+}
+
+// Find and return all spectral peaks in a given audio signal.
+// If the signal contains more than 1 frame worth of audio, it will be broken
+// up into separate frames, each containing a std::vector of peaks.
+Frames* PeakDetection::find_peaks(const samples& audio)
+{
+    _frames.clear();
+    unsigned int pos = 0;
+    while(pos < audio.size())
+    {
+        // get the next frame size
+        if(!_static_frame_size)
+        {
+            _frame_size = next_frame_size();
+        }
+        
+        // get the next frame
+        Frame* f = new Frame();
+        f->size(_frame_size);
+        f->audio(&(audio[pos]));
+
+        // find peaks
+        f->add_peaks(find_peaks_in_frame(*f));
+        _frames.push_back(*f);
+        pos += _hop_size;
+    }
+
     return &_frames;
 }
 

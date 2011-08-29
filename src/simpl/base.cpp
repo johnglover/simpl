@@ -45,7 +45,6 @@ Peak::~Peak()
 
 // Returns true iff this peak is unmatched in the given direction, and has positive amplitude
 bool Peak::is_free(const string direction) 
-throw(InvalidArgument)
 {
     if(amplitude <= 0.0)
     {

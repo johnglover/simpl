@@ -56,7 +56,7 @@ public:
     {
         return previous_peak == NULL;
     };
-    bool is_free(const string direction = string("forwards")) throw(InvalidArgument);
+    bool is_free(const string direction = string("forwards"));
 };
 
 typedef std::vector<Peak> Peaks;

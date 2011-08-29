@@ -267,12 +267,7 @@ PeakDetection::PeakDetection()
 
 PeakDetection::~PeakDetection()
 {
-    while(!_frames.empty())
-    {
-        Frame* f = &_frames.back();  
-        _frames.pop_back();
-        delete f;
-    }
+    _frames.clear();
 }
 
 int PeakDetection::sampling_rate()
@@ -387,13 +382,16 @@ Frames* PeakDetection::find_peaks(const samples& audio)
         }
         
         // get the next frame
-        Frame* f = new Frame();
-        f->size(_frame_size);
-        f->audio(&(audio[pos]));
+        Frame f = Frame();
+        f.size(_frame_size);
+        f.audio(&(audio[pos]));
 
         // find peaks
-        f->add_peaks(find_peaks_in_frame(*f));
-        _frames.push_back(*f);
+        Peaks* peaks = find_peaks_in_frame(f);
+        f.add_peaks(peaks);
+        delete peaks;
+
+        _frames.push_back(f);
         pos += _hop_size;
     }
 

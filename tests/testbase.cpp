@@ -352,7 +352,15 @@ protected:
 
     void test_find_peaks()
     {
-        
+        const samples audio = samples(1024);
+        pd->frame_size(256);
+        pd->hop_size(256);
+        Frames* frames = pd->find_peaks(audio);
+        CPPUNIT_ASSERT(frames->size() == 4);
+        for(Frames::iterator i = frames->begin(); i != frames->end(); i++)
+        {
+            CPPUNIT_ASSERT(i->num_peaks() == 0);
+        }
     }
 
 public:

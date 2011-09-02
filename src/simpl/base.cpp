@@ -99,9 +99,9 @@ void Frame::init()
     _max_peaks = 100;
     _max_partials = 100;
     _audio = NULL;
-    _synth = NULL;
-    _residual = NULL;
-    _synth_residual = NULL;
+    // _synth = NULL;
+    // _residual = NULL;
+    // _synth_residual = NULL;
 }
 
 // Frame - peaks
@@ -208,45 +208,51 @@ void Frame::size(int new_size)
 {
     _size = new_size;
 }
-void Frame::audio(const number* new_audio)
+
+// void Frame::audio(const number* new_audio)
+// {
+//     _audio = new_audio;
+// }
+
+void Frame::audio(const samples& new_audio, const int offset)
 {
-    _audio = new_audio;
+    _audio = &new_audio + offset;
 }
 
-const number* Frame::audio()
+const samples* Frame::audio()
 {
     return _audio;
 }
 
-void Frame::synth(const number* new_synth)
-{
-    _synth = new_synth;
-}
+// void Frame::synth(const number* new_synth)
+// {
+//     _synth = new_synth;
+// }
 
-const number* Frame::synth()
-{
-    return _synth;
-}
+// const number* Frame::synth()
+// {
+//     return _synth;
+// }
 
-void Frame::residual(const number* new_residual)
-{
-    _residual = new_residual;
-}
+// void Frame::residual(const number* new_residual)
+// {
+//     _residual = new_residual;
+// }
 
-const number* Frame::residual()
-{
-    return _residual;
-}
+// const number* Frame::residual()
+// {
+//     return _residual;
+// }
 
-void Frame::synth_residual(const number* new_synth_residual)
-{
-    _synth_residual = new_synth_residual;
-}
+// void Frame::synth_residual(const number* new_synth_residual)
+// {
+//     _synth_residual = new_synth_residual;
+// }
 
-const number* Frame::synth_residual()
-{
-    return _synth_residual;
-}
+// const number* Frame::synth_residual()
+// {
+//     return _synth_residual;
+// }
 
 // ---------------------------------------------------------------------------
 // PeakDetection
@@ -381,9 +387,8 @@ Frames* PeakDetection::find_peaks(const samples& audio)
         }
         
         // get the next frame
-        Frame f = Frame();
-        f.size(_frame_size);
-        f.audio(&(audio[pos]));
+        Frame f = Frame(_frame_size);
+        f.audio(audio, pos);
 
         // find peaks
         Peaks* peaks = find_peaks_in_frame(f);

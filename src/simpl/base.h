@@ -21,7 +21,6 @@
 
 #include <vector>
 #include <string>
-
 #include "exceptions.h"
 
 using namespace std;
@@ -87,10 +86,10 @@ private:
     int _max_partials;
     Peaks _peaks;
     Partials _partials;
-    const number* _audio;
-    const number* _synth;
-    const number* _residual;
-    const number* _synth_residual;
+    const samples* _audio;
+    // const number* _synth;
+    // const number* _residual;
+    // const number* _synth_residual;
     void init();
 
 public:
@@ -119,14 +118,16 @@ public:
     // audio buffers
     int size();
     void size(int new_size);
-    void audio(const number* new_audio);
-    const number* audio();
-    void synth(const number* new_synth);
-    const number* synth();
-    void residual(const number* new_residual);
-    const number* residual();
-    void synth_residual(const number* new_synth_residual);
-    const number* synth_residual();
+    // void audio(const number* new_audio);
+    void audio(const samples& new_audio, const int offset = 0);
+    const samples* audio();
+
+    // void synth(const number* new_synth);
+    // const number* synth();
+    // void residual(const number* new_residual);
+    // const number* residual();
+    // void synth_residual(const number* new_synth_residual);
+    // const number* synth_residual();
 };
 
 typedef std::vector<Frame> Frames;

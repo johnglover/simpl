@@ -44,7 +44,7 @@ def plot_peaks(frames):
             max_amp = max(max_amp, max([p.amplitude for p in frame.peaks]))
     # If no max amp then no peaks so return
     if not max_amp:
-        print "Warning: no peaks to plot"
+        print "Warning: no peaks with an amplitude of > 0 to plot, returning"
         return
 
     for frame_number, frame in enumerate(frames):
@@ -60,7 +60,7 @@ def plot_partials(frames, show_peaks=False):
             max_amp = max(max_amp, max([p.amplitude for p in frame.peaks]))
     # If no max amp then no peaks so return
     if not max_amp:
-        print "Warning: no peaks to plot"
+        print "Warning: no peaks with an amplitude of > 0 to plot, returning"
         return
 
     # Create Partial objects from frames

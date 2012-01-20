@@ -1,10 +1,6 @@
-# OS generated files
 .DS_Store?
 Icon?
 Thumbs.db
-
-# Editor/IDE files
-.settings
 *.swp
 
 # Distutils/pip files

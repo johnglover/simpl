@@ -136,6 +136,9 @@ class SndObjPartialTracking(simpl.PartialTracking):
             peak.frequency = self._analysis.Output((i*3)+1)
             peak.phase = self._analysis.Output((i*3)+2)
             partials.append(peak)
+        for i in range(num_partials, self.max_partials):
+            peak = simpl.Peak()
+            partials.append(peak)
         return partials
     
                 

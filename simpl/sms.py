@@ -69,6 +69,12 @@ class SMSPeakDetection(simpl.PeakDetection):
                              lambda self, x: self.set_min_frequency(x))
     min_peak_amp = property(lambda self: self.get_min_peak_amp(),
                             lambda self, x: self.set_min_peak_amp(x))
+    clean_tracks = property(lambda self: self.get_clean_tracks(),
+                            lambda self, x: self.set_clean_tracks(x))
+    format = property(lambda self: self.get_format(),
+                      lambda self, x: self.set_format(x))
+    pre_emphasis = property(lambda self: self.get_pre_emphasis(),
+                            lambda self, x: self.set_pre_emphasis(x))
     
     def get_max_frequency(self):
         return self._analysis_params.fHighestFreq
@@ -121,6 +127,33 @@ class SMSPeakDetection(simpl.PeakDetection):
     
     def set_min_peak_amp(self, min_peak_amp):
         self._analysis_params.fMinPeakMag = min_peak_amp
+
+    def get_clean_tracks(self):
+        return self._analysis_params.iCleanTracks
+    
+    def set_clean_tracks(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.iCleanTracks = x
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+
+    def get_format(self):
+        return self._analysis_params.iFormat
+    
+    def set_format(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.iFormat = x
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+
+    def get_pre_emphasis(self):
+        return self._analysis_params.preEmphasis
+
+    def set_pre_emphasis(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.preEmphasis = x
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
     
     def get_hop_size(self):
         return self._analysis_params.sizeHop

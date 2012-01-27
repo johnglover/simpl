@@ -249,13 +249,22 @@ class SMSPartialTracking(simpl.PartialTracking):
         simplsms.sms_free()
 
     # properties
-    # TODO: make properties for the remaining analysis parameters
     max_frequency = property(lambda self: self.get_max_frequency(),
                              lambda self, x: self.set_max_frequency(x))
     default_fundamental = property(lambda self: self.get_default_fundamental(),
                                    lambda self, x: self.set_default_fundamental(x))
     max_frame_delay = property(lambda self: self.get_max_frame_delay(),
                                lambda self, x: self.set_max_frame_delay(x))
+    analysis_delay = property(lambda self: self.get_analysis_delay(),
+                              lambda self, x: self.set_analysis_delay(x))
+    min_good_frames = property(lambda self: self.get_min_good_frames(),
+                               lambda self, x: self.set_min_good_frames(x))
+    clean_tracks = property(lambda self: self.get_clean_tracks(),
+                            lambda self, x: self.set_clean_tracks(x))
+    format = property(lambda self: self.get_format(),
+                      lambda self, x: self.set_format(x))
+    pre_emphasis = property(lambda self: self.get_pre_emphasis(),
+                            lambda self, x: self.set_pre_emphasis(x))
 
     def get_max_frequency(self):
         return self._analysis_params.fHighestFreq
@@ -275,6 +284,51 @@ class SMSPartialTracking(simpl.PartialTracking):
     def set_max_frame_delay(self, max_frame_delay):
         simplsms.sms_freeAnalysis(self._analysis_params)
         self._analysis_params.iMaxDelayFrames = max_frame_delay
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+
+    def get_analysis_delay(self):
+        return self._analysis_params.analDelay
+    
+    def set_analysis_delay(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.analDelay = x
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+
+    def get_min_good_frames(self):
+        return self._analysis_params.minGoodFrames
+    
+    def set_min_good_frames(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.minGoodFrames = x
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+
+    def get_clean_tracks(self):
+        return self._analysis_params.iCleanTracks
+    
+    def set_clean_tracks(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.iCleanTracks = x
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+
+    def get_format(self):
+        return self._analysis_params.iFormat
+    
+    def set_format(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.iFormat = x
+        if simplsms.sms_initAnalysis(self._analysis_params) != 0:
+            raise Exception("Error allocating memory for analysis_params")
+
+    def get_pre_emphasis(self):
+        return self._analysis_params.preEmphasis
+
+    def set_pre_emphasis(self, x):
+        simplsms.sms_freeAnalysis(self._analysis_params)
+        self._analysis_params.preEmphasis = x
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
 

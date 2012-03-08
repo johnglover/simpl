@@ -5,7 +5,8 @@ from simpl import pysndobj
 from scipy.io.wavfile import read
 import numpy as np
 
-FLOAT_PRECISION = 2 # number of decimal places to check for accuracy
+FLOAT_PRECISION = 2  # number of decimal places to check for accuracy
+
 
 class TestSimplSndObj(unittest.TestCase):
     def setUp(self):

@@ -6,6 +6,12 @@ dtype = np.float64
 ctypedef np.double_t dtype_t
 
 cdef extern from "../src/simpl/base.h" namespace "simpl": 
+    cdef cppclass c_Peak "simpl::Peak":
+        c_Peak()
+        double amplitude
+        double frequency
+        double phase
+
     cdef cppclass c_Frame "simpl::Frame":
         c_Frame()
         c_Frame(int frame_size)
@@ -40,6 +46,23 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void synth_residual(double* new_synth_residual)
         double* synth_residual()
 
+cdef class Peak:
+    cdef c_Peak *thisptr
+    def __cinit__(self): self.thisptr = new c_Peak()
+    def __dealloc__(self): del self.thisptr
+
+    property amplitude:
+        def __get__(self): return self.thisptr.amplitude
+        def __set__(self, double x): self.thisptr.amplitude = x
+
+    property frequency:
+        def __get__(self): return self.thisptr.frequency
+        def __set__(self, double x): self.thisptr.frequency = x
+
+    property phase:
+        def __get__(self): return self.thisptr.phase
+        def __set__(self, double x): self.thisptr.phase = x
+
 cdef class Frame:
     cdef c_Frame *thisptr
 
@@ -49,8 +72,7 @@ cdef class Frame:
         else:
             self.thisptr = new c_Frame()
 
-    def __dealloc__(self):
-        del self.thisptr
+    def __dealloc__(self): del self.thisptr
 
     property size:
         def __get__(self): return self.thisptr.size()
@@ -87,4 +109,3 @@ cdef class Frame:
             return np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.thisptr.synth_residual())
         def __set__(self, np.ndarray[dtype_t, ndim=1] a): 
             self.thisptr.synth_residual(<double*> a.data)
-

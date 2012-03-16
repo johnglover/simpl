@@ -23,3 +23,9 @@ class TestFrame(object):
         a = np.random.rand(N)
         f.synth_residual = a
         assert np.all(f.synth_residual == a)
+
+    def test_peak(self):
+        p = base.Peak()
+        p.amplitude = 0.5
+        p.frequency = 220.0
+        p.phase = 0.0

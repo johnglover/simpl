@@ -8,7 +8,9 @@ many of which have yet to be released in software. Simpl is primarily intended
 as a tool for other researchers in the field, allowing them to easily combine,
 compare and contrast many of the published analysis/synthesis algorithms.
 """
-from setuptools import setup, Extension
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
 import os
 from glob import glob
 
@@ -38,6 +40,11 @@ include_dirs = [numpy_include, '/usr/local/include']
 simpl_sources = glob('src/simpl/*.cpp')
 simpl_include_dirs = ['src/simpl']
 simpl_include_dirs.extend(include_dirs)
+
+base = Extension("simpl.base",
+                 sources=["simpl/base.pyx", "src/simpl/base.cpp"],
+                 include_dirs=["simpl"] + simpl_include_dirs,
+                 language="c++")
 
 # -----------------------------------------------------------------------------
 # SndObj Library
@@ -115,13 +122,13 @@ sms = Extension("simpl/_simplsms",
 # Loris
 # -----------------------------------------------------------------------------
 
-simplloris_sources = ['simpl/simplloris.i']
-simplloris_sources.extend(simpl_sources)
+# simplloris_sources = ['simpl/simplloris.i']
+# simplloris_sources.extend(simpl_sources)
 
-simplloris = Extension("simpl/_simplloris",
-                       sources=simplloris_sources,
-                       include_dirs=simpl_include_dirs,
-                       swig_opts=swig_opts)
+# simplloris = Extension("simpl/_simplloris",
+#                        sources=simplloris_sources,
+#                        include_dirs=simpl_include_dirs,
+#                        swig_opts=swig_opts)
 
 # -----------------------------------------------------------------------------
 # Package
@@ -140,6 +147,7 @@ setup(
     author_email='j@johnglover.net',
     platforms=["Linux", "Mac OS-X", "Unix", "Windows"],
     version='0.3',
-    ext_modules=[sndobj, sms, simplloris],
+    ext_modules=[base, sndobj, sms],
+    cmdclass={'build_ext': build_ext},
     packages=['simpl', 'simpl.plot']
 )

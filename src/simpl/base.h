@@ -7,11 +7,10 @@
 
 using namespace std;
 
-namespace Simpl 
+namespace simpl 
 {
 
 typedef double number;
-typedef std::vector<number> samples;
 
 // ---------------------------------------------------------------------------
 // Peak
@@ -68,10 +67,10 @@ private:
     int _max_partials;
     Peaks _peaks;
     Partials _partials;
-    const samples* _audio;
-    // const number* _synth;
-    // const number* _residual;
-    // const number* _synth_residual;
+    number* _audio;
+    number* _synth;
+    number* _residual;
+    number* _synth_residual;
     void init();
 
 public:
@@ -100,16 +99,14 @@ public:
     // audio buffers
     int size();
     void size(int new_size);
-    // void audio(const number* new_audio);
-    void audio(const samples& new_audio, const int offset = 0);
-    const samples* audio();
-
-    // void synth(const number* new_synth);
-    // const number* synth();
-    // void residual(const number* new_residual);
-    // const number* residual();
-    // void synth_residual(const number* new_synth_residual);
-    // const number* synth_residual();
+    void audio(number* new_audio);
+    number* audio();
+    void synth(number* new_synth);
+    number* synth();
+    void residual(number* new_residual);
+    number* residual();
+    void synth_residual(number* new_synth_residual);
+    number* synth_residual();
 };
 
 typedef std::vector<Frame> Frames;
@@ -161,8 +158,8 @@ public:
 
     // Find and return all spectral peaks in a given audio signal.
     // If the signal contains more than 1 frame worth of audio, it will be broken
-    // up into separate frames, with a std::vector of peaks returned for each frame.
-    virtual Frames* find_peaks(const samples& audio);
+    // up into separate frames, with an array of peaks returned for each frame.
+    virtual Frames* find_peaks(number* audio);
 };
 
 } // end of namespace Simpl

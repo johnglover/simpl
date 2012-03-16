@@ -2,8 +2,7 @@
 #include "base.h"
 
 using namespace std;
-
-namespace Simpl {
+using namespace simpl;
 
 // ---------------------------------------------------------------------------
 // Peak
@@ -48,7 +47,9 @@ bool Peak::is_free(const string direction)
     }
     else
     {
-        Throw(InvalidArgument, "Invalid direction");
+        // Throw(InvalidArgument, "Invalid direction");
+        // TODO: fix this
+        printf("ERROR: InvalidArgument\n");
     }
 
     return true;
@@ -80,9 +81,9 @@ void Frame::init()
     _max_peaks = 100;
     _max_partials = 100;
     _audio = NULL;
-    // _synth = NULL;
-    // _residual = NULL;
-    // _synth_residual = NULL;
+    _synth = NULL;
+    _residual = NULL;
+    _synth_residual = NULL;
 }
 
 // Frame - peaks
@@ -190,50 +191,45 @@ void Frame::size(int new_size)
     _size = new_size;
 }
 
-// void Frame::audio(const number* new_audio)
-// {
-//     _audio = new_audio;
-// }
-
-void Frame::audio(const samples& new_audio, const int offset)
+void Frame::audio(number* new_audio)
 {
-    _audio = &new_audio + offset;
+    _audio = new_audio;
 }
 
-const samples* Frame::audio()
+number* Frame::audio()
 {
     return _audio;
 }
 
-// void Frame::synth(const number* new_synth)
-// {
-//     _synth = new_synth;
-// }
+void Frame::synth(number* new_synth)
+{
+    _synth = new_synth;
+}
 
-// const number* Frame::synth()
-// {
-//     return _synth;
-// }
+number* Frame::synth()
+{
+    return _synth;
+}
 
-// void Frame::residual(const number* new_residual)
-// {
-//     _residual = new_residual;
-// }
+void Frame::residual(number* new_residual)
+{
+    _residual = new_residual;
+}
 
-// const number* Frame::residual()
-// {
-//     return _residual;
-// }
+number* Frame::residual()
+{
+    return _residual;
+}
 
-// void Frame::synth_residual(const number* new_synth_residual)
-// {
-//     _synth_residual = new_synth_residual;
-// }
+void Frame::synth_residual(number* new_synth_residual)
+{
+    _synth_residual = new_synth_residual;
+}
 
-// const number* Frame::synth_residual()
-// {
-//     return _synth_residual;
-// }
+number* Frame::synth_residual()
+{
+    return _synth_residual;
+}
 
 // ---------------------------------------------------------------------------
 // PeakDetection
@@ -355,32 +351,31 @@ Peaks* PeakDetection::find_peaks_in_frame(const Frame& frame)
 // Find and return all spectral peaks in a given audio signal.
 // If the signal contains more than 1 frame worth of audio, it will be broken
 // up into separate frames, each containing a std::vector of peaks.
-Frames* PeakDetection::find_peaks(const samples& audio)
+// Frames* PeakDetection::find_peaks(const samples& audio)
+Frames* PeakDetection::find_peaks(number* audio)
 {
-    _frames.clear();
-    unsigned int pos = 0;
-    while(pos < audio.size())
-    {
-        // get the next frame size
-        if(!_static_frame_size)
-        {
-            _frame_size = next_frame_size();
-        }
+    // _frames.clear();
+    // unsigned int pos = 0;
+    // while(pos < audio.size())
+    // {
+    //     // get the next frame size
+    //     if(!_static_frame_size)
+    //     {
+    //         _frame_size = next_frame_size();
+    //     }
         
-        // get the next frame
-        Frame f = Frame(_frame_size);
-        f.audio(audio, pos);
+    //     // get the next frame
+    //     Frame f = Frame(_frame_size);
+    //     f.audio(audio, pos);
 
-        // find peaks
-        Peaks* peaks = find_peaks_in_frame(f);
-        f.add_peaks(peaks);
-        delete peaks;
+    //     // find peaks
+    //     Peaks* peaks = find_peaks_in_frame(f);
+    //     f.add_peaks(peaks);
+    //     delete peaks;
 
-        _frames.push_back(f);
-        pos += _hop_size;
-    }
+    //     _frames.push_back(f);
+    //     pos += _hop_size;
+    // }
 
-    return &_frames;
+    // return &_frames;
 }
-
-} // end of namespace Simpl

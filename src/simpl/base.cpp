@@ -110,7 +110,7 @@ void Frame::max_peaks(int new_max_peaks)
     }
 }
 
-void Frame::add_peak(Peak peak)
+void Frame::add_peak(Peak* peak)
 {
     _peaks.push_back(peak);
 }
@@ -119,11 +119,11 @@ void Frame::add_peaks(Peaks* peaks)
 {
     for(Peaks::iterator i = peaks->begin(); i != peaks->end(); i++)
     {
-        add_peak(Peak(*i));
+        add_peak(*i);
     }
 }
 
-Peak Frame::peak(int peak_number)
+Peak* Frame::peak(int peak_number)
 {
     return _peaks[peak_number];
 }

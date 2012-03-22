@@ -39,7 +39,7 @@ public:
     bool is_free(const string direction = string("forwards"));
 };
 
-typedef std::vector<Peak> Peaks;
+typedef std::vector<Peak*> Peaks;
 
 // ---------------------------------------------------------------------------
 // Partial
@@ -82,9 +82,9 @@ public:
     int num_peaks();
     int max_peaks();
     void max_peaks(int new_max_peaks);
-    void add_peak(Peak peak);
+    void add_peak(Peak* peak);
     void add_peaks(Peaks* peaks);
-    Peak peak(int peak_number);
+    Peak* peak(int peak_number);
     void clear_peaks();
     Peaks::iterator peaks_begin();
     Peaks::iterator peaks_end();

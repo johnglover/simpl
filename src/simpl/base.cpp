@@ -24,7 +24,7 @@ Peak::~Peak()
 }
 
 // Returns true iff this peak is unmatched in the given direction, and has positive amplitude
-bool Peak::is_free(const string direction) 
+bool Peak::is_free(const string direction)
 {
     if(amplitude <= 0.0)
     {
@@ -336,6 +336,16 @@ void PeakDetection::min_peak_separation(number new_min_peak_separation)
     _min_peak_separation = new_min_peak_separation;
 }
 
+int PeakDetection::num_frames()
+{
+    return _frames.size();
+}
+
+Frame* PeakDetection::frame(int frame_number)
+{
+    return _frames[frame_number];
+}
+
 Frames* PeakDetection::frames()
 {
     return &_frames;
@@ -363,7 +373,7 @@ Frames* PeakDetection::find_peaks(number* audio)
     //     {
     //         _frame_size = next_frame_size();
     //     }
-        
+
     //     // get the next frame
     //     Frame f = Frame(_frame_size);
     //     f.audio(audio, pos);

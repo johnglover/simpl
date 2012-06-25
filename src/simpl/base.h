@@ -46,7 +46,7 @@ typedef std::vector<Peak*> Peaks;
 // ---------------------------------------------------------------------------
 class Partial {};
 
-typedef std::vector<Partial> Partials;
+typedef std::vector<Partial*> Partials;
 
 // ---------------------------------------------------------------------------
 // Frame
@@ -109,7 +109,7 @@ public:
     number* synth_residual();
 };
 
-typedef std::vector<Frame> Frames;
+typedef std::vector<Frame*> Frames;
 
 // ---------------------------------------------------------------------------
 // PeakDetection
@@ -151,6 +151,8 @@ public:
     void window_size(int new_window_size);
     number min_peak_separation();
     void min_peak_separation(number new_min_peak_separation);
+    int num_frames();
+    Frame* frame(int frame_number);
     Frames* frames();
 
     // Find and return all spectral peaks in a given frame of audio

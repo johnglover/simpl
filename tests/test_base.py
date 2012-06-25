@@ -46,4 +46,4 @@ class TestFrame(object):
 class TestPeakDetection(object):
     def test_peak_detection(self):
         pd = base.PeakDetection()
-        print pd
+        print pd.frames

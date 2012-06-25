@@ -15,7 +15,7 @@ cdef extern from "<string>" namespace "std":
         char * c_str()
 
 
-cdef extern from "../src/simpl/base.h" namespace "simpl": 
+cdef extern from "../src/simpl/base.h" namespace "simpl":
     cdef cppclass c_Peak "simpl::Peak":
         c_Peak()
         double amplitude
@@ -31,18 +31,14 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         int max_peaks()
         void max_peaks(int new_max_peaks)
         void add_peak(c_Peak* peak)
-        # void add_peaks(Peaks* peaks)
         c_Peak* peak(int peak_number)
         void clear_peaks()
-        # Peaks::iterator peaks_begin()
-        # Peaks::iterator peaks_end()
 
         # partials
         # int num_partials()
         # int max_partials()
         # void max_partials(int new_max_partials)
         # void add_partial(Partial partial)
-        # Partials::iterator partials()
 
         # audio buffers
         int size()
@@ -76,24 +72,26 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void window_size(int new_window_size)
         double min_peak_separation()
         void min_peak_separation(double new_min_peak_separation)
-        # Frames* frames()
-        # virtual Peaks* find_peaks_in_frame(const Frame& frame)
-        # virtual Frames* find_peaks(number* audio)
+        int num_frames()
+        c_Frame* frame(int frame_number)
+        vector[c_Frame*] frames()
+        # Peaks* find_peaks_in_frame(const Frame& frame)
+        # Frames* find_peaks(number* audio)
 
 
 cdef class Peak:
     cdef c_Peak* thisptr
-    cdef int peak_created
+    cdef int created
 
-    def __cinit__(self, create_new=True): 
+    def __cinit__(self, create_new=True):
         if create_new:
             self.thisptr = new c_Peak()
-            self.peak_created = True
+            self.created = True
         else:
-            self.peak_created = False
+            self.created = False
 
-    def __dealloc__(self): 
-        if self.peak_created:
+    def __dealloc__(self):
+        if self.created:
             del self.thisptr
 
     cdef set_peak(self, c_Peak* p):
@@ -114,14 +112,24 @@ cdef class Peak:
 
 cdef class Frame:
     cdef c_Frame* thisptr
+    cdef int created
 
-    def __cinit__(self, size=None):
-        if size:
-            self.thisptr = new c_Frame(size)
+    def __cinit__(self, size=None, create_new=True):
+        if create_new:
+            if size:
+                self.thisptr = new c_Frame(size)
+            else:
+                self.thisptr = new c_Frame()
+            self.created = True
         else:
-            self.thisptr = new c_Frame()
+            self.create = False
 
-    def __dealloc__(self): del self.thisptr
+    def __dealloc__(self):
+        if self.created:
+            del self.thisptr
+
+    cdef set_frame(self, c_Frame* f):
+        self.thisptr = f
 
     # peaks
     property num_peaks:
@@ -134,6 +142,10 @@ cdef class Frame:
     def add_peak(self, Peak p not None):
         self.thisptr.add_peak(p.thisptr)
 
+    def add_peaks(self, peaks not None):
+        for p in peaks:
+            self.add_peak(p)
+
     def peak(self, int i):
         cdef c_Peak* c_p = self.thisptr.peak(i)
         p = Peak(False)
@@ -143,6 +155,8 @@ cdef class Frame:
     property peaks:
         def __get__(self):
             return [self.peak(i) for i in range(self.thisptr.num_peaks())]
+        def __set__(self, peaks):
+            self.add_peaks(peaks)
 
     def clear_peaks(self):
         self.thisptr.clear_peaks()
@@ -153,35 +167,35 @@ cdef class Frame:
         def __set__(self, int i): self.thisptr.size(i)
 
     property audio:
-        def __get__(self): 
+        def __get__(self):
             cdef np.npy_intp shape[1]
             shape[0] = <np.npy_intp> self.thisptr.size()
             return np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.thisptr.audio())
-        def __set__(self, np.ndarray[dtype_t, ndim=1] a): 
+        def __set__(self, np.ndarray[dtype_t, ndim=1] a):
             self.thisptr.audio(<double*> a.data)
 
     property synth:
-        def __get__(self): 
+        def __get__(self):
             cdef np.npy_intp shape[1]
             shape[0] = <np.npy_intp> self.thisptr.size()
             return np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.thisptr.synth())
-        def __set__(self, np.ndarray[dtype_t, ndim=1] a): 
+        def __set__(self, np.ndarray[dtype_t, ndim=1] a):
             self.thisptr.synth(<double*> a.data)
 
     property residual:
-        def __get__(self): 
+        def __get__(self):
             cdef np.npy_intp shape[1]
             shape[0] = <np.npy_intp> self.thisptr.size()
             return np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.thisptr.residual())
-        def __set__(self, np.ndarray[dtype_t, ndim=1] a): 
+        def __set__(self, np.ndarray[dtype_t, ndim=1] a):
             self.thisptr.residual(<double*> a.data)
 
     property synth_residual:
-        def __get__(self): 
+        def __get__(self):
             cdef np.npy_intp shape[1]
             shape[0] = <np.npy_intp> self.thisptr.size()
             return np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.thisptr.synth_residual())
-        def __set__(self, np.ndarray[dtype_t, ndim=1] a): 
+        def __set__(self, np.ndarray[dtype_t, ndim=1] a):
             self.thisptr.synth_residual(<double*> a.data)
 
 
@@ -225,3 +239,14 @@ cdef class PeakDetection:
     property min_peak_separation:
         def __get__(self): return self.thisptr.min_peak_separation()
         def __set__(self, double d): self.thisptr.min_peak_separation(d)
+
+    def frame(self, int i):
+        cdef c_Frame* c_f = self.thisptr.frame(i)
+        f = Frame(False)
+        f.set_frame(c_f)
+
+    property frames:
+        def __get__(self):
+            return [self.frame(i) for i in range(self.thisptr.num_frames())]
+        def __set__(self, f):
+            raise Exception("NotImplemented")

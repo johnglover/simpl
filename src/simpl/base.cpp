@@ -1,8 +1,8 @@
-#include <iostream>
 #include "base.h"
 
 using namespace std;
 using namespace simpl;
+
 
 // ---------------------------------------------------------------------------
 // Peak
@@ -55,6 +55,7 @@ bool Peak::is_free(const string direction)
     return true;
 }
 
+
 // ---------------------------------------------------------------------------
 // Frame
 // ---------------------------------------------------------------------------
@@ -103,7 +104,7 @@ void Frame::max_peaks(int new_max_peaks)
 {
     _max_peaks = new_max_peaks;
 
-    // potentially losing data here but the user shouldn't really do this
+    // TODO: potentially losing data here, should prevent or complain
     if((int)_peaks.size() > _max_peaks)
     {
         _peaks.resize(_max_peaks);
@@ -128,7 +129,7 @@ Peak* Frame::peak(int peak_number)
     return _peaks[peak_number];
 }
 
-void Frame::clear_peaks()
+void Frame::clear()
 {
     _peaks.clear();
 }
@@ -231,6 +232,7 @@ number* Frame::synth_residual()
     return _synth_residual;
 }
 
+
 // ---------------------------------------------------------------------------
 // PeakDetection
 // ---------------------------------------------------------------------------
@@ -249,6 +251,16 @@ PeakDetection::PeakDetection()
 
 PeakDetection::~PeakDetection()
 {
+    clear();
+}
+
+void PeakDetection::clear()
+{
+    for(int i = 0; i < _frames.size(); i++)
+    {
+        delete _frames[i];
+    }
+
     _frames.clear();
 }
 
@@ -346,15 +358,15 @@ Frame* PeakDetection::frame(int frame_number)
     return _frames[frame_number];
 }
 
-Frames* PeakDetection::frames()
+Frames PeakDetection::frames()
 {
-    return &_frames;
+    return _frames;
 }
 
 // Find and return all spectral peaks in a given frame of audio
-Peaks* PeakDetection::find_peaks_in_frame(const Frame& frame)
+Peaks PeakDetection::find_peaks_in_frame(Frame* frame)
 {
-    Peaks* peaks = new Peaks();
+    Peaks peaks;
     return peaks;
 }
 
@@ -362,30 +374,30 @@ Peaks* PeakDetection::find_peaks_in_frame(const Frame& frame)
 // If the signal contains more than 1 frame worth of audio, it will be broken
 // up into separate frames, each containing a std::vector of peaks.
 // Frames* PeakDetection::find_peaks(const samples& audio)
-Frames* PeakDetection::find_peaks(number* audio)
+Frames PeakDetection::find_peaks(int audio_size, number* audio)
 {
-    // _frames.clear();
-    // unsigned int pos = 0;
-    // while(pos < audio.size())
-    // {
-    //     // get the next frame size
-    //     if(!_static_frame_size)
-    //     {
-    //         _frame_size = next_frame_size();
-    //     }
+    clear();
+    unsigned int pos = 0;
 
-    //     // get the next frame
-    //     Frame f = Frame(_frame_size);
-    //     f.audio(audio, pos);
+    while(pos < audio_size - _hop_size)
+    {
+        // get the next frame size
+        if(!_static_frame_size)
+        {
+            _frame_size = next_frame_size();
+        }
 
-    //     // find peaks
-    //     Peaks* peaks = find_peaks_in_frame(f);
-    //     f.add_peaks(peaks);
-    //     delete peaks;
+        // get the next frame
+        Frame* f = new Frame(_frame_size);
+        f->audio(&audio[pos]);
 
-    //     _frames.push_back(f);
-    //     pos += _hop_size;
-    // }
+        // find peaks
+        Peaks peaks = find_peaks_in_frame(f);
+        f->add_peaks(&peaks);
 
-    // return &_frames;
+        _frames.push_back(f);
+        pos += _hop_size;
+    }
+
+    return _frames;
 }

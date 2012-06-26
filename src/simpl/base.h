@@ -12,6 +12,7 @@ namespace simpl
 
 typedef double number;
 
+
 // ---------------------------------------------------------------------------
 // Peak
 //
@@ -41,12 +42,14 @@ public:
 
 typedef std::vector<Peak*> Peaks;
 
+
 // ---------------------------------------------------------------------------
 // Partial
 // ---------------------------------------------------------------------------
 class Partial {};
 
 typedef std::vector<Partial*> Partials;
+
 
 // ---------------------------------------------------------------------------
 // Frame
@@ -85,7 +88,7 @@ public:
     void add_peak(Peak* peak);
     void add_peaks(Peaks* peaks);
     Peak* peak(int peak_number);
-    void clear_peaks();
+    void clear();
     Peaks::iterator peaks_begin();
     Peaks::iterator peaks_end();
 
@@ -111,6 +114,7 @@ public:
 
 typedef std::vector<Frame*> Frames;
 
+
 // ---------------------------------------------------------------------------
 // PeakDetection
 // 
@@ -133,6 +137,7 @@ private:
 public:
     PeakDetection();
     virtual ~PeakDetection();
+    void clear();
 
     int sampling_rate();
     void sampling_rate(int new_sampling_rate);
@@ -153,15 +158,15 @@ public:
     void min_peak_separation(number new_min_peak_separation);
     int num_frames();
     Frame* frame(int frame_number);
-    Frames* frames();
+    Frames frames();
 
     // Find and return all spectral peaks in a given frame of audio
-    virtual Peaks* find_peaks_in_frame(const Frame& frame);
+    virtual Peaks find_peaks_in_frame(Frame* frame);
 
     // Find and return all spectral peaks in a given audio signal.
     // If the signal contains more than 1 frame worth of audio, it will be broken
     // up into separate frames, with an array of peaks returned for each frame.
-    virtual Frames* find_peaks(number* audio);
+    virtual Frames find_peaks(int audio_size, number* audio);
 };
 
 } // end of namespace Simpl

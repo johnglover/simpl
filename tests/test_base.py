@@ -1,5 +1,8 @@
-import simpl.base as base
+import os
 import numpy as np
+import scipy.io.wavfile as wavfile
+from nose.tools import assert_almost_equals
+import simpl.base as base
 
 
 class TestFrame(object):
@@ -39,11 +42,27 @@ class TestFrame(object):
         assert f.peak(0).amplitude == p.amplitude
         assert f.peaks[0].amplitude == p.amplitude
 
-        f.clear_peaks()
+        f.clear()
         assert f.num_peaks == 0
 
 
 class TestPeakDetection(object):
+    float_precision = 5
+    frame_size = 512
+    hop_size = 512
+    audio_path = os.path.join(
+        os.path.dirname(__file__), 'audio/flute.wav'
+    )
+
+    @classmethod
+    def setup_class(cls):
+        cls.audio = wavfile.read(cls.audio_path)[1]
+        cls.audio = np.asarray(cls.audio, dtype=np.double)
+        cls.audio /= np.max(cls.audio)
+
     def test_peak_detection(self):
         pd = base.PeakDetection()
-        print pd.frames
+        pd.find_peaks(self.audio)
+
+        assert len(pd.frames) == len(self.audio) / self.hop_size
+        assert len(pd.frames[0].peaks) == 0

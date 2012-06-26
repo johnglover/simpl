@@ -32,7 +32,7 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void max_peaks(int new_max_peaks)
         void add_peak(c_Peak* peak)
         c_Peak* peak(int peak_number)
-        void clear_peaks()
+        void clear()
 
         # partials
         # int num_partials()
@@ -74,9 +74,8 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void min_peak_separation(double new_min_peak_separation)
         int num_frames()
         c_Frame* frame(int frame_number)
-        vector[c_Frame*] frames()
-        # Peaks* find_peaks_in_frame(const Frame& frame)
-        # Frames* find_peaks(number* audio)
+        vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
+        vector[c_Frame*] find_peaks(int audio_size, double* audio)
 
 
 cdef class Peak:
@@ -122,7 +121,7 @@ cdef class Frame:
                 self.thisptr = new c_Frame()
             self.created = True
         else:
-            self.create = False
+            self.created = False
 
     def __dealloc__(self):
         if self.created:
@@ -158,8 +157,8 @@ cdef class Frame:
         def __set__(self, peaks):
             self.add_peaks(peaks)
 
-    def clear_peaks(self):
-        self.thisptr.clear_peaks()
+    def clear(self):
+        self.thisptr.clear()
 
     # audio buffers
     property size:
@@ -242,11 +241,26 @@ cdef class PeakDetection:
 
     def frame(self, int i):
         cdef c_Frame* c_f = self.thisptr.frame(i)
-        f = Frame(False)
+        f = Frame(None, False)
         f.set_frame(c_f)
+        return f
 
     property frames:
         def __get__(self):
             return [self.frame(i) for i in range(self.thisptr.num_frames())]
         def __set__(self, f):
             raise Exception("NotImplemented")
+
+    def find_peaks_in_frame(self, Frame frame not None):
+        peaks = []
+        cdef vector[c_Peak*] c_peaks = self.thisptr.find_peaks_in_frame(frame.thisptr)
+        for i in range(c_peaks.size()):
+            peak = Peak(False)
+            peak.set_peak(c_peaks[i])
+            peaks.append(peak)
+        return peaks
+
+    def find_peaks(self, np.ndarray[dtype_t, ndim=1] audio):
+        frames = []
+        cdef vector[c_Frame*] c_frames = self.thisptr.find_peaks(len(audio), <double*> audio.data)
+        return frames

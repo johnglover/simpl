@@ -10,7 +10,7 @@ using namespace std;
 namespace simpl 
 {
 
-typedef double number;
+typedef double sample;
 
 
 // ---------------------------------------------------------------------------
@@ -21,9 +21,9 @@ typedef double number;
 class Peak
 {
 public:
-    number amplitude;
-    number frequency;
-    number phase;
+    sample amplitude;
+    sample frequency;
+    sample phase;
     Peak* next_peak;
     Peak* previous_peak;
     int partial_id;
@@ -70,10 +70,10 @@ private:
     int _max_partials;
     Peaks _peaks;
     Partials _partials;
-    number* _audio;
-    number* _synth;
-    number* _residual;
-    number* _synth_residual;
+    sample* _audio;
+    sample* _synth;
+    sample* _residual;
+    sample* _synth_residual;
     void init();
 
 public:
@@ -102,14 +102,14 @@ public:
     // audio buffers
     int size();
     void size(int new_size);
-    void audio(number* new_audio);
-    number* audio();
-    void synth(number* new_synth);
-    number* synth();
-    void residual(number* new_residual);
-    number* residual();
-    void synth_residual(number* new_synth_residual);
-    number* synth_residual();
+    void audio(sample* new_audio);
+    sample* audio();
+    void synth(sample* new_synth);
+    sample* synth();
+    void residual(sample* new_residual);
+    sample* residual();
+    void synth_residual(sample* new_synth_residual);
+    sample* synth_residual();
 };
 
 typedef std::vector<Frame*> Frames;
@@ -131,7 +131,7 @@ private:
     int _max_peaks;
     std::string _window_type;
     int _window_size;
-    number _min_peak_separation;
+    sample _min_peak_separation;
     Frames _frames;
 
 public:
@@ -154,8 +154,8 @@ public:
     void window_type(std::string new_window_type);
     int window_size();
     void window_size(int new_window_size);
-    number min_peak_separation();
-    void min_peak_separation(number new_min_peak_separation);
+    sample min_peak_separation();
+    void min_peak_separation(sample new_min_peak_separation);
     int num_frames();
     Frame* frame(int frame_number);
     Frames frames();
@@ -166,7 +166,7 @@ public:
     // Find and return all spectral peaks in a given audio signal.
     // If the signal contains more than 1 frame worth of audio, it will be broken
     // up into separate frames, with an array of peaks returned for each frame.
-    virtual Frames find_peaks(int audio_size, number* audio);
+    virtual Frames find_peaks(int audio_size, sample* audio);
 };
 
 } // end of namespace Simpl

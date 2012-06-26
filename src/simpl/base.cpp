@@ -192,42 +192,42 @@ void Frame::size(int new_size)
     _size = new_size;
 }
 
-void Frame::audio(number* new_audio)
+void Frame::audio(sample* new_audio)
 {
     _audio = new_audio;
 }
 
-number* Frame::audio()
+sample* Frame::audio()
 {
     return _audio;
 }
 
-void Frame::synth(number* new_synth)
+void Frame::synth(sample* new_synth)
 {
     _synth = new_synth;
 }
 
-number* Frame::synth()
+sample* Frame::synth()
 {
     return _synth;
 }
 
-void Frame::residual(number* new_residual)
+void Frame::residual(sample* new_residual)
 {
     _residual = new_residual;
 }
 
-number* Frame::residual()
+sample* Frame::residual()
 {
     return _residual;
 }
 
-void Frame::synth_residual(number* new_synth_residual)
+void Frame::synth_residual(sample* new_synth_residual)
 {
     _synth_residual = new_synth_residual;
 }
 
-number* Frame::synth_residual()
+sample* Frame::synth_residual()
 {
     return _synth_residual;
 }
@@ -338,12 +338,12 @@ void PeakDetection::window_size(int new_window_size)
     _window_size = new_window_size;
 }
 
-number PeakDetection::min_peak_separation()
+sample PeakDetection::min_peak_separation()
 {
     return _min_peak_separation;
 }
 
-void PeakDetection::min_peak_separation(number new_min_peak_separation)
+void PeakDetection::min_peak_separation(sample new_min_peak_separation)
 {
     _min_peak_separation = new_min_peak_separation;
 }
@@ -374,7 +374,7 @@ Peaks PeakDetection::find_peaks_in_frame(Frame* frame)
 // If the signal contains more than 1 frame worth of audio, it will be broken
 // up into separate frames, each containing a std::vector of peaks.
 // Frames* PeakDetection::find_peaks(const samples& audio)
-Frames PeakDetection::find_peaks(int audio_size, number* audio)
+Frames PeakDetection::find_peaks(int audio_size, sample* audio)
 {
     clear();
     unsigned int pos = 0;

@@ -1,11 +1,12 @@
 from simpl import Partial
 import numpy as np
 
+
 def time_stretch(partials, factor):
     """Time stretch partials by factor."""
     stretched_partials = []
     step_size = 1.0 / factor
-            
+
     for partial in partials:
         stretched_partial = Partial()
         stretched_partial.starting_frame = partial.starting_frame * factor

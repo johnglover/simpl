@@ -207,13 +207,15 @@ pbj_colours = [
     [0.820, 0.357, 0.094]
 ]
 
+
 def classic(heat):
     if heat < 0.0:
         return classic_colours[0]
     elif heat > 1.0:
         return classic_colours[-1]
     else:
-        return classic_colours[int(heat * (len(classic_colours)-1))]
+        return classic_colours[int(heat * (len(classic_colours) - 1))]
+
 
 def pbj(heat):
     if heat < 0.0:
@@ -221,5 +223,4 @@ def pbj(heat):
     elif heat > 1.0:
         return pbj_colours[-1]
     else:
-        return pbj_colours[int(heat * (len(pbj_colours)-1))]
-
+        return pbj_colours[int(heat * (len(pbj_colours) - 1))]

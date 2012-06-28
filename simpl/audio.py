@@ -1,9 +1,9 @@
 import numpy as np
-from scipy.io.wavfile import read, write
+import scipy.io.wavfile as wav
 import simpl
 
-def read_wav(file):
-    audio_data = read(file)
-    # return floating point values between -1 and 1
-    return simpl.asarray(audio_data[1]) / 32768.0, audio_data[0]
 
+def read_wav(file):
+    'return floating point values between -1 and 1'
+    audio = wav.read(file)
+    return np.asarray(audio[1], dtype=simpl.dtype) / 32768.0, audio[0]

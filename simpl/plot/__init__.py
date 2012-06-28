@@ -2,6 +2,7 @@ import simpl
 import matplotlib.pyplot as plt
 import colours
 
+
 def plot_frame_peaks(peaks):
     "Plot peaks in one frame"
     x_values = []
@@ -11,13 +12,15 @@ def plot_frame_peaks(peaks):
         y_values.append(peak.amplitude)
     plt.plot(x_values, y_values, 'ro')
 
+
 def _plot_frame_peaks(peaks, frame_number, max_amp=0):
     "Plot one frame, which is a list of Peak objects"
     for peak in peaks:
         plt.plot(frame_number, int(peak.frequency), linestyle="None",
                  marker="o", markersize=2, markeredgewidth=None,
-                 markerfacecolor=colours.pbj(peak.amplitude/max_amp))
-    
+                 markerfacecolor=colours.pbj(peak.amplitude / max_amp))
+
+
 def plot_peaks(frames):
     "Plot peaks found by a peak detection algorithm"
     # Get the maximum peak amplitude, used to select an appropriate
@@ -33,7 +36,8 @@ def plot_peaks(frames):
 
     for frame_number, frame in enumerate(frames):
         _plot_frame_peaks(frame.peaks, frame_number, max_amp)
-        
+
+
 def plot_partials(frames, show_peaks=False):
     "Plot partials created by a partial tracking algorithm"
     # Get the maximum peak amplitude, used to select an appropriate
@@ -70,22 +74,21 @@ def plot_partials(frames, show_peaks=False):
     for p in live_partials:
         if p:
             partials.append(p)
-    
+
     peaks = [[] for f in range(num_frames)]
     for partial in partials:
-       x_values = []
-       y_values = []
-       avg_amp = 0.0
-       num_peaks = 0
-       for peak_number, peak in enumerate(partial.peaks):
-           x_values.append(partial.starting_frame + peak_number)
-           y_values.append(int(peak.frequency))
-           avg_amp += peak.amplitude
-           num_peaks += 1
-           peaks[partial.starting_frame + peak_number].append(peak)
-       avg_amp /= num_peaks
-       plt.plot(x_values, y_values, color=colours.pbj(avg_amp/max_amp))
+        x_values = []
+        y_values = []
+        avg_amp = 0.0
+        num_peaks = 0
+        for peak_number, peak in enumerate(partial.peaks):
+            x_values.append(partial.starting_frame + peak_number)
+            y_values.append(int(peak.frequency))
+            avg_amp += peak.amplitude
+            num_peaks += 1
+            peaks[partial.starting_frame + peak_number].append(peak)
+        avg_amp /= num_peaks
+        plt.plot(x_values, y_values, color=colours.pbj(avg_amp / max_amp))
 
     if show_peaks:
-        plot_peaks(frames)  
-
+        plot_peaks(frames)

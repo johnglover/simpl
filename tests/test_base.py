@@ -4,6 +4,13 @@ import scipy.io.wavfile as wavfile
 from nose.tools import assert_almost_equals
 import simpl.base as base
 
+float_precision = 5
+frame_size = 512
+hop_size = 512
+audio_path = os.path.join(
+    os.path.dirname(__file__), 'audio/flute.wav'
+)
+
 
 class TestFrame(object):
     def test_buffers(self):
@@ -39,8 +46,10 @@ class TestFrame(object):
         f.add_peak(p)
 
         assert f.num_peaks == 1
-        assert f.peak(0).amplitude == p.amplitude
-        assert f.peaks[0].amplitude == p.amplitude
+        assert_almost_equals(f.peak(0).amplitude, p.amplitude,
+                             float_precision)
+        assert_almost_equals(f.peaks[0].amplitude, p.amplitude,
+                             float_precision)
 
         f.clear()
         assert f.num_peaks == 0
@@ -56,21 +65,16 @@ class TestFrame(object):
         p.phase = 0.0
 
         f.partial(0, p)
-        assert f.partial(0).amplitude == p.amplitude
-        assert f.partial(0).frequency == p.frequency
+        assert_almost_equals(f.partial(0).amplitude, p.amplitude,
+                             float_precision)
+        assert_almost_equals(f.partial(0).frequency, p.frequency,
+                             float_precision)
 
 
 class TestPeakDetection(object):
-    float_precision = 5
-    frame_size = 512
-    hop_size = 512
-    audio_path = os.path.join(
-        os.path.dirname(__file__), 'audio/flute.wav'
-    )
-
     @classmethod
     def setup_class(cls):
-        cls.audio = wavfile.read(cls.audio_path)[1]
+        cls.audio = wavfile.read(audio_path)[1]
         cls.audio = np.asarray(cls.audio, dtype=np.double)
         cls.audio /= np.max(cls.audio)
 
@@ -78,21 +82,14 @@ class TestPeakDetection(object):
         pd = base.PeakDetection()
         pd.find_peaks(self.audio)
 
-        assert len(pd.frames) == len(self.audio) / self.hop_size
+        assert len(pd.frames) == len(self.audio) / hop_size
         assert len(pd.frames[0].peaks) == 0
 
 
 class TestPartialTracking(object):
-    float_precision = 5
-    frame_size = 512
-    hop_size = 512
-    audio_path = os.path.join(
-        os.path.dirname(__file__), 'audio/flute.wav'
-    )
-
     @classmethod
     def setup_class(cls):
-        cls.audio = wavfile.read(cls.audio_path)[1]
+        cls.audio = wavfile.read(audio_path)[1]
         cls.audio = np.asarray(cls.audio, dtype=np.double)
         cls.audio /= np.max(cls.audio)
 
@@ -103,5 +100,47 @@ class TestPartialTracking(object):
         pt = base.PartialTracking()
         frames = pt.find_partials(frames)
 
-        assert len(frames) == len(self.audio) / self.hop_size
+        assert len(frames) == len(self.audio) / hop_size
         assert len(frames[0].partials) == 100
+
+
+class TestSynthesis(object):
+    @classmethod
+    def setup_class(cls):
+        cls.audio = wavfile.read(audio_path)[1]
+        cls.audio = np.asarray(cls.audio, dtype=np.double)
+        cls.audio /= np.max(cls.audio)
+
+    def test_synthesis(self):
+        pd = base.PeakDetection()
+        frames = pd.find_peaks(self.audio)
+
+        pt = base.PartialTracking()
+        frames = pt.find_partials(frames)
+
+        s = base.Synthesis()
+        synth_audio = s.synth(frames)
+
+        assert len(synth_audio)
+
+
+class TestResidual(object):
+    @classmethod
+    def setup_class(cls):
+        cls.audio = wavfile.read(audio_path)[1]
+        cls.audio = np.asarray(cls.audio, dtype=np.double)
+        cls.audio /= np.max(cls.audio)
+
+    def test_synthesis(self):
+        pd = base.PeakDetection()
+        frames = pd.find_peaks(self.audio)
+
+        pt = base.PartialTracking()
+        frames = pt.find_partials(frames)
+
+        s = base.Synthesis()
+        synth_audio = s.synth(frames)
+
+        r = base.Residual()
+        residual_audio = r.find_residual(synth_audio, self.audio)
+        assert len(residual_audio)

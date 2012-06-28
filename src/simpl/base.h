@@ -43,8 +43,25 @@ typedef std::vector<Peak*> Peaks;
 
 // ---------------------------------------------------------------------------
 // Partial
+//
+// Represents a sinuoidal partial or track, an ordered sequence of Peaks
 // ---------------------------------------------------------------------------
-class Partial {};
+class Partial {
+    private:
+        int _starting_frame;
+        long _partial_number;
+        Peaks _peaks;
+
+    public:
+        Partial();
+        ~Partial();
+
+        void add_peak(Peak* peak);
+        int length();
+        int first_frame_number();
+        int last_frame_number();
+        Peak* peak(int peak_number);
+};
 
 typedef std::vector<Partial*> Partials;
 
@@ -66,7 +83,7 @@ class Frame {
         int _max_peaks;
         int _max_partials;
         Peaks _peaks;
-        Partials _partials;
+        Peaks _partials;
         sample* _audio;
         sample* _synth;
         sample* _residual;
@@ -86,15 +103,13 @@ class Frame {
         void add_peaks(Peaks* peaks);
         Peak* peak(int peak_number);
         void clear();
-        Peaks::iterator peaks_begin();
-        Peaks::iterator peaks_end();
 
         // partials
         int num_partials();
         int max_partials();
         void max_partials(int new_max_partials);
-        void add_partial(Partial partial);
-        Partials::iterator partials();
+        Peak* partial(int partial_number);
+        void partial(int partial_number, Peak* peak);
 
         // audio buffers
         int size();
@@ -163,6 +178,40 @@ class PeakDetection {
         // If the signal contains more than 1 frame worth of audio, it will be broken
         // up into separate frames, with an array of peaks returned for each frame.
         virtual Frames find_peaks(int audio_size, sample* audio);
+};
+
+
+// ---------------------------------------------------------------------------
+// PartialTracking
+//
+// Link spectral peaks from consecutive frames to form partials
+// ---------------------------------------------------------------------------
+
+class PartialTracking {
+    private:
+        int _sampling_rate;
+        int _max_partials;
+        int _min_partial_length;
+        int _max_gap;
+        Frames _frames;
+
+    public:
+        PartialTracking();
+        ~PartialTracking();
+
+        void clear();
+
+        int sampling_rate();
+        void sampling_rate(int new_sampling_rate);
+        int max_partials();
+        void max_partials(int new_max_partials);
+        int min_partial_length();
+        void min_partial_length(int new_min_partial_length);
+        int max_gap();
+        void max_gap(int new_max_gap);
+
+        virtual Peaks update_partials(Frame* frame);
+        virtual Frames find_partials(Frames frames);
 };
 
 } // end of namespace Simpl

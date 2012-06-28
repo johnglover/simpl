@@ -35,10 +35,11 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void clear()
 
         # partials
-        # int num_partials()
-        # int max_partials()
-        # void max_partials(int new_max_partials)
-        # void add_partial(Partial partial)
+        int num_partials()
+        int max_partials()
+        void max_partials(int new_max_partials)
+        c_Peak* partial(int partial_number)
+        void partial(int partial_number, c_Peak* peak)
 
         # audio buffers
         int size()
@@ -76,6 +77,20 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         c_Frame* frame(int frame_number)
         vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
         vector[c_Frame*] find_peaks(int audio_size, double* audio)
+
+    cdef cppclass c_PartialTracking "simpl::PartialTracking":
+        c_PartialTracking()
+        void clear()
+        int sampling_rate()
+        void sampling_rate(int new_sampling_rate)
+        int max_partials()
+        void max_partials(int new_max_partials)
+        int min_partial_length()
+        void min_partial_length(int new_min_partial_length)
+        int max_gap()
+        void max_gap(int new_max_gap)
+        vector[c_Peak*] update_partials(c_Frame* frame)
+        vector[c_Frame*] find_partials(vector[c_Frame*] frames)
 
 
 cdef class Peak:
@@ -159,6 +174,31 @@ cdef class Frame:
 
     def clear(self):
         self.thisptr.clear()
+
+    # partials
+    property num_partials:
+        def __get__(self): return self.thisptr.num_partials()
+        def __set__(self, int i): raise Exception("Invalid Operation")
+
+    property max_partials:
+        def __get__(self): return self.thisptr.max_partials()
+        def __set__(self, int i): self.thisptr.max_partials(i)
+
+    def partial(self, int i, Peak p=None):
+        cdef c_Peak* c_p
+        if not p:
+            c_p = self.thisptr.partial(i)
+            peak = Peak(False)
+            peak.set_peak(c_p)
+            return peak
+        else:
+            self.thisptr.partial(i, p.thisptr)
+
+    property partials:
+        def __get__(self):
+            return [self.partial(i) for i in range(self.thisptr.num_partials())]
+        def __set__(self, peaks):
+            raise Exception("NotImplemented")
 
     # audio buffers
     property size:
@@ -262,5 +302,56 @@ cdef class PeakDetection:
 
     def find_peaks(self, np.ndarray[dtype_t, ndim=1] audio):
         frames = []
-        cdef vector[c_Frame*] c_frames = self.thisptr.find_peaks(len(audio), <double*> audio.data)
+        cdef vector[c_Frame*] output_frames = self.thisptr.find_peaks(len(audio), <double*> audio.data)
+        for i in range(output_frames.size()):
+            f = Frame(output_frames[i].size(), False)
+            f.set_frame(output_frames[i])
+            frames.append(f)
         return frames
+
+
+cdef class PartialTracking:
+    cdef c_PartialTracking* thisptr
+
+    def __cinit__(self): self.thisptr = new c_PartialTracking()
+    def __dealloc__(self): del self.thisptr
+
+    def clear(self):
+        self.thisptr.clear()
+
+    property sampling_rate:
+        def __get__(self): return self.thisptr.sampling_rate()
+        def __set__(self, int i): self.thisptr.sampling_rate(i)
+
+    property max_partials:
+        def __get__(self): return self.thisptr.max_partials()
+        def __set__(self, int i): self.thisptr.max_partials(i)
+
+    property min_partial_length:
+        def __get__(self): return self.thisptr.min_partial_length()
+        def __set__(self, int i): self.thisptr.min_partial_length(i)
+
+    property max_gap:
+        def __get__(self): return self.thisptr.max_gap()
+        def __set__(self, int i): self.thisptr.max_gap(i)
+
+    def update_partials(self, Frame frame not None):
+        peaks = []
+        cdef vector[c_Peak*] c_peaks = self.thisptr.update_partials(frame.thisptr)
+        for i in range(c_peaks.size()):
+            peak = Peak(False)
+            peak.set_peak(c_peaks[i])
+            peaks.append(peak)
+        return peaks
+
+    def find_partials(self, frames):
+        partial_frames = []
+        cdef vector[c_Frame*] c_frames
+        for frame in frames:
+            c_frames.push_back((<Frame>frame).thisptr)
+        cdef vector[c_Frame*] output_frames = self.thisptr.find_partials(c_frames)
+        for i in range(output_frames.size()):
+            f = Frame(output_frames[i].size(), False)
+            f.set_frame(output_frames[i])
+            partial_frames.append(f)
+        return partial_frames

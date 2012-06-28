@@ -38,14 +38,43 @@ bool Peak::is_free(const string direction) {
         }
     }
     else {
-        // Throw(InvalidArgument, "Invalid direction");
-        // TODO: fix this
-        printf("ERROR: InvalidArgument\n");
+        return false;
     }
 
     return true;
 }
 
+
+// ---------------------------------------------------------------------------
+// Partial
+// ---------------------------------------------------------------------------
+Partial::Partial() {
+    _starting_frame = 0;
+    _partial_number = -1;
+}
+
+Partial::~Partial() {
+    _peaks.clear();
+}
+
+void Partial::add_peak(Peak* peak) {
+}
+
+int Partial::length() {
+    return _peaks.size();
+}
+
+int Partial::first_frame_number() {
+    return _starting_frame;
+}
+
+int Partial::last_frame_number() {
+    return _starting_frame + length();
+}
+
+Peak* Partial::peak(int peak_number) {
+    return _peaks[peak_number];
+}
 
 // ---------------------------------------------------------------------------
 // Frame
@@ -68,6 +97,7 @@ Frame::~Frame() {
 void Frame::init() {
     _max_peaks = 100;
     _max_partials = 100;
+    _partials.resize(_max_partials);
     _audio = NULL;
     _synth = NULL;
     _residual = NULL;
@@ -110,14 +140,7 @@ Peak* Frame::peak(int peak_number) {
 
 void Frame::clear() {
     _peaks.clear();
-}
-
-Peaks::iterator Frame::peaks_begin() {
-    return _peaks.begin();
-}
-
-Peaks::iterator Frame::peaks_end() {
-    return _peaks.end();
+    _partials.clear();
 }
 
 // Frame - partials
@@ -134,17 +157,18 @@ int Frame::max_partials() {
 void Frame::max_partials(int new_max_partials) {
     _max_partials = new_max_partials;
 
-    // potentially losing data here but the user shouldn't really do this
+    // TODO: potentially losing data here, should prevent or complain
     if((int)_partials.size() > _max_partials) {
         _partials.resize(_max_partials);
     }
 }
 
-void Frame::add_partial(Partial partial) {
+Peak* Frame::partial(int partial_number) {
+    return _partials[partial_number];
 }
 
-Partials::iterator Frame::partials() {
-    return _partials.begin();
+void Frame::partial(int partial_number, Peak* peak) {
+    _partials[partial_number] = peak;
 }
 
 
@@ -213,7 +237,9 @@ PeakDetection::~PeakDetection() {
 
 void PeakDetection::clear() {
     for(int i = 0; i < _frames.size(); i++) {
-        delete _frames[i];
+        if(_frames[i]) {
+            delete _frames[i];
+        }
     }
 
     _frames.clear();
@@ -331,5 +357,74 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
         pos += _hop_size;
     }
 
+    return _frames;
+}
+
+
+// ---------------------------------------------------------------------------
+// PartialTracking
+// ---------------------------------------------------------------------------
+PartialTracking::PartialTracking() {
+    _sampling_rate = 44100;
+    _max_partials = 100;
+    _min_partial_length = 0;
+    _max_gap = 2;
+}
+
+PartialTracking::~PartialTracking() {
+    clear();
+}
+
+void PartialTracking::clear() {
+    _frames.clear();
+}
+
+int PartialTracking::sampling_rate() {
+    return _sampling_rate;
+}
+
+void PartialTracking::sampling_rate(int new_sampling_rate) {
+    _sampling_rate = new_sampling_rate;
+}
+
+int PartialTracking::max_partials() {
+    return _max_partials;
+}
+
+void PartialTracking::max_partials(int new_max_partials) {
+    _max_partials = new_max_partials;
+}
+
+int PartialTracking::min_partial_length() {
+    return _min_partial_length;
+}
+
+void PartialTracking::min_partial_length(int new_min_partial_length) {
+    _min_partial_length = new_min_partial_length;
+}
+
+int PartialTracking::max_gap() {
+    return _max_gap;
+}
+
+void PartialTracking::max_gap(int new_max_gap) {
+    _max_gap = new_max_gap;
+}
+
+// Streamable (real-time) partial-tracking.
+Peaks PartialTracking::update_partials(Frame* frame) {
+    Peaks peaks;
+    return peaks;
+}
+
+// Find partials from the sinusoidal peaks in a list of Frames.
+Frames PartialTracking::find_partials(Frames frames) {
+    for(int i = 0; i < frames.size(); i++) {
+        Peaks peaks = update_partials(frames[i]);
+        for(int j = 0; j < peaks.size(); j++) {
+            frames[i]->partial(j, peaks[j]);
+        }
+    }
+    _frames = frames;
     return _frames;
 }

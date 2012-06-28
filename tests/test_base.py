@@ -45,6 +45,20 @@ class TestFrame(object):
         f.clear()
         assert f.num_peaks == 0
 
+    def test_partials(self):
+        N = 256
+        f = base.Frame(N)
+        f.max_partials = 10
+
+        p = base.Peak()
+        p.amplitude = 0.5
+        p.frequency = 220.0
+        p.phase = 0.0
+
+        f.partial(0, p)
+        assert f.partial(0).amplitude == p.amplitude
+        assert f.partial(0).frequency == p.frequency
+
 
 class TestPeakDetection(object):
     float_precision = 5
@@ -66,3 +80,28 @@ class TestPeakDetection(object):
 
         assert len(pd.frames) == len(self.audio) / self.hop_size
         assert len(pd.frames[0].peaks) == 0
+
+
+class TestPartialTracking(object):
+    float_precision = 5
+    frame_size = 512
+    hop_size = 512
+    audio_path = os.path.join(
+        os.path.dirname(__file__), 'audio/flute.wav'
+    )
+
+    @classmethod
+    def setup_class(cls):
+        cls.audio = wavfile.read(cls.audio_path)[1]
+        cls.audio = np.asarray(cls.audio, dtype=np.double)
+        cls.audio /= np.max(cls.audio)
+
+    def test_partial_tracking(self):
+        pd = base.PeakDetection()
+        frames = pd.find_peaks(self.audio)
+
+        pt = base.PartialTracking()
+        frames = pt.find_partials(frames)
+
+        assert len(frames) == len(self.audio) / self.hop_size
+        assert len(frames[0].partials) == 100

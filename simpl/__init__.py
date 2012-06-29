@@ -17,11 +17,11 @@ SndObjPeakDetection = sndobj.SndObjPeakDetection
 SndObjPartialTracking = sndobj.SndObjPartialTracking
 SndObjSynthesis = sndobj.SndObjSynthesis
 
-import sms
-SMSPeakDetection = sms.SMSPeakDetection
-SMSPartialTracking = sms.SMSPartialTracking
-SMSSynthesis = sms.SMSSynthesis
-SMSResidual = sms.SMSResidual
+import pysms
+SMSPeakDetection = pysms.SMSPeakDetection
+SMSPartialTracking = pysms.SMSPartialTracking
+SMSSynthesis = pysms.SMSSynthesis
+SMSResidual = pysms.SMSResidual
 
 import mq
 MQPeakDetection = mq.MQPeakDetection

@@ -1,7 +1,7 @@
 import os
 import numpy as np
-import scipy.io.wavfile as wavfile
 from nose.tools import assert_almost_equals
+import simpl
 import simpl.base as base
 
 float_precision = 5
@@ -74,9 +74,7 @@ class TestFrame(object):
 class TestPeakDetection(object):
     @classmethod
     def setup_class(cls):
-        cls.audio = wavfile.read(audio_path)[1]
-        cls.audio = np.asarray(cls.audio, dtype=np.double)
-        cls.audio /= np.max(cls.audio)
+        cls.audio = simpl.read_wav(audio_path)[0]
 
     def test_peak_detection(self):
         pd = base.PeakDetection()
@@ -89,9 +87,7 @@ class TestPeakDetection(object):
 class TestPartialTracking(object):
     @classmethod
     def setup_class(cls):
-        cls.audio = wavfile.read(audio_path)[1]
-        cls.audio = np.asarray(cls.audio, dtype=np.double)
-        cls.audio /= np.max(cls.audio)
+        cls.audio = simpl.read_wav(audio_path)[0]
 
     def test_partial_tracking(self):
         pd = base.PeakDetection()
@@ -107,9 +103,7 @@ class TestPartialTracking(object):
 class TestSynthesis(object):
     @classmethod
     def setup_class(cls):
-        cls.audio = wavfile.read(audio_path)[1]
-        cls.audio = np.asarray(cls.audio, dtype=np.double)
-        cls.audio /= np.max(cls.audio)
+        cls.audio = simpl.read_wav(audio_path)[0]
 
     def test_synthesis(self):
         pd = base.PeakDetection()
@@ -127,9 +121,7 @@ class TestSynthesis(object):
 class TestResidual(object):
     @classmethod
     def setup_class(cls):
-        cls.audio = wavfile.read(audio_path)[1]
-        cls.audio = np.asarray(cls.audio, dtype=np.double)
-        cls.audio /= np.max(cls.audio)
+        cls.audio = simpl.read_wav(audio_path)[0]
 
     def test_synthesis(self):
         pd = base.PeakDetection()

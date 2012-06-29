@@ -1,13 +1,19 @@
-import simpl
-from simpl import simplsms
-import pysms
+import os
 import numpy as np
-from scipy.io.wavfile import read
+import pysms
 from nose.tools import assert_almost_equals
+import simpl
+import simpl.simplsms as simplsms
+
+float_precision = 2
+frame_size = 512
+hop_size = 512
+audio_path = os.path.join(
+    os.path.dirname(__file__), 'audio/flute.wav'
+)
+
 
 class TestSimplSMS(object):
-    FLOAT_PRECISION = 2 # number of decimal places to check for accuracy
-    input_file = 'audio/flute.wav'
     hop_size = 512
     num_frames = 50
     num_samples = num_frames * hop_size
@@ -15,9 +21,7 @@ class TestSimplSMS(object):
     max_partials = 10
 
     def get_audio(self):
-        audio_data = read(self.input_file)
-        audio = simpl.asarray(audio_data[1]) / 32768.0
-        sampling_rate = audio_data[0]
+        audio, sampling_rate = simpl.read_wav(audio_path)
         return audio[0:self.num_samples], sampling_rate
 
     def pysms_analysis_params(self, sampling_rate):
@@ -61,25 +65,25 @@ class TestSimplSMS(object):
         return analysis_params
 
     def pysms_synthesis_params(self, sampling_rate):
-        synth_params = pysms.SMS_SynthParams() 
+        synth_params = pysms.SMS_SynthParams()
         pysms.sms_initSynthParams(synth_params)
         synth_params.iSamplingRate = sampling_rate
         synth_params.iSynthesisType = pysms.SMS_STYPE_DET
         synth_params.iStochasticType = pysms.SMS_STOC_NONE
-        synth_params.sizeHop = self.hop_size 
+        synth_params.sizeHop = self.hop_size
         synth_params.nTracks = self.max_peaks
         synth_params.deEmphasis = 0
         return synth_params
 
     def test_size_next_read(self):
         """test_size_next_read
-        Make sure pysms PeakDetection is calculating 
+        Make sure pysms PeakDetection is calculating
         the correct value for the size of the next frame."""
         audio, sampling_rate = self.get_audio()
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         analysis_params.iMaxDelayFrames = self.num_frames + 1
@@ -106,10 +110,10 @@ class TestSimplSMS(object):
                                                    dtype=np.float32)))
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)
             # as the no. of frames of delay is > num_frames, sms_analyze should
-            # never get around to performing partial tracking, and so the return
-            # value should be 0
+            # never get around to performing partial tracking, and so the
+            # return value should be 0
             assert status == 0
             pysms.sms_freeFrame(analysis_data)
             current_frame += 1
@@ -126,7 +130,6 @@ class TestSimplSMS(object):
 
         while current_frame < self.num_frames:
             pd.frame_size = pd.get_next_frame_size()
-            #print current_frame, sms_next_read_sizes[current_frame], pd.frame_size
             assert sms_next_read_sizes[current_frame] == pd.frame_size
             frame = simpl.Frame()
             frame.size = pd.frame_size
@@ -143,7 +146,7 @@ class TestSimplSMS(object):
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
@@ -172,7 +175,7 @@ class TestSimplSMS(object):
                                                                dtype=np.float32)))
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame.audio, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame.audio, analysis_data, analysis_params)
             num_partials = analysis_data.nTracks
             peaks = []
 
@@ -232,17 +235,19 @@ class TestSimplSMS(object):
             frame.size = size_new_data
             frame.audio = audio[sample_offset:sample_offset + size_new_data]
             if len(frame.audio) < size_new_data:
-                frame.audio = np.hstack((frame.audio, simpl.zeros(size_new_data - len(frame.audio))))
+                frame.audio = np.hstack((
+                    frame.audio, np.zeros(size_new_data - len(frame.audio), dtype=simpl.dtype)
+                ))
             analysis_data = simplsms.SMS_Data()
             simplsms.sms_allocFrameH(simpl_sms_header, analysis_data)
-            status = simplsms.sms_analyze(frame.audio, analysis_data, simpl_analysis_params)  
+            status = simplsms.sms_analyze(frame.audio, analysis_data, simpl_analysis_params)
             num_partials = analysis_data.nTracks
             peaks = []
 
             if status == 1:
-                freqs = simpl.zeros(num_partials)
-                amps = simpl.zeros(num_partials)
-                phases = simpl.zeros(num_partials)
+                freqs = np.zeros(num_partials, dtype=simpl.dtype)
+                amps = np.zeros(num_partials, dtype=simpl.dtype)
+                phases = np.zeros(num_partials, dtype=simpl.dtype)
                 analysis_data.getSinAmp(amps)
                 analysis_data.getSinFreq(freqs)
                 analysis_data.getSinPhase(phases)
@@ -280,15 +285,15 @@ class TestSimplSMS(object):
             for p in range(len(sms_frames[i].partials)):
                 assert_almost_equals(sms_frames[i].partials[p].amplitude,
                                      simplsms_frames[i].partials[p].amplitude,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
                 assert_almost_equals(sms_frames[i].partials[p].frequency,
                                      simplsms_frames[i].partials[p].frequency,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
                 assert_almost_equals(sms_frames[i].partials[p].phase,
                                      simplsms_frames[i].partials[p].phase,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
 
-    def test_multi_sms_peak_detection(self): 
+    def test_multi_sms_peak_detection(self):
         """test_multi_sms_peak_detection
         Test that running the same peak detection process twice in a row
         produces the same results each time. This makes sure that results
@@ -314,16 +319,16 @@ class TestSimplSMS(object):
             frame = audio[sample_offset:sample_offset + size_new_data]
             analysis_data = simplsms.SMS_Data()
             simplsms.sms_allocFrameH(sms_header, analysis_data)
-            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)
             # as the no. of frames of delay is > num_frames, sms_analyze should
-            # never get around to performing partial tracking, and so the return
-            # value should be 0
+            # never get around to performing partial tracking, and so the
+            # return value should be 0
             assert status == 0
             num_peaks = analysis_data.nTracks
             frame_peaks = []
-            simplsms_freqs = simpl.zeros(num_peaks)
-            simplsms_amps = simpl.zeros(num_peaks)
-            simplsms_phases = simpl.zeros(num_peaks)
+            simplsms_freqs = np.zeros(num_peaks, dtype=simpl.dtype)
+            simplsms_amps = np.zeros(num_peaks, dtype=simpl.dtype)
+            simplsms_phases = np.zeros(num_peaks, dtype=simpl.dtype)
             analysis_data.getSinFreq(simplsms_freqs)
             analysis_data.getSinAmp(simplsms_amps)
             analysis_data.getSinPhase(simplsms_phases)
@@ -331,7 +336,7 @@ class TestSimplSMS(object):
                 if simplsms_amps[i]:
                     p = simpl.Peak()
                     # convert amplitude back to linear
-                    p.amplitude = 10**(simplsms_amps[i]/20.0)
+                    p.amplitude = 10 ** (simplsms_amps[i] / 20.0)
                     p.frequency = simplsms_freqs[i]
                     p.phase = simplsms_phases[i]
                     frame_peaks.append(p)
@@ -364,16 +369,16 @@ class TestSimplSMS(object):
             frame = audio[sample_offset:sample_offset + size_new_data]
             analysis_data = simplsms.SMS_Data()
             simplsms.sms_allocFrameH(sms_header, analysis_data)
-            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)
             # as the no. of frames of delay is > num_frames, sms_analyze should
-            # never get around to performing partial tracking, and so the return
-            # value should be 0
+            # never get around to performing partial tracking, and so the
+            # return value should be 0
             assert status == 0
             num_peaks = analysis_data.nTracks
             frame_peaks = []
-            simplsms_freqs = simpl.zeros(num_peaks)
-            simplsms_amps = simpl.zeros(num_peaks)
-            simplsms_phases = simpl.zeros(num_peaks)
+            simplsms_freqs = np.zeros(num_peaks, dtype=simpl.dtype)
+            simplsms_amps = np.zeros(num_peaks, dtype=simpl.dtype)
+            simplsms_phases = np.zeros(num_peaks, dtype=simpl.dtype)
             analysis_data.getSinFreq(simplsms_freqs)
             analysis_data.getSinAmp(simplsms_amps)
             analysis_data.getSinPhase(simplsms_phases)
@@ -381,7 +386,7 @@ class TestSimplSMS(object):
                 if simplsms_amps[i]:
                     p = simpl.Peak()
                     # convert amplitude back to linear
-                    p.amplitude = 10**(simplsms_amps[i]/20.0)
+                    p.amplitude = 10 ** (simplsms_amps[i] / 20.0)
                     p.frequency = simplsms_freqs[i]
                     p.phase = simplsms_phases[i]
                     frame_peaks.append(p)
@@ -399,17 +404,17 @@ class TestSimplSMS(object):
             assert len(peaks1[f]) == len(peaks2[f])
             # make sure that each peak has the same value
             for p in range(len(peaks1[f])):
-                assert_almost_equals(peaks1[f][p].frequency, 
+                assert_almost_equals(peaks1[f][p].frequency,
                                      peaks2[f][p].frequency,
-                                     self.FLOAT_PRECISION)
-                assert_almost_equals(peaks1[f][p].amplitude, 
+                                     float_precision)
+                assert_almost_equals(peaks1[f][p].amplitude,
                                      peaks2[f][p].amplitude,
-                                     self.FLOAT_PRECISION)
-                assert_almost_equals(peaks1[f][p].phase, 
+                                     float_precision)
+                assert_almost_equals(peaks1[f][p].phase,
                                      peaks2[f][p].phase,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
 
-    def test_multi_simpl_peak_detection(self): 
+    def test_multi_simpl_peak_detection(self):
         """test_multi_simpl_peak_detection
         Test that running the simpl peak detection process twice in a row
         produces the same results each time. This makes sure that results
@@ -417,14 +422,14 @@ class TestSimplSMS(object):
         audio, sampling_rate = self.get_audio()
         pd = simpl.SMSPeakDetection()
         pd.max_peaks = self.max_peaks
-        pd.hop_size = self.hop_size 
+        pd.hop_size = self.hop_size
         frames1 = pd.find_peaks(audio)[0:self.num_frames]
         del pd
         # second run
         audio, sampling_rate = self.get_audio()
         pd = simpl.SMSPeakDetection()
         pd.max_peaks = self.max_peaks
-        pd.hop_size = self.hop_size 
+        pd.hop_size = self.hop_size
         frames2 = pd.find_peaks(audio)[0:self.num_frames]
 
         # make sure we have the same number of frames in each run
@@ -434,25 +439,25 @@ class TestSimplSMS(object):
             assert len(frames1[f].peaks) == len(frames2[f].peaks)
             # make sure that each peak has the same value
             for p in range(len(frames1[f].peaks)):
-                assert_almost_equals(frames1[f].peaks[p].frequency, 
+                assert_almost_equals(frames1[f].peaks[p].frequency,
                                      frames2[f].peaks[p].frequency,
-                                     self.FLOAT_PRECISION)
-                assert_almost_equals(frames1[f].peaks[p].amplitude, 
+                                     float_precision)
+                assert_almost_equals(frames1[f].peaks[p].amplitude,
                                      frames2[f].peaks[p].amplitude,
-                                     self.FLOAT_PRECISION)
-                assert_almost_equals(frames1[f].peaks[p].phase, 
+                                     float_precision)
+                assert_almost_equals(frames1[f].peaks[p].phase,
                                      frames2[f].peaks[p].phase,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
 
-    def test_peak_detection(self): 
+    def test_peak_detection(self):
         """test_peak_detection
         Compare simplsms Peaks with SMS peaks. Exact peak
         information cannot be retrieved using libsms. Basic peak detection
         is performed by sms_detectPeaks, but this is called multiple times
         with different frame sizes by sms_analyze. This peak data cannot
         be returned from sms_analyze without modifying it, so here
-        we compare the peaks to a slightly modified version of sms_analyze 
-        from simplsms. The peak values should be the same as those found by 
+        we compare the peaks to a slightly modified version of sms_analyze
+        from simplsms. The peak values should be the same as those found by
         the simplsms find_peaks function. Analyses have to be performed
         separately due to libsms implementation issues."""
         audio, sampling_rate = self.get_audio()
@@ -475,19 +480,21 @@ class TestSimplSMS(object):
             size_new_data = analysis_params.sizeNextRead
             frame = audio[sample_offset:sample_offset + size_new_data]
             if len(frame) < size_new_data:
-                frame = np.hstack((frame, simpl.zeros(size_new_data - len(frame))))
+                frame = np.hstack((
+                    frame, np.zeros(size_new_data - len(frame), dtype=simpl.dtype)
+                ))
             analysis_data = simplsms.SMS_Data()
             simplsms.sms_allocFrameH(sms_header, analysis_data)
-            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)
             # as the no. of frames of delay is > num_frames, sms_analyze should
-            # never get around to performing partial tracking, and so the return
-            # value should be 0
+            # never get around to performing partial tracking, and so the
+            # return value should be 0
             assert status == 0
             num_peaks = analysis_data.nTracks
             frame_peaks = []
-            simplsms_freqs = simpl.zeros(num_peaks)
-            simplsms_amps = simpl.zeros(num_peaks)
-            simplsms_phases = simpl.zeros(num_peaks)
+            simplsms_freqs = np.zeros(num_peaks, dtype=simpl.dtype)
+            simplsms_amps = np.zeros(num_peaks, dtype=simpl.dtype)
+            simplsms_phases = np.zeros(num_peaks, dtype=simpl.dtype)
             analysis_data.getSinFreq(simplsms_freqs)
             analysis_data.getSinAmp(simplsms_amps)
             analysis_data.getSinPhase(simplsms_phases)
@@ -508,7 +515,7 @@ class TestSimplSMS(object):
 
         # get simpl peaks
         pd = simpl.SMSPeakDetection()
-        pd.hop_size = self.hop_size 
+        pd.hop_size = self.hop_size
         pd.max_peaks = self.max_peaks
         current_frame = 0
         sample_offset = 0
@@ -520,7 +527,9 @@ class TestSimplSMS(object):
             frame.size = pd.frame_size
             frame.audio = audio[sample_offset:sample_offset + pd.frame_size]
             if len(frame.audio) < pd.frame_size:
-                frame.audio = np.hstack((frame.audio, simpl.zeros(pd.frame_size - len(frame.audio))))
+                frame.audio = np.hstack((
+                    frame.audio, np.zeros(pd.frame_size - len(frame.audio), dtype=simpl.dtype)
+                ))
             simpl_peaks.append(pd.find_peaks_in_frame(frame))
             sample_offset += pd.frame_size
             current_frame += 1
@@ -539,13 +548,13 @@ class TestSimplSMS(object):
                 sms_peak = sms_frame[peak_number]
                 simpl_peak = simpl_frame[peak_number]
                 assert_almost_equals(sms_peak.amplitude, simpl_peak.amplitude,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
                 assert_almost_equals(sms_peak.frequency, simpl_peak.frequency,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
                 assert_almost_equals(sms_peak.phase, simpl_peak.phase,
-                                     self.FLOAT_PRECISION)  
+                                     float_precision)
 
-    def test_multi_pysms_analyze(self): 
+    def test_multi_pysms_analyze(self):
         """test_multi_pysms_analyze
         Test that running the pysms sms_analyze function twice in a row
         produces the same results each time. This makes sure that results
@@ -554,7 +563,7 @@ class TestSimplSMS(object):
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
@@ -579,7 +588,7 @@ class TestSimplSMS(object):
             frame = np.array(frame, dtype=np.float32)
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)
             if status == 1:
                 num_partials = analysis_data.nTracks
                 freqs = np.zeros(num_partials, dtype=np.float32)
@@ -605,7 +614,7 @@ class TestSimplSMS(object):
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
@@ -630,7 +639,7 @@ class TestSimplSMS(object):
             frame = np.array(frame, dtype=np.float32)
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)
             if status == 1:
                 num_partials = analysis_data.nTracks
                 freqs = np.zeros(num_partials, dtype=np.float32)
@@ -657,17 +666,18 @@ class TestSimplSMS(object):
         assert len(phases1) == len(phases2)
 
         for r in range(len(freqs1)):
-           # in each result, make sure that we have the same number amps, freqs and phases
-           assert len(freqs1[r]) == len(freqs2[r])
-           assert len(amps1[r]) == len(amps2[r])
-           assert len(phases1[r]) == len(phases2[r])
-           # make sure that each partial has the same value
-           for p in range(len(freqs1[r])):
-               assert_almost_equals(freqs1[r][p], freqs2[r][p], self.FLOAT_PRECISION)
-               assert_almost_equals(amps1[r][p], amps2[r][p], self.FLOAT_PRECISION)
-               assert_almost_equals(phases1[r][p], phases2[r][p], self.FLOAT_PRECISION)
+            # in each result, make sure that we have the same number amps,
+            # freqs and phases
+            assert len(freqs1[r]) == len(freqs2[r])
+            assert len(amps1[r]) == len(amps2[r])
+            assert len(phases1[r]) == len(phases2[r])
+            # make sure that each partial has the same value
+            for p in range(len(freqs1[r])):
+                assert_almost_equals(freqs1[r][p], freqs2[r][p], float_precision)
+                assert_almost_equals(amps1[r][p], amps2[r][p], float_precision)
+                assert_almost_equals(phases1[r][p], phases2[r][p], float_precision)
 
-    def test_multi_simpl_partial_tracking(self): 
+    def test_multi_simpl_partial_tracking(self):
         """test_multi_simpl_partial_tracking
         Test that running the simpl peak detection process twice in a row
         produces the same results each time. This makes sure that results
@@ -675,7 +685,7 @@ class TestSimplSMS(object):
         audio, sampling_rate = self.get_audio()
         pd = simpl.SMSPeakDetection()
         pd.max_peaks = self.max_peaks
-        pd.hop_size = self.hop_size 
+        pd.hop_size = self.hop_size
         peaks = pd.find_peaks(audio)[0:self.num_frames]
         pt = simpl.SMSPartialTracking()
         pt.max_partials = self.max_peaks
@@ -686,7 +696,7 @@ class TestSimplSMS(object):
         audio, sampling_rate = self.get_audio()
         pd = simpl.SMSPeakDetection()
         pd.max_peaks = self.max_peaks
-        pd.hop_size = self.hop_size 
+        pd.hop_size = self.hop_size
         peaks = pd.find_peaks(audio)[0:self.num_frames]
         pt = simpl.SMSPartialTracking()
         pt.max_partials = self.max_peaks
@@ -699,24 +709,24 @@ class TestSimplSMS(object):
             assert len(frames1[i].partials) == len(frames2[i].partials)
             # make sure that the peaks in each partial have the same values
             for p in range(len(frames1[i].partials)):
-                assert_almost_equals(frames1[i].partials[p].frequency, 
-                                     frames2[i].partials[p].frequency, 
-                                     self.FLOAT_PRECISION)
-                assert_almost_equals(frames1[i].partials[p].amplitude, 
-                                     frames2[i].partials[p].amplitude, 
-                                     self.FLOAT_PRECISION)
-                assert_almost_equals(frames1[i].partials[p].phase, 
-                                     frames2[i].partials[p].phase, 
-                                     self.FLOAT_PRECISION)
+                assert_almost_equals(frames1[i].partials[p].frequency,
+                                     frames2[i].partials[p].frequency,
+                                     float_precision)
+                assert_almost_equals(frames1[i].partials[p].amplitude,
+                                     frames2[i].partials[p].amplitude,
+                                     float_precision)
+                assert_almost_equals(frames1[i].partials[p].phase,
+                                     frames2[i].partials[p].phase,
+                                     float_precision)
 
     def test_partial_tracking(self):
         """test_partial_tracking
-        Compare pysms Partials with SMS partials.""" 
+        Compare pysms Partials with SMS partials."""
         audio, sampling_rate = self.get_audio()
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
@@ -744,7 +754,7 @@ class TestSimplSMS(object):
             pysms.sms_allocFrameH(sms_header, analysis_data)
             num_partials = analysis_data.nTracks
             peaks = []
-            status = pysms.sms_analyze(frame.audio, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame.audio, analysis_data, analysis_params)
 
             if status == 1:
                 sms_freqs = np.zeros(num_partials, dtype=np.float32)
@@ -793,13 +803,13 @@ class TestSimplSMS(object):
             for p in range(len(sms_frames[i].partials)):
                 assert_almost_equals(sms_frames[i].partials[p].amplitude,
                                      simpl_frames[i].partials[p].amplitude,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
                 assert_almost_equals(sms_frames[i].partials[p].frequency,
                                      simpl_frames[i].partials[p].frequency,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
                 assert_almost_equals(sms_frames[i].partials[p].phase,
                                      simpl_frames[i].partials[p].phase,
-                                     self.FLOAT_PRECISION)
+                                     float_precision)
 
     def test_sms_interpolate_frames(self):
         """test_sms_interpolate_frames
@@ -809,7 +819,7 @@ class TestSimplSMS(object):
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         analysis_params.nFrames = self.num_frames
@@ -836,7 +846,7 @@ class TestSimplSMS(object):
             frame = np.array(frame, dtype=np.float32)
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)
 
             if status == 1:
                 analysis_frames.append(analysis_data)
@@ -861,13 +871,13 @@ class TestSimplSMS(object):
                     interp_frame.getSinFreq(interp_freqs)
                     for i in range(self.max_partials):
                         assert_almost_equals(left_amps[i], interp_amps[i],
-                                             self.FLOAT_PRECISION)
+                                             float_precision)
                         if left_freqs[i] != 0:
                             assert_almost_equals(left_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
                         else:
                             assert_almost_equals(right_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
                     pysms.sms_interpolateFrames(left_frame, right_frame, interp_frame, 1)
                     interp_amps = np.zeros(self.max_partials, dtype=np.float32)
                     interp_freqs = np.zeros(self.max_partials, dtype=np.float32)
@@ -875,13 +885,13 @@ class TestSimplSMS(object):
                     interp_frame.getSinFreq(interp_freqs)
                     for i in range(self.max_partials):
                         assert_almost_equals(right_amps[i], interp_amps[i],
-                                             self.FLOAT_PRECISION)
+                                             float_precision)
                         if right_freqs[i] != 0:
                             assert_almost_equals(right_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
                         else:
                             assert_almost_equals(left_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
             elif status == -1:
                 raise Exception("AnalysisStoppedEarly")
             else:
@@ -924,7 +934,7 @@ class TestSimplSMS(object):
             frame = audio[sample_offset:sample_offset + size_new_data]
             analysis_data = simplsms.SMS_Data()
             simplsms.sms_allocFrameH(sms_header, analysis_data)
-            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = simplsms.sms_analyze(frame, analysis_data, analysis_params)
 
             if status == 1:
                 analysis_frames.append(analysis_data)
@@ -935,41 +945,41 @@ class TestSimplSMS(object):
                     simplsms.sms_interpolateFrames(left_frame, right_frame, interp_frame, 0)
                     # make sure that interp_frame == left_frame
                     # interpolateFrames doesn't interpolate phases so ignore
-                    left_amps = simpl.zeros(self.max_partials)
-                    left_freqs = simpl.zeros(self.max_partials)
+                    left_amps = np.zeros(self.max_partials, dtype=simpl.dtype)
+                    left_freqs = np.zeros(self.max_partials, dtype=simpl.dtype)
                     left_frame.getSinAmp(left_amps)
                     left_frame.getSinFreq(left_freqs)
-                    right_amps = simpl.zeros(self.max_partials)
-                    right_freqs = simpl.zeros(self.max_partials)
+                    right_amps = np.zeros(self.max_partials, dtype=simpl.dtype)
+                    right_freqs = np.zeros(self.max_partials, dtype=simpl.dtype)
                     right_frame.getSinAmp(right_amps)
                     right_frame.getSinFreq(right_freqs)
-                    interp_amps = simpl.zeros(self.max_partials)
-                    interp_freqs = simpl.zeros(self.max_partials)
+                    interp_amps = np.zeros(self.max_partials, dtype=simpl.dtype)
+                    interp_freqs = np.zeros(self.max_partials, dtype=simpl.dtype)
                     interp_frame.getSinAmp(interp_amps)
                     interp_frame.getSinFreq(interp_freqs)
                     for i in range(self.max_partials):
                         assert_almost_equals(left_amps[i], interp_amps[i],
-                                             self.FLOAT_PRECISION)
+                                             float_precision)
                         if left_freqs[i] != 0:
                             assert_almost_equals(left_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
                         else:
                             assert_almost_equals(right_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
                     simplsms.sms_interpolateFrames(left_frame, right_frame, interp_frame, 1)
-                    interp_amps = simpl.zeros(self.max_partials)
-                    interp_freqs = simpl.zeros(self.max_partials)
+                    interp_amps = np.zeros(self.max_partials, dtype=simpl.dtype)
+                    interp_freqs = np.zeros(self.max_partials, dtype=simpl.dtype)
                     interp_frame.getSinAmp(interp_amps)
                     interp_frame.getSinFreq(interp_freqs)
                     for i in range(self.max_partials):
                         assert_almost_equals(right_amps[i], interp_amps[i],
-                                             self.FLOAT_PRECISION)
+                                             float_precision)
                         if right_freqs[i] != 0:
                             assert_almost_equals(right_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
                         else:
                             assert_almost_equals(left_freqs[i], interp_freqs[i],
-                                                 self.FLOAT_PRECISION)
+                                                 float_precision)
             elif status == -1:
                 raise Exception("AnalysisStoppedEarly")
             else:
@@ -984,13 +994,13 @@ class TestSimplSMS(object):
 
     def test_harmonic_synthesis(self):
         """test_harmonic_synthesis
-        Compare pysms synthesised harmonic component with SMS synthesised 
+        Compare pysms synthesised harmonic component with SMS synthesised
         harmonic component."""
         audio, sampling_rate = self.get_audio()
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         analysis_params.nFrames = self.num_frames
@@ -1014,7 +1024,7 @@ class TestSimplSMS(object):
             frame = np.array(frame, dtype=np.float32)
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)
             if status == 1:
                 analysis_frames.append(analysis_data)
                 current_frame += 1
@@ -1050,7 +1060,7 @@ class TestSimplSMS(object):
 
         pd = simpl.SMSPeakDetection()
         pd.max_peaks = self.max_peaks
-        pd.hop_size = self.hop_size 
+        pd.hop_size = self.hop_size
         peaks = pd.find_peaks(audio)
         pt = simpl.SMSPartialTracking()
         pt.max_partials = self.max_partials
@@ -1063,17 +1073,17 @@ class TestSimplSMS(object):
 
         assert len(sms_audio) == len(simpl_audio)
         for i in range(simpl_audio.size):
-            assert_almost_equals(sms_audio[i], simpl_audio[i], self.FLOAT_PRECISION)
+            assert_almost_equals(sms_audio[i], simpl_audio[i], float_precision)
 
     def test_harmonic_synthesis_sin(self):
         """test_harmonic_synthesis_sin
-        Compare pysms synthesised harmonic component with SMS synthesised 
+        Compare pysms synthesised harmonic component with SMS synthesised
         harmonic component."""
         audio, sampling_rate = self.get_audio()
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         if pysms.sms_initAnalysis(analysis_params, snd_header) != 0:
@@ -1100,7 +1110,7 @@ class TestSimplSMS(object):
                                                    dtype=np.float32)))
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)
             if status == 1:
                 analysis_frames.append(analysis_data)
                 current_frame += 1
@@ -1137,7 +1147,7 @@ class TestSimplSMS(object):
 
         pd = simpl.SMSPeakDetection()
         pd.max_peaks = self.max_peaks
-        pd.hop_size = self.hop_size 
+        pd.hop_size = self.hop_size
         peaks = pd.find_peaks(audio)
         pt = simpl.SMSPartialTracking()
         pt.max_partials = self.max_partials
@@ -1150,11 +1160,11 @@ class TestSimplSMS(object):
 
         assert len(sms_audio) == len(simpl_audio)
         for i in range(simpl_audio.size):
-            assert_almost_equals(sms_audio[i], simpl_audio[i], self.FLOAT_PRECISION)
+            assert_almost_equals(sms_audio[i], simpl_audio[i], float_precision)
 
     def test_residual_synthesis(self):
         """test_residual_synthesis
-        Compare pysms residual signal with SMS residual""" 
+        Compare pysms residual signal with SMS residual"""
 
         # -------------------------------------------
         # This test is not finished yet. Skip for now
@@ -1166,7 +1176,7 @@ class TestSimplSMS(object):
         pysms.sms_init()
         snd_header = pysms.SMS_SndHeader()
         # Try to open the input file to fill snd_header
-        if(pysms.sms_openSF(self.input_file, snd_header)):
+        if(pysms.sms_openSF(audio_path, snd_header)):
             raise NameError("error opening sound file: " + pysms.sms_errorString())
         analysis_params = self.pysms_analysis_params(sampling_rate)
         analysis_params.nFrames = self.num_frames
@@ -1192,10 +1202,10 @@ class TestSimplSMS(object):
             frame = np.array(frame, dtype=np.float32)
             analysis_data = pysms.SMS_Data()
             pysms.sms_allocFrameH(sms_header, analysis_data)
-            status = pysms.sms_analyze(frame, analysis_data, analysis_params)  
+            status = pysms.sms_analyze(frame, analysis_data, analysis_params)
             analysis_frames.append(analysis_data)
             if status == -1:
-              do_analysis = False
+                do_analysis = False
             current_frame += 1
 
         sms_header.nFrames = len(analysis_frames)
@@ -1235,16 +1245,5 @@ class TestSimplSMS(object):
 
         assert len(simpl_residual) == len(sms_residual)
         for i in range(len(simpl_residual)):
-            assert_almost_equals(simpl_residual[i], sms_residual[i], 
-                                 self.FLOAT_PRECISION)
-
-
-if __name__ == "__main__":
-    # run individual tests programatically
-    # useful for debugging, particularly with GDB
-    import nose
-    argv = [__file__, 
-            "--nocapture",
-            #__file__ + ":TestSimplSMS.test_residual_synthesis"]
-            __file__ + ":TestSimplSMS.test_harmonic_synthesis_sin"]
-    nose.run(argv=argv)
+            assert_almost_equals(simpl_residual[i], sms_residual[i],
+                                 float_precision)

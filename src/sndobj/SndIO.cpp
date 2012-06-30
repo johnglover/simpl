@@ -115,9 +115,9 @@ SndIO::SndIO(short channels, short bits, SndObj** inputlist,
     return 1;
   }
 
-  char* SndIO::ErrorMessage(){
+const char* SndIO::ErrorMessage(){
 	 
-    char* message;
+    const char* message;
    
     switch(m_error){
 
@@ -148,7 +148,4 @@ SndIO::SndIO(short channels, short bits, SndObj** inputlist,
     }
 
     return message;
-
-  }
-
-  
+}

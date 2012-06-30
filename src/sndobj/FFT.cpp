@@ -244,7 +244,6 @@ FFT::DoProcess(){
 
 void
 FFT::fft(double* signal){
-
   // FFT function
   rfftw_one(m_plan, signal, m_ffttmp);
 
@@ -259,7 +258,4 @@ FFT::fft(double* signal){
     m_output[i] = m_ffttmp[i2]/m_norm;
     m_output[i+1] = m_ffttmp[m_fftsize-(i2)]/m_norm;
   }
-
-
 }
-

@@ -128,7 +128,7 @@ class SndIO {
   virtual ~SndIO();
   virtual short Read();
   virtual short Write();
-  virtual char* ErrorMessage();
+  virtual const char* ErrorMessage();
   int Error() { return m_error; }
 
 };

@@ -77,10 +77,10 @@ HammingTable :: MakeTable(){
 
 ///////////////// ERROR HANDLING ///////////////////////////////
 
-char*
+const char*
 HammingTable::ErrorMessage(){
   
-  char* message;
+  const char* message;
    
   switch(m_error){
 
@@ -95,5 +95,4 @@ HammingTable::ErrorMessage(){
   }
 
   return message;
-
 }

@@ -53,7 +53,7 @@ class Table {
   }
 
   virtual ~Table(){};
-  virtual char* ErrorMessage() = 0;
+  virtual const char* ErrorMessage() = 0;
   virtual short MakeTable() = 0; 
  
          

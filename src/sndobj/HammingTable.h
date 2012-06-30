@@ -38,7 +38,7 @@ class HammingTable : public Table {
  public:
   
   void SetParam(long L, double alpha=.54);
-  char* ErrorMessage();
+  const char* ErrorMessage();
   short MakeTable();
   HammingTable();
   HammingTable(long L, double alpha);

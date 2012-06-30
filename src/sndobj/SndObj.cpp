@@ -201,36 +201,7 @@ SndObj::operator<<(SndIO& in){
   for(int n=0;n<m_vecsize;n++) m_output[n]=in.Output(n,1);
 }
 
-
-char* SndObj::ErrorMessage(){
-	 
-  char* message;
-   
-  switch(m_error){
-
-  case 0:
-    message = "No error\n";
-    break; 
-
-  case 1:
-    message = "Failed to allocate vector memory\n";
-    break;
-
-  case 3:
-    message = "DoProcess() failed: no input object \n";
-    break;
-
-  default:
-    message = "Undefined error\n";
-    break;
-  
-  }
-
-  return message;
-
-}
-
-const char* SndObj::CErrorMessage(){
+const char* SndObj::ErrorMessage(){
 	   
   switch(m_error){
 

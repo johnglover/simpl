@@ -265,8 +265,7 @@ class SndObj {
 #endif
 
   virtual ~SndObj();
-  virtual char* ErrorMessage();
-  virtual const char* CErrorMessage(); 
+  virtual const char* ErrorMessage(); 
   virtual short DoProcess();
  
 };

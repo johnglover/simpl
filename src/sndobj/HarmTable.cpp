@@ -129,10 +129,10 @@ HarmTable :: MakeTable(){
 
 ///////////////// ERROR HANDLING ///////////////////////////////
 
-char*
+const char*
 HarmTable::ErrorMessage(){
   
-  char* message;
+  const char* message;
    
   switch(m_error){
 
@@ -150,11 +150,4 @@ HarmTable::ErrorMessage(){
   }
 
   return message;
-
 }
-
-
-
-
-
-

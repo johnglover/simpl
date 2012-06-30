@@ -44,7 +44,7 @@ class HarmTable : public Table {
  
   void SetHarm(int harm, int type);
 
-  char* ErrorMessage();
+  const char* ErrorMessage();
   short MakeTable();
   HarmTable();
   void SetPhase(double phase){ m_phase = (double)(phase*TWOPI); }

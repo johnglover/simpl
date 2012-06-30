@@ -32,8 +32,13 @@ cdef extern from "../src/simpl/peak_detection.h" namespace "simpl":
         void min_peak_separation(double new_min_peak_separation)
         int num_frames()
         c_Frame* frame(int frame_number)
+        void frames(vector[c_Frame*] new_frames)
         vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
         vector[c_Frame*] find_peaks(int audio_size, double* audio)
 
     cdef cppclass c_SMSPeakDetection "simpl::SMSPeakDetection"(c_PeakDetection):
         c_SMSPeakDetection()
+        void hop_size(int new_hop_size)
+        void max_peaks(int new_max_peaks)
+        vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
+        vector[c_Frame*] find_peaks(int audio_size, double* audio)

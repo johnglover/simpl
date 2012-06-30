@@ -63,8 +63,11 @@ cdef class PeakDetection:
     property frames:
         def __get__(self):
             return [self.frame(i) for i in range(self.thisptr.num_frames())]
-        def __set__(self, f):
-            raise Exception("NotImplemented")
+        def __set__(self, new_frames):
+            cdef vector[c_Frame*] c_frames
+            for f in new_frames:
+                c_frames.push_back((<Frame>f).thisptr)
+            self.thisptr.frames(c_frames)
 
     def find_peaks_in_frame(self, Frame frame not None):
         peaks = []

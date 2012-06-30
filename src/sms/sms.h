@@ -132,7 +132,7 @@ typedef struct
 } SMS_Peak;
 
 /* a collection of spectral peaks */
-typedef struct
+typedef struct SMSSpectralPeaks
 {
     SMS_Peak *pSpectralPeaks;
     int nPeaks;
@@ -228,7 +228,7 @@ typedef struct
  * and peak detection/continuation process can be re-computed with more accuracy.
  * 
  */
-typedef struct 
+typedef struct SMSAnalysisParams
 {
     int iDebugMode;                  /*!< debug codes enumerated by SMS_DBG \see SMS_DBG */
     int iFormat;                     /*!< analysis format code defined by SMS_Format \see SMS_Format */

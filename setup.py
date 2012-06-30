@@ -8,11 +8,10 @@ many of which have yet to be released in software. Simpl is primarily intended
 as a tool for other researchers in the field, allowing them to easily combine,
 compare and contrast many of the published analysis/synthesis algorithms.
 """
+import os
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
-import os
-from glob import glob
 
 # -----------------------------------------------------------------------------
 # Global
@@ -35,16 +34,11 @@ except ImportError:
 macros = []
 link_args = []
 swig_opts = ['-c++']
-include_dirs = [numpy_include, '/usr/local/include']
+include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
+                'src/sndobj/rfftw', numpy_include, '/usr/local/include']
+libs = ['m', 'fftw3', 'gsl', 'gslcblas']
+sources = []
 
-simpl_sources = glob('src/simpl/*.cpp')
-simpl_include_dirs = ['src/simpl']
-simpl_include_dirs.extend(include_dirs)
-
-base = Extension("simpl.base",
-                 sources=["simpl/base.pyx", "src/simpl/base.cpp"],
-                 include_dirs=["simpl"] + simpl_include_dirs,
-                 language="c++")
 
 # -----------------------------------------------------------------------------
 # SndObj Library
@@ -80,6 +74,8 @@ fftw_sources = """
 
 sndobj_sources = map(lambda x: 'src/sndobj/' + x, sndobj_sources)
 sndobj_sources.extend(map(lambda x: 'src/sndobj/rfftw/' + x, fftw_sources))
+# sources.extend(sndobj_sources)
+
 sndobj_sources.append("simpl/sndobj.i")
 
 sndobj_macros = [('PYTHON_WRAP', None)]
@@ -99,18 +95,18 @@ sndobj = Extension("simpl/_simplsndobj",
 # SMS
 # -----------------------------------------------------------------------------
 
-# sms_sources = """
-#     OOURA.c cepstrum.c peakContinuation.c soundIO.c tables.c
-#     fileIO.c peakDetection.c spectralApprox.c transforms.c
-#     filters.c residual.c spectrum.c windows.c SFMT.c fixTracks.c
-#     sineSynth.c stocAnalysis.c harmDetection.c sms.c synthesis.c
-#     analysis.c modify.c
-#     """.split()
+sms_sources = """
+    OOURA.c cepstrum.c peakContinuation.c soundIO.c tables.c
+    fileIO.c peakDetection.c spectralApprox.c transforms.c
+    filters.c residual.c spectrum.c windows.c SFMT.c fixTracks.c
+    sineSynth.c stocAnalysis.c harmDetection.c sms.c synthesis.c
+    analysis.c modify.c
+    """.split()
 
-# sms_sources = map(lambda x: 'src/sms/' + x, sms_sources)
-# sms_sources.append("simpl/sms.i")
-# sms_include_dirs = ['src/sms']
-# sms_include_dirs.extend(include_dirs)
+sms_sources = map(lambda x: 'src/sms/' + x, sms_sources)
+sources.extend(sms_sources)
+
+sms_sources.append("simpl/sms.i")
 
 # sms = Extension("simpl/_simplsms",
 #                 sources=sms_sources,
@@ -118,20 +114,27 @@ sndobj = Extension("simpl/_simplsndobj",
 #                 libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
 #                 extra_compile_args=['-DMERSENNE_TWISTER'])
 
-# sms = Extension("simpl.sms",
-#                 sources=["simpl/sms.pyx", "simpl/base.pyx",
-#                          "src/simpl/simplsms.cpp", "src/simpl/base.cpp"],
-#                 include_dirs=["simpl"] + simpl_include_dirs,
-#                 language="c++")
+# -----------------------------------------------------------------------------
+# Base
+# -----------------------------------------------------------------------------
+base = Extension(
+    "simpl.base",
+    sources=["simpl/base.pyx", "src/simpl/base.cpp"],
+    include_dirs=include_dirs,
+    language="c++"
+)
 
 # -----------------------------------------------------------------------------
 # Peak Detection
 # -----------------------------------------------------------------------------
 peak_detection = Extension(
     "simpl.peak_detection",
-    sources=["simpl/peak_detection.pyx", "src/simpl/peak_detection.cpp",
-             "src/simpl/base.cpp"],
-    include_dirs=["simpl"] + simpl_include_dirs,
+    sources=sources + ["simpl/peak_detection.pyx",
+                       "src/simpl/peak_detection.cpp",
+                       "src/simpl/base.cpp"],
+    include_dirs=include_dirs,
+    libraries=libs,
+    extra_compile_args=['-DMERSENNE_TWISTER'],
     language="c++"
 )
 
@@ -142,7 +145,7 @@ partial_tracking = Extension(
     "simpl.partial_tracking",
     sources=["simpl/partial_tracking.pyx", "src/simpl/partial_tracking.cpp",
              "src/simpl/base.cpp"],
-    include_dirs=["simpl"] + simpl_include_dirs,
+    include_dirs=include_dirs,
     language="c++"
 )
 
@@ -154,7 +157,7 @@ synthesis = Extension(
     "simpl.synthesis",
     sources=["simpl/synthesis.pyx", "src/simpl/synthesis.cpp",
              "src/simpl/base.cpp"],
-    include_dirs=["simpl"] + simpl_include_dirs,
+    include_dirs=include_dirs,
     language="c++"
 )
 
@@ -166,7 +169,7 @@ residual = Extension(
     "simpl.residual",
     sources=["simpl/residual.pyx", "src/simpl/residual.cpp",
              "src/simpl/base.cpp"],
-    include_dirs=["simpl"] + simpl_include_dirs,
+    include_dirs=include_dirs,
     language="c++"
 )
 

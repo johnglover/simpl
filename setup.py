@@ -99,36 +99,76 @@ sndobj = Extension("simpl/_simplsndobj",
 # SMS
 # -----------------------------------------------------------------------------
 
-sms_sources = """
-    OOURA.c cepstrum.c peakContinuation.c soundIO.c tables.c
-    fileIO.c peakDetection.c spectralApprox.c transforms.c
-    filters.c residual.c spectrum.c windows.c SFMT.c fixTracks.c
-    sineSynth.c stocAnalysis.c harmDetection.c sms.c synthesis.c
-    analysis.c modify.c
-    """.split()
+# sms_sources = """
+#     OOURA.c cepstrum.c peakContinuation.c soundIO.c tables.c
+#     fileIO.c peakDetection.c spectralApprox.c transforms.c
+#     filters.c residual.c spectrum.c windows.c SFMT.c fixTracks.c
+#     sineSynth.c stocAnalysis.c harmDetection.c sms.c synthesis.c
+#     analysis.c modify.c
+#     """.split()
 
-sms_sources = map(lambda x: 'src/sms/' + x, sms_sources)
-sms_sources.append("simpl/sms.i")
-sms_include_dirs = ['src/sms']
-sms_include_dirs.extend(include_dirs)
+# sms_sources = map(lambda x: 'src/sms/' + x, sms_sources)
+# sms_sources.append("simpl/sms.i")
+# sms_include_dirs = ['src/sms']
+# sms_include_dirs.extend(include_dirs)
 
-sms = Extension("simpl/_simplsms",
-                sources=sms_sources,
-                include_dirs=sms_include_dirs,
-                libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
-                extra_compile_args=['-DMERSENNE_TWISTER'])
+# sms = Extension("simpl/_simplsms",
+#                 sources=sms_sources,
+#                 include_dirs=sms_include_dirs,
+#                 libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
+#                 extra_compile_args=['-DMERSENNE_TWISTER'])
+
+# sms = Extension("simpl.sms",
+#                 sources=["simpl/sms.pyx", "simpl/base.pyx",
+#                          "src/simpl/simplsms.cpp", "src/simpl/base.cpp"],
+#                 include_dirs=["simpl"] + simpl_include_dirs,
+#                 language="c++")
 
 # -----------------------------------------------------------------------------
-# Loris
+# Peak Detection
 # -----------------------------------------------------------------------------
+peak_detection = Extension(
+    "simpl.peak_detection",
+    sources=["simpl/peak_detection.pyx", "src/simpl/peak_detection.cpp",
+             "src/simpl/base.cpp"],
+    include_dirs=["simpl"] + simpl_include_dirs,
+    language="c++"
+)
 
-# simplloris_sources = ['simpl/simplloris.i']
-# simplloris_sources.extend(simpl_sources)
+# -----------------------------------------------------------------------------
+# Partial Tracking
+# -----------------------------------------------------------------------------
+partial_tracking = Extension(
+    "simpl.partial_tracking",
+    sources=["simpl/partial_tracking.pyx", "src/simpl/partial_tracking.cpp",
+             "src/simpl/base.cpp"],
+    include_dirs=["simpl"] + simpl_include_dirs,
+    language="c++"
+)
 
-# simplloris = Extension("simpl/_simplloris",
-#                        sources=simplloris_sources,
-#                        include_dirs=simpl_include_dirs,
-#                        swig_opts=swig_opts)
+
+# -----------------------------------------------------------------------------
+# Synthesis
+# -----------------------------------------------------------------------------
+synthesis = Extension(
+    "simpl.synthesis",
+    sources=["simpl/synthesis.pyx", "src/simpl/synthesis.cpp",
+             "src/simpl/base.cpp"],
+    include_dirs=["simpl"] + simpl_include_dirs,
+    language="c++"
+)
+
+
+# -----------------------------------------------------------------------------
+# Residual
+# -----------------------------------------------------------------------------
+residual = Extension(
+    "simpl.residual",
+    sources=["simpl/residual.pyx", "src/simpl/residual.cpp",
+             "src/simpl/base.cpp"],
+    include_dirs=["simpl"] + simpl_include_dirs,
+    language="c++"
+)
 
 # -----------------------------------------------------------------------------
 # Package
@@ -147,7 +187,8 @@ setup(
     author_email='j@johnglover.net',
     platforms=["Linux", "Mac OS-X", "Unix", "Windows"],
     version='0.3',
-    ext_modules=[base, sndobj, sms],
+    ext_modules=[base, peak_detection, partial_tracking,
+                 synthesis, residual, sndobj],
     cmdclass={'build_ext': build_ext},
     packages=['simpl', 'simpl.plot']
 )

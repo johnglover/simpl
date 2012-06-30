@@ -1,7 +1,7 @@
 #include "exceptions.h"
 #include <string>
 
-namespace Simpl {
+namespace simpl {
 
 // ---------------------------------------------------------------------------
 //	Exception constructor

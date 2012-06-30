@@ -1,7 +1,6 @@
 import os
 import numpy as np
 from nose.tools import assert_almost_equals
-import simpl
 import simpl.base as base
 
 float_precision = 5
@@ -69,70 +68,3 @@ class TestFrame(object):
                              float_precision)
         assert_almost_equals(f.partial(0).frequency, p.frequency,
                              float_precision)
-
-
-class TestPeakDetection(object):
-    @classmethod
-    def setup_class(cls):
-        cls.audio = simpl.read_wav(audio_path)[0]
-
-    def test_peak_detection(self):
-        pd = base.PeakDetection()
-        pd.find_peaks(self.audio)
-
-        assert len(pd.frames) == len(self.audio) / hop_size
-        assert len(pd.frames[0].peaks) == 0
-
-
-class TestPartialTracking(object):
-    @classmethod
-    def setup_class(cls):
-        cls.audio = simpl.read_wav(audio_path)[0]
-
-    def test_partial_tracking(self):
-        pd = base.PeakDetection()
-        frames = pd.find_peaks(self.audio)
-
-        pt = base.PartialTracking()
-        frames = pt.find_partials(frames)
-
-        assert len(frames) == len(self.audio) / hop_size
-        assert len(frames[0].partials) == 100
-
-
-class TestSynthesis(object):
-    @classmethod
-    def setup_class(cls):
-        cls.audio = simpl.read_wav(audio_path)[0]
-
-    def test_synthesis(self):
-        pd = base.PeakDetection()
-        frames = pd.find_peaks(self.audio)
-
-        pt = base.PartialTracking()
-        frames = pt.find_partials(frames)
-
-        s = base.Synthesis()
-        synth_audio = s.synth(frames)
-
-        assert len(synth_audio)
-
-
-class TestResidual(object):
-    @classmethod
-    def setup_class(cls):
-        cls.audio = simpl.read_wav(audio_path)[0]
-
-    def test_synthesis(self):
-        pd = base.PeakDetection()
-        frames = pd.find_peaks(self.audio)
-
-        pt = base.PartialTracking()
-        frames = pt.find_partials(frames)
-
-        s = base.Synthesis()
-        synth_audio = s.synth(frames)
-
-        r = base.Residual()
-        residual_audio = r.find_residual(synth_audio, self.audio)
-        assert len(residual_audio)

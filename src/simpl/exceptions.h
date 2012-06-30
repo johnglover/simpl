@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace Simpl {
+namespace simpl {
 
 // ---------------------------------------------------------------------------
 //  class Exception

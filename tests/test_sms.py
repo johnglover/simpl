@@ -6,8 +6,6 @@ import simpl
 import simpl.simplsms as simplsms
 
 float_precision = 2
-frame_size = 512
-hop_size = 512
 audio_path = os.path.join(
     os.path.dirname(__file__), 'audio/flute.wav'
 )

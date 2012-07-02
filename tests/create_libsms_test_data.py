@@ -131,27 +131,29 @@ def _partial_tracking():
         status = pysms.sms_analyze(frame_audio, analysis_data,
                                    analysis_params)
 
+        sms_freqs = np.zeros(num_partials, dtype=np.float32)
+        sms_amps = np.zeros(num_partials, dtype=np.float32)
+        sms_phases = np.zeros(num_partials, dtype=np.float32)
+
         frame = {'status': status}
         frame['partials'] = []
 
         if status == 1:
-            sms_freqs = np.zeros(num_partials, dtype=np.float32)
-            sms_amps = np.zeros(num_partials, dtype=np.float32)
-            sms_phases = np.zeros(num_partials, dtype=np.float32)
             analysis_data.getSinFreq(sms_freqs)
             analysis_data.getSinAmp(sms_amps)
             analysis_data.getSinPhase(sms_phases)
-            for i in range(num_partials):
-                frame['partials'].append({
-                    'n': i,
-                    'amplitude': float(sms_amps[i]),
-                    'frequency': float(sms_freqs[i]),
-                    'phase': float(sms_phases[i])
-                })
             current_frame += 1
 
         if status == -1:
             do_analysis = False
+
+        for i in range(num_partials):
+            frame['partials'].append({
+                'n': i,
+                'amplitude': float(sms_amps[i]),
+                'frequency': float(sms_freqs[i]),
+                'phase': float(sms_phases[i])
+            })
 
         sms_frames.append(frame)
         pysms.sms_freeFrame(analysis_data)

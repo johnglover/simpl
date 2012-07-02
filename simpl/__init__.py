@@ -1,12 +1,21 @@
 import numpy as np
 dtype = np.double
 
+import base
+Frame = base.Frame
+Peak = base.Peak
+
+import peak_detection
+PeakDetection = peak_detection.PeakDetection
+SMSPeakDetection = peak_detection.SMSPeakDetection
+
+import partial_tracking
+PartialTracking = partial_tracking.PartialTracking
+SMSPartialTracking = partial_tracking.SMSPartialTracking
+
 import pybase
-Frame = pybase.Frame
-Peak = pybase.Peak
 Partial = pybase.Partial
-PeakDetection = pybase.PeakDetection
-PartialTracking = pybase.PartialTracking
+# PartialTracking = pybase.PartialTracking
 Synthesis = pybase.Synthesis
 Residual = pybase.Residual
 compare_peak_amps = pybase.compare_peak_amps
@@ -18,8 +27,7 @@ SndObjPartialTracking = sndobj.SndObjPartialTracking
 SndObjSynthesis = sndobj.SndObjSynthesis
 
 import pysms
-SMSPeakDetection = pysms.SMSPeakDetection
-SMSPartialTracking = pysms.SMSPartialTracking
+# SMSPartialTracking = pysms.SMSPartialTracking
 SMSSynthesis = pysms.SMSSynthesis
 SMSResidual = pysms.SMSResidual
 

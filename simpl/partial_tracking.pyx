@@ -12,8 +12,12 @@ from base cimport c_Frame
 cdef class PartialTracking:
     cdef c_PartialTracking* thisptr
 
-    def __cinit__(self): self.thisptr = new c_PartialTracking()
-    def __dealloc__(self): del self.thisptr
+    def __cinit__(self):
+        self.thisptr = new c_PartialTracking()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
 
     def clear(self):
         self.thisptr.clear()
@@ -54,3 +58,15 @@ cdef class PartialTracking:
             f.set_frame(output_frames[i])
             partial_frames.append(f)
         return partial_frames
+
+
+cdef class SMSPartialTracking(PartialTracking):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_SMSPartialTracking()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_PartialTracking*>0

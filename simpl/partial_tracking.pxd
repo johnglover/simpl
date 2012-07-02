@@ -24,3 +24,6 @@ cdef extern from "../src/simpl/partial_tracking.h" namespace "simpl":
         void max_gap(int new_max_gap)
         vector[c_Peak*] update_partials(c_Frame* frame)
         vector[c_Frame*] find_partials(vector[c_Frame*] frames)
+
+    cdef cppclass c_SMSPartialTracking "simpl::SMSPartialTracking"(c_PartialTracking):
+        c_SMSPartialTracking()

@@ -55,6 +55,7 @@ cdef class Frame:
     # peaks
     property num_peaks:
         def __get__(self): return self.thisptr.num_peaks()
+        def __set__(self, int i): self.thisptr.num_peaks(i)
 
     property max_peaks:
         def __get__(self): return self.thisptr.max_peaks()
@@ -91,6 +92,13 @@ cdef class Frame:
         def __get__(self): return self.thisptr.max_partials()
         def __set__(self, int i): self.thisptr.max_partials(i)
 
+    def add_partial(self, Peak p not None):
+        self.thisptr.add_partial(p.thisptr)
+
+    def add_partials(self, peaks not None):
+        for p in peaks:
+            self.add_partial(p)
+
     def partial(self, int i, Peak p=None):
         cdef c_Peak* c_p
         if not p:
@@ -105,7 +113,7 @@ cdef class Frame:
         def __get__(self):
             return [self.partial(i) for i in range(self.thisptr.num_partials())]
         def __set__(self, peaks):
-            raise Exception("NotImplemented")
+            self.add_partials(peaks)
 
     # audio buffers
     property size:

@@ -2,6 +2,7 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 from libcpp.vector cimport vector
+from libcpp cimport bool
 
 from base cimport c_Peak
 from base cimport c_Frame
@@ -18,7 +19,7 @@ cdef extern from "../src/simpl/peak_detection.h" namespace "simpl":
         int frame_size()
         void frame_size(int new_frame_size)
         int static_frame_size()
-        void static_frame_size(int new_static_frame_size)
+        void static_frame_size(bool new_static_frame_size)
         int next_frame_size()
         int hop_size()
         void hop_size(int new_hop_size)

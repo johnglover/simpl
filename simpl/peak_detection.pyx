@@ -2,6 +2,7 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 from libcpp.vector cimport vector
+from libcpp cimport bool
 
 from base cimport Peak
 from base cimport Frame
@@ -29,7 +30,7 @@ cdef class PeakDetection:
 
     property static_frame_size:
         def __get__(self): return self.thisptr.static_frame_size()
-        def __set__(self, int i): self.thisptr.static_frame_size(i)
+        def __set__(self, bool b): self.thisptr.static_frame_size(b)
 
     def next_frame_size(self):
         return self.thisptr.next_frame_size()

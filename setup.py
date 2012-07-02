@@ -106,7 +106,7 @@ sms_sources = """
 sms_sources = map(lambda x: 'src/sms/' + x, sms_sources)
 sources.extend(sms_sources)
 
-sms_sources.append("simpl/sms.i")
+# sms_sources.append("simpl/sms.i")
 
 # sms = Extension("simpl/_simplsms",
 #                 sources=sms_sources,

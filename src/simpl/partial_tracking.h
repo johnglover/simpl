@@ -55,7 +55,6 @@ class SMSPartialTracking : public PartialTracking {
         SMSAnalysisParams _analysis_params;
         SMSHeader _header;
         SMSData _data;
-        int _num_peaks;
         sample* _peak_amplitude;
         sample* _peak_frequency;
         sample* _peak_phase;

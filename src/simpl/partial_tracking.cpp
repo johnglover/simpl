@@ -100,7 +100,6 @@ SMSPartialTracking::SMSPartialTracking() {
     sms_fillHeader(&_header, &_analysis_params);
     sms_allocFrameH(&_header, &_data);
 
-    _num_peaks = 100;
     init_peaks();
 }
 
@@ -125,9 +124,13 @@ void SMSPartialTracking::init_peaks() {
         delete [] _peak_phase;
     }
 
-    _peak_amplitude = new sample[_num_peaks];
-    _peak_frequency = new sample[_num_peaks];
-    _peak_phase = new sample[_num_peaks];
+    _peak_amplitude = new sample[_max_partials];
+    _peak_frequency = new sample[_max_partials];
+    _peak_phase = new sample[_max_partials];
+
+    memset(_peak_amplitude, 0.0, sizeof(sample) * _max_partials);
+    memset(_peak_frequency, 0.0, sizeof(sample) * _max_partials);
+    memset(_peak_phase, 0.0, sizeof(sample) * _max_partials);
 }
 
 void SMSPartialTracking::max_partials(int new_max_partials) {
@@ -136,7 +139,6 @@ void SMSPartialTracking::max_partials(int new_max_partials) {
     sms_freeAnalysis(&_analysis_params);
     sms_freeFrame(&_data);
 
-    // sms_initAnalParams(&_analysis_params);
     _analysis_params.maxPeaks = _max_partials;
     _analysis_params.nTracks = _max_partials;
     _analysis_params.nGuides = _max_partials;
@@ -147,20 +149,21 @@ void SMSPartialTracking::max_partials(int new_max_partials) {
 }
 
 Peaks SMSPartialTracking::update_partials(Frame* frame) {
-    if(_num_peaks != frame->num_peaks()) {
-        _num_peaks = frame->num_peaks();
-        init_peaks();
+    int num_peaks = _max_partials;
+    if(num_peaks > frame->num_peaks()) {
+        num_peaks = frame->num_peaks();
     }
 
     // set peaks in SMSAnalysisParams object
-    for(int i = 0; i < _num_peaks; i++) {
+    for(int i = 0; i < num_peaks; i++) {
         _peak_amplitude[i] = frame->peak(i)->amplitude;
         _peak_frequency[i] = frame->peak(i)->frequency;
         _peak_phase[i] = frame->peak(i)->phase;
     }
-    sms_setPeaks(&_analysis_params, _num_peaks, _peak_amplitude,
-                 _num_peaks, _peak_frequency,
-                 _num_peaks, _peak_phase);
+
+    sms_setPeaks(&_analysis_params, _max_partials, _peak_amplitude,
+                 _max_partials, _peak_frequency,
+                 _max_partials, _peak_phase);
 
     // SMS partial tracking
     sms_findPartials(&_data, &_analysis_params);

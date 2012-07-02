@@ -95,8 +95,11 @@ Frame::~Frame() {
 }
 
 void Frame::init() {
+    _num_peaks = 0;
     _max_peaks = 100;
+    _num_partials = 0;
     _max_partials = 100;
+    _peaks.resize(_max_peaks);
     _partials.resize(_max_partials);
     _audio = NULL;
     _synth = NULL;
@@ -108,8 +111,13 @@ void Frame::init() {
 // -------------
 
 int Frame::num_peaks() {
-    return _peaks.size();
+    return _num_peaks;
 }
+
+void Frame::num_peaks(int new_num_peaks) {
+    _num_peaks = new_num_peaks;
+}
+
 
 int Frame::max_peaks() {
     return _max_peaks;
@@ -125,29 +133,34 @@ void Frame::max_peaks(int new_max_peaks) {
 }
 
 void Frame::add_peak(Peak* peak) {
-    _peaks.push_back(peak);
-}
-
-void Frame::add_peaks(Peaks* peaks) {
-    for(Peaks::iterator i = peaks->begin(); i != peaks->end(); i++) {
-        add_peak(*i);
-    }
+    _peaks[_num_peaks] = peak;
+    _num_peaks++;
 }
 
 Peak* Frame::peak(int peak_number) {
     return _peaks[peak_number];
 }
 
+void Frame::peak(int peak_number, Peak* peak) {
+    _peaks[peak_number] = peak;
+}
+
 void Frame::clear() {
     _peaks.clear();
     _partials.clear();
+    _num_peaks = 0;
+    _num_partials = 0;
 }
 
 // Frame - partials
 // ----------------
 
 int Frame::num_partials() {
-    return _partials.size();
+    return _num_partials;
+}
+
+void Frame::num_partials(int new_num_partials) {
+    _num_partials = new_num_partials;
 }
 
 int Frame::max_partials() {
@@ -161,6 +174,11 @@ void Frame::max_partials(int new_max_partials) {
     if((int)_partials.size() > _max_partials) {
         _partials.resize(_max_partials);
     }
+}
+
+void Frame::add_partial(Peak* peak) {
+    _partials[_num_partials] = peak;
+    _num_partials++;
 }
 
 Peak* Frame::partial(int partial_number) {

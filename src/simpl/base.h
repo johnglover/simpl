@@ -80,7 +80,9 @@ class Frame {
     private:
         int _size;
         int _max_peaks;
+        int _num_peaks;
         int _max_partials;
+        int _num_partials;
         Peaks _peaks;
         Peaks _partials;
         sample* _audio;
@@ -96,17 +98,20 @@ class Frame {
 
         // peaks
         int num_peaks();
+        void num_peaks(int new_num_peaks);
         int max_peaks();
         void max_peaks(int new_max_peaks);
         void add_peak(Peak* peak);
-        void add_peaks(Peaks* peaks);
         Peak* peak(int peak_number);
+        void peak(int peak_number, Peak* peak);
         void clear();
 
         // partials
         int num_partials();
+        void num_partials(int new_num_partials);
         int max_partials();
         void max_partials(int new_max_partials);
+        void add_partial(Peak* peak);
         Peak* partial(int partial_number);
         void partial(int partial_number, Peak* peak);
 

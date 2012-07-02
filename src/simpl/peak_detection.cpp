@@ -131,7 +131,7 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
     clear();
     unsigned int pos = 0;
 
-    while(pos < audio_size - _hop_size) {
+    while(pos <= audio_size - _hop_size) {
         // get the next frame size
         if(!_static_frame_size) {
             _frame_size = next_frame_size();
@@ -140,10 +140,13 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
         // get the next frame
         Frame* f = new Frame(_frame_size);
         f->audio(&audio[pos]);
+        f->max_peaks(_max_peaks);
 
         // find peaks
         Peaks peaks = find_peaks_in_frame(f);
-        f->add_peaks(&peaks);
+        for(int i = 0; i < peaks.size(); i++) {
+            f->add_peak(peaks[i]);
+        }
 
         _frames.push_back(f);
         pos += _hop_size;
@@ -240,36 +243,37 @@ Peaks SMSPeakDetection::find_peaks_in_frame(Frame* frame) {
 // If the signal contains more than 1 frame worth of audio,
 // it will be broken up into separate frames, with a list of
 // peaks returned for each frame.
-//
-// TODO: This hops by frame size rather than hop size in order to
-//       make sure the results are the same as with libsms. Make sure
-//       we have the same number of frames as the other algorithms.
 Frames SMSPeakDetection::find_peaks(int audio_size, sample* audio) {
     clear();
 
     _analysis_params.iSizeSound = audio_size;
     unsigned int pos = 0;
 
-    // account for SMS analysis delay
-    // need an extra (max_frame_delay - 1) frames
-    int delay = (_analysis_params.iMaxDelayFrames - 1) & _hop_size;
-
-    while(pos < ((audio_size - _hop_size) + delay)) {
+    while(pos <= audio_size - _hop_size) {
         // get the next frame size
-        if(!_static_frame_size) {
-            _frame_size = next_frame_size();
-        }
+        // if(!_static_frame_size) {
+        _frame_size = next_frame_size();
+        // }
 
         // get the next frame
         Frame* f = new Frame(_frame_size);
         f->audio(&audio[pos]);
+        f->max_peaks(_max_peaks);
 
         // find peaks
         Peaks peaks = find_peaks_in_frame(f);
-        f->add_peaks(&peaks);
+        for(int i = 0; i < peaks.size(); i++) {
+            f->add_peak(peaks[i]);
+        }
 
         _frames.push_back(f);
-        pos += _frame_size;
+
+        if(!_static_frame_size) {
+            pos += _frame_size;
+        }
+        else {
+            pos += _hop_size;
+        }
     }
 
     return _frames;

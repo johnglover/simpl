@@ -12,8 +12,12 @@ from base cimport c_Frame
 cdef class Synthesis:
     cdef c_Synthesis* thisptr
 
-    def __cinit__(self): self.thisptr = new c_Synthesis()
-    def __dealloc__(self): del self.thisptr
+    def __cinit__(self):
+        self.thisptr = new c_Synthesis()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
 
     property sampling_rate:
         def __get__(self): return self.thisptr.sampling_rate()
@@ -49,3 +53,30 @@ cdef class Synthesis:
             frame_audio = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, output_frames[i].synth())
             output[i * self.thisptr.hop_size():(i + 1) * self.thisptr.hop_size()] = frame_audio
         return output
+
+
+cdef class SMSSynthesis(Synthesis):
+    SMS_DET_IFFT = 0
+    SMS_DET_SIN = 1
+
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_SMSSynthesis()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_Synthesis*>0
+
+    property num_stochastic_coeffs:
+        def __get__(self): return (<c_SMSSynthesis*>self.thisptr).num_stochastic_coeffs()
+        def __set__(self, int i): raise Exception("NotImplemented")
+
+    property stochastic_type:
+        def __get__(self): return (<c_SMSSynthesis*>self.thisptr).stochastic_type()
+        def __set__(self, int i): raise Exception("NotImplemented")
+
+    property det_synthesis_type:
+        def __get__(self): return (<c_SMSSynthesis*>self.thisptr).det_synthesis_type()
+        def __set__(self, int i): (<c_SMSSynthesis*>self.thisptr).det_synthesis_type(i)

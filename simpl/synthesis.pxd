@@ -24,3 +24,10 @@ cdef extern from "../src/simpl/synthesis.h" namespace "simpl":
         void max_partials(int new_max_partials)
         void synth_frame(c_Frame* frame)
         vector[c_Frame*] synth(vector[c_Frame*] frames)
+
+    cdef cppclass c_SMSSynthesis "simpl::SMSSynthesis"(c_Synthesis):
+        c_SMSSynthesis()
+        int num_stochastic_coeffs()
+        int stochastic_type()
+        int det_synthesis_type()
+        void det_synthesis_type(int new_det_synthesis_type)

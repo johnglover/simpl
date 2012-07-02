@@ -320,7 +320,7 @@ typedef struct
  * synthesized frame.
  *
  */
-typedef struct
+typedef struct SMSSynthParams
 {
     int iStochasticType;        /*!<  type of stochastic model defined by SMS_StocSynthType 
                                   \see SMS_StocSynthType */

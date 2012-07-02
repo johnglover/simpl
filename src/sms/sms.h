@@ -58,7 +58,7 @@
  *  the documentation will be updated to reflect which members of the header
  *  are useful in manipulations, and what functions to use for these manipulatinos
  */
-typedef struct 
+typedef struct SMSHeader
 {
     int iSmsMagic;         /*!< identification constant */
     int iHeadBSize;        /*!< size in bytes of header */
@@ -88,7 +88,7 @@ typedef struct
  * pFSinPha is optional in the final output, but it is always used to construct the
  * residual signal.
  */
-typedef struct 
+typedef struct SMSData
 {
     sfloat *pSmsData;      /*!< pointer to all SMS data */
     int sizeData;          /*!< size of all the data */
@@ -671,7 +671,7 @@ void sms_sineSynthFrame(SMS_Data *pSmsFrame, sfloat *pBuffer,
 
 void sms_initHeader(SMS_Header *pSmsHeader);
 int sms_getHeader(char *pChFileName, SMS_Header **ppSmsHeader, FILE **ppInputFile);
-void sms_fillHeader(SMS_Header *pSmsHeader, SMS_AnalParams *pAnalParams, char *pProgramString);
+void sms_fillHeader(SMS_Header *pSmsHeader, SMS_AnalParams *pAnalParams);
 int sms_writeHeader(char *pFileName, SMS_Header *pSmsHeader, FILE **ppOutSmsFile);
 int sms_writeFile(FILE *pSmsFile, SMS_Header *pSmsHeader);
 int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow);

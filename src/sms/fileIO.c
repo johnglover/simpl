@@ -63,9 +63,8 @@ void sms_initHeader(SMS_Header *pSmsHeader)
  *
  * \param pSmsHeader    header for SMS file (to be stored)
  * \param pAnalParams   structure of analysis parameters
- * \param pProgramString pointer to a string containing the name of the program that made the analysis data
  */
-void sms_fillHeader(SMS_Header *pSmsHeader, SMS_AnalParams *pAnalParams, char *pProgramString)
+void sms_fillHeader(SMS_Header *pSmsHeader, SMS_AnalParams *pAnalParams)
 {
     sms_initHeader(pSmsHeader);
     pSmsHeader->nFrames = pAnalParams->nFrames;

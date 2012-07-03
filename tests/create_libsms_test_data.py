@@ -46,7 +46,7 @@ def _pysms_synthesis_params(sampling_rate):
     synth_params.iSynthesisType = pysms.SMS_STYPE_DET
     synth_params.iStochasticType = pysms.SMS_STOC_NONE
     synth_params.sizeHop = hop_size
-    synth_params.nTracks = max_peaks
+    synth_params.nTracks = max_partials
     synth_params.deEmphasis = 0
     return synth_params
 
@@ -178,7 +178,7 @@ def _partial_tracking():
     return sms_frames
 
 
-def _harmonic_synthesis():
+def _harmonic_synthesis(det_synth_type):
     pysms.sms_init()
     snd_header = pysms.SMS_SndHeader()
 
@@ -216,20 +216,20 @@ def _harmonic_synthesis():
         status = pysms.sms_analyze(frame_audio, analysis_data,
                                    analysis_params)
 
-        if status == 1:
-            current_frame += 1
-            analysis_frames.append(analysis_data)
-        elif status == 0:
-            pysms.sms_freeFrame(analysis_data)
+        analysis_frames.append(analysis_data)
+        current_frame += 1
+
         if status == -1:
             do_analysis = False
-            pysms.sms_freeFrame(analysis_data)
-
-    # blank_frame = analysis_frames[0]
-    # analysis_frames = analysis_frames[1:]
-    # pysms.sms_freeFrame(blank_frame)
 
     synth_params = _pysms_synthesis_params(sampling_rate)
+    if det_synth_type == 'ifft':
+        synth_params.iDetSynthType = pysms.SMS_DET_IFFT
+    elif det_synth_type == 'sin':
+        synth_params.iDetSynthType = pysms.SMS_DET_SIN
+    else:
+        raise Exception("Invalid deterministic synthesis type")
+
     pysms.sms_initSynth(sms_header, synth_params)
 
     synth_frame = np.zeros(synth_params.sizeHop, dtype=np.float32)
@@ -254,7 +254,8 @@ def _harmonic_synthesis():
 if __name__ == '__main__':
     size_next_read = _size_next_read()
     partial_tracking = _partial_tracking()
-    harmonic_synthesis = _harmonic_synthesis()
+    harmonic_synthesis_ifft = _harmonic_synthesis('ifft')
+    harmonic_synthesis_sin = _harmonic_synthesis('sin')
 
     test_data = {'size_next_read': size_next_read,
                  'peak_detection': partial_tracking,
@@ -264,5 +265,7 @@ if __name__ == '__main__':
     with open('libsms_test_data.json', 'w') as f:
         f.write(test_data)
 
-    wav.write('libsms_harmonic_synthesis.wav', sampling_rate,
-              harmonic_synthesis)
+    wav.write('libsms_harmonic_synthesis_ifft.wav', sampling_rate,
+              harmonic_synthesis_ifft)
+    wav.write('libsms_harmonic_synthesis_sin.wav', sampling_rate,
+              harmonic_synthesis_sin)

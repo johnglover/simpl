@@ -20,8 +20,11 @@ audio_path = os.path.join(
 libsms_test_data_path = os.path.join(
     os.path.dirname(__file__), 'libsms_test_data.json'
 )
-libsms_harmonic_synthesis_path = os.path.join(
-    os.path.dirname(__file__), 'libsms_harmonic_synthesis.wav'
+libsms_harmonic_synthesis_ifft_path = os.path.join(
+    os.path.dirname(__file__), 'libsms_harmonic_synthesis_ifft.wav'
+)
+libsms_harmonic_synthesis_sin_path = os.path.join(
+    os.path.dirname(__file__), 'libsms_harmonic_synthesis_sin.wav'
 )
 
 PeakDetection = peak_detection.PeakDetection
@@ -83,7 +86,7 @@ class TestSMSSynthesis(object):
 
         assert len(synth_audio) == len(self.audio)
 
-    def test_harmonic_synthesis(self):
+    def test_harmonic_synthesis_ifft(self):
         pd = SMSPeakDetection()
         pd.hop_size = hop_size
         frames = pd.find_peaks(self.audio)
@@ -94,13 +97,40 @@ class TestSMSSynthesis(object):
 
         synth = SMSSynthesis()
         synth.hop_size = hop_size
+        synth.max_partials = max_partials
         synth.det_synthesis_type = SMSSynthesis.SMS_DET_IFFT
         synth_audio = synth.synth(frames)
 
         assert len(synth_audio) == len(self.audio)
 
         sms_audio, sampling_rate = simpl.read_wav(
-            libsms_harmonic_synthesis_path
+            libsms_harmonic_synthesis_ifft_path
+        )
+
+        assert len(synth_audio) == len(sms_audio)
+
+        for i in range(len(synth_audio)):
+            assert_almost_equals(synth_audio[i], sms_audio[i], float_precision)
+
+    def test_harmonic_synthesis_sin(self):
+        pd = SMSPeakDetection()
+        pd.hop_size = hop_size
+        frames = pd.find_peaks(self.audio)
+
+        pt = SMSPartialTracking()
+        pt.max_partials = max_partials
+        frames = pt.find_partials(frames)
+
+        synth = SMSSynthesis()
+        synth.hop_size = hop_size
+        synth.max_partials = max_partials
+        synth.det_synthesis_type = SMSSynthesis.SMS_DET_SIN
+        synth_audio = synth.synth(frames)
+
+        assert len(synth_audio) == len(self.audio)
+
+        sms_audio, sampling_rate = simpl.read_wav(
+            libsms_harmonic_synthesis_sin_path
         )
 
         assert len(synth_audio) == len(sms_audio)

@@ -125,10 +125,15 @@ void SMSSynthesis::det_synthesis_type(int new_det_synthesis_type) {
 }
 
 void SMSSynthesis::synth_frame(Frame* frame) {
-    for(int i = 0; i < _data.nTracks; i++) {
-        _data.pFSinAmp[i] = frame->peak(i)->amplitude;
-        _data.pFSinFreq[i] = frame->peak(i)->frequency;
-        _data.pFSinPha[i] = frame->peak(i)->phase;
+    int num_partials = _data.nTracks;
+    if(num_partials > frame->num_partials()) {
+        num_partials = frame->num_partials();
+    }
+
+    for(int i = 0; i < num_partials; i++) {
+        _data.pFSinAmp[i] = frame->partial(i)->amplitude;
+        _data.pFSinFreq[i] = frame->partial(i)->frequency;
+        _data.pFSinPha[i] = frame->partial(i)->phase;
     }
 
     sms_synthesize(&_data, frame->synth(), &_synth_params);

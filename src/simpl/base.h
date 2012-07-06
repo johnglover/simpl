@@ -90,10 +90,13 @@ class Frame {
         sample* _residual;
         sample* _synth_residual;
         void init();
+        bool _alloc_memory;
+        void create_arrays();
+        void destroy_arrays();
 
     public:
         Frame();
-        Frame(int frame_size);
+        Frame(int frame_size, bool alloc_memory=false);
         ~Frame();
 
         // peaks

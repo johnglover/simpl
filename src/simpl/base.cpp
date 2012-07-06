@@ -81,17 +81,27 @@ Peak* Partial::peak(int peak_number) {
 // ---------------------------------------------------------------------------
 Frame::Frame() {
     _size = 512;
+    _alloc_memory = false;
     init();
 }
 
-Frame::Frame(int frame_size) {
+Frame::Frame(int frame_size, bool alloc_memory) {
     _size = frame_size;
+    _alloc_memory = alloc_memory;
     init();
+
+    if(_alloc_memory) {
+        create_arrays();
+    }
 }
 
 Frame::~Frame() {
     _peaks.clear();
     _partials.clear();
+
+    if(_alloc_memory) {
+        destroy_arrays();
+    }
 }
 
 void Frame::init() {
@@ -105,6 +115,25 @@ void Frame::init() {
     _synth = NULL;
     _residual = NULL;
     _synth_residual = NULL;
+}
+
+void Frame::create_arrays() {
+    _audio = new sample[_size];
+    _synth = new sample[_size];
+    _residual = new sample[_size];
+    _synth_residual = new sample[_size];
+
+    memset(_audio, 0.0, sizeof(sample) * _size);
+    memset(_synth, 0.0, sizeof(sample) * _size);
+    memset(_residual, 0.0, sizeof(sample) * _size);
+    memset(_synth_residual, 0.0, sizeof(sample) * _size);
+}
+
+void Frame::destroy_arrays() {
+    delete [] _audio;
+    delete [] _synth;
+    delete [] _residual;
+    delete [] _synth_residual;
 }
 
 // Frame - peaks
@@ -199,10 +228,20 @@ int Frame::size() {
 
 void Frame::size(int new_size) {
     _size = new_size;
+
+    if(_alloc_memory) {
+        destroy_arrays();
+        create_arrays();
+    }
 }
 
 void Frame::audio(sample* new_audio) {
-    _audio = new_audio;
+    if(_alloc_memory) {
+        memcpy(_audio, new_audio, sizeof(sample) * _size);
+    }
+    else {
+        _audio = new_audio;
+    }
 }
 
 sample* Frame::audio() {
@@ -210,7 +249,12 @@ sample* Frame::audio() {
 }
 
 void Frame::synth(sample* new_synth) {
-    _synth = new_synth;
+    if(_alloc_memory) {
+        memcpy(_synth, new_synth, sizeof(sample) * _size);
+    }
+    else {
+        _synth = new_synth;
+    }
 }
 
 sample* Frame::synth() {
@@ -218,7 +262,12 @@ sample* Frame::synth() {
 }
 
 void Frame::residual(sample* new_residual) {
-    _residual = new_residual;
+    if(_alloc_memory) {
+        memcpy(_residual, new_residual, sizeof(sample) * _size);
+    }
+    else {
+        _residual = new_residual;
+    }
 }
 
 sample* Frame::residual() {
@@ -226,7 +275,12 @@ sample* Frame::residual() {
 }
 
 void Frame::synth_residual(sample* new_synth_residual) {
-    _synth_residual = new_synth_residual;
+    if(_alloc_memory) {
+        memcpy(_synth_residual, new_synth_residual, sizeof(sample) * _size);
+    }
+    else {
+        _synth_residual = new_synth_residual;
+    }
 }
 
 sample* Frame::synth_residual() {

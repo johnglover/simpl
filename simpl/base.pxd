@@ -1,6 +1,7 @@
 import numpy as np
 cimport numpy as np
 from libcpp.vector cimport vector
+from libcpp cimport bool
 
 np.import_array()
 
@@ -36,7 +37,7 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
 
     cdef cppclass c_Frame "simpl::Frame":
         c_Frame()
-        c_Frame(int frame_size)
+        c_Frame(int frame_size, bool alloc_memory)
 
         # peaks
         int num_peaks()

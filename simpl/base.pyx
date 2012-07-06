@@ -35,10 +35,10 @@ cdef class Peak:
 
 
 cdef class Frame:
-    def __cinit__(self, size=None, create_new=True):
+    def __cinit__(self, size=None, create_new=True, alloc_memory=False):
         if create_new:
             if size:
-                self.thisptr = new c_Frame(size)
+                self.thisptr = new c_Frame(size, alloc_memory)
             else:
                 self.thisptr = new c_Frame()
             self.created = True
@@ -46,7 +46,7 @@ cdef class Frame:
             self.created = False
 
     def __dealloc__(self):
-        if self.created:
+        if self.created and self.thisptr:
             del self.thisptr
 
     cdef set_frame(self, c_Frame* f):
@@ -86,7 +86,7 @@ cdef class Frame:
     # partials
     property num_partials:
         def __get__(self): return self.thisptr.num_partials()
-        def __set__(self, int i): raise Exception("Invalid Operation")
+        def __set__(self, int i): raise Exception("NotImplemented")
 
     property max_partials:
         def __get__(self): return self.thisptr.max_partials()

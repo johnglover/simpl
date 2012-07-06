@@ -1,6 +1,4 @@
 import os
-import json
-import numpy as np
 from nose.tools import assert_almost_equals
 import simpl
 import simpl.peak_detection as peak_detection
@@ -17,9 +15,6 @@ num_samples = num_frames * hop_size
 audio_path = os.path.join(
     os.path.dirname(__file__), 'audio/flute.wav'
 )
-libsms_test_data_path = os.path.join(
-    os.path.dirname(__file__), 'libsms_test_data.json'
-)
 libsms_harmonic_synthesis_ifft_path = os.path.join(
     os.path.dirname(__file__), 'libsms_harmonic_synthesis_ifft.wav'
 )
@@ -33,13 +28,6 @@ PartialTracking = partial_tracking.PartialTracking
 SMSPartialTracking = partial_tracking.SMSPartialTracking
 Synthesis = synthesis.Synthesis
 SMSSynthesis = synthesis.SMSSynthesis
-
-
-def _load_libsms_test_data():
-    test_data = None
-    with open(libsms_test_data_path, 'r') as f:
-        test_data = json.loads(f.read())
-    return test_data
 
 
 class TestSynthesis(object):
@@ -69,7 +57,6 @@ class TestSMSSynthesis(object):
     def setup_class(cls):
         cls.audio = simpl.read_wav(audio_path)[0]
         cls.audio = cls.audio[0:num_samples]
-        cls.test_data = _load_libsms_test_data()
 
     def test_basic(self):
         pd = SMSPeakDetection()

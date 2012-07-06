@@ -12,7 +12,7 @@ from base import dtype
 
 cdef extern from "../src/simpl/residual.h" namespace "simpl":
     cdef cppclass c_Residual "simpl::Residual":
-        c_Synthesis()
+        c_Residual()
         int frame_size()
         void frame_size(int new_frame_size)
         int next_frame_size()
@@ -27,4 +27,11 @@ cdef extern from "../src/simpl/residual.h" namespace "simpl":
                            int original_size, double* original,
                            int residual_size, double* residual)
         void synth_frame(c_Frame* frame)
-        vector[c_Frame*] synth(vector[c_Frame*] frames)
+        vector[c_Frame*] synth(int synth_size, double* synth,
+                               int original_size, double* original)
+
+    cdef cppclass c_SMSResidual "simpl::SMSResidual"(c_Residual):
+        c_SMSResidual()
+        int num_stochastic_coeffs()
+        void num_stochastic_coeffs(int new_num_stochastic_coeffs)
+        # int stochastic_type()

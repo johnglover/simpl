@@ -12,8 +12,12 @@ from base cimport c_Frame
 cdef class Residual:
     cdef c_Residual* thisptr
 
-    def __cinit__(self): self.thisptr = new c_Residual()
-    def __dealloc__(self): del self.thisptr
+    def __cinit__(self):
+        self.thisptr = new c_Residual()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
 
     property sampling_rate:
         def __get__(self): return self.thisptr.sampling_rate()
@@ -25,7 +29,9 @@ cdef class Residual:
 
     property hop_size:
         def __get__(self): return self.thisptr.hop_size()
-        def __set__(self, int i): self.thisptr.hop_size(i)
+        def __set__(self, int i):
+            print 'setting hop size...'
+            self.thisptr.hop_size(i)
 
     def residual_frame(self, np.ndarray[dtype_t, ndim=1] synth,
                        np.ndarray[dtype_t, ndim=1] original):
@@ -47,17 +53,80 @@ cdef class Residual:
         self.thisptr.synth_frame(frame.thisptr)
         return frame.audio
 
-    def synth(self, frames):
-        cdef vector[c_Frame*] c_frames
-        for frame in frames:
-            c_frames.push_back((<Frame>frame).thisptr)
-        cdef vector[c_Frame*] output_frames = self.thisptr.synth(c_frames)
-        cdef np.ndarray[dtype_t, ndim=1] output = np.zeros(
-            output_frames.size() * self.thisptr.hop_size()
+    def synth(self, np.ndarray[dtype_t, ndim=1] synth, np.ndarray[dtype_t, ndim=1] original):
+        # cdef vector[c_Frame*] c_frames
+        # cdef int i = 0
+        # cdef int j = 0
+        cdef int hop = self.thisptr.hop_size()
+        # cdef int n = min(len(synth), len(original))
+        # cdef Frame f
+
+        # while i < (n - hop):
+            # f = Frame(hop, alloc_memory=True)
+            # frame_audio = np.zeros(hop)
+            # frame_synth = np.zeros(hop)
+            # for j in xrange(hop):
+                # frame_audio[j] = original[i+j]
+                # frame_synth[j] = synth[i+j]
+            # f.audio = frame_audio
+
+            # f.audio = original[i:i + hop]
+            # f.synth = synth[i:i + hop]
+            # f.synth = frame_synth
+
+            # c_frames.push_back(f.thisptr)
+
+            # c_frames.push_back(Frame(hop, alloc_memory=True).thisptr)
+            # c_frames[i / hop].audio = original[i:i + hop]
+            # for j in xrange(hop):
+            #     c_frames[i / hop].audio()[j] = original[i + j]
+
+            # print original[i:i + hop].data
+            # c_frames[i / hop].audio(<double*>(original[i:i + hop].data))
+            # c_frames[i / hop].synth = synth[i:i + hop]
+            # i += hop
+
+        # for i in range(c_frames.size()):
+        #     print c_frames[i].size()
+
+        # print
+        # f = Fra
+
+        cdef vector[c_Frame*] output_frames = self.thisptr.synth(
+            len(synth), <double*> synth.data,
+            len(original), <double*> original.data
         )
+
+        cdef np.ndarray[dtype_t, ndim=1] output = np.zeros(output_frames.size() * hop)
         cdef np.npy_intp shape[1]
-        shape[0] = <np.npy_intp> self.thisptr.hop_size()
+        shape[0] = <np.npy_intp> hop
+
         for i in range(output_frames.size()):
-            frame_audio = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, output_frames[i].synth())
-            output[i * self.thisptr.hop_size():(i + 1) * self.thisptr.hop_size()] = frame_audio
+            frame_audio = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, output_frames[i].synth_residual())
+            output[i * hop:(i + 1) * hop] = frame_audio
+
         return output
+
+
+cdef class SMSResidual(Residual):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_SMSResidual()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_Residual*>0
+
+    property hop_size:
+        def __get__(self): return self.thisptr.hop_size()
+        def __set__(self, int i): self.thisptr.hop_size(i)
+
+    property num_stochastic_coeffs:
+        def __get__(self): return (<c_SMSResidual*>self.thisptr).num_stochastic_coeffs()
+        def __set__(self, int i): (<c_SMSResidual*>self.thisptr).num_stochastic_coeffs(i)
+
+    # property stochastic_type:
+    #     def __get__(self): return (<c_SMSResidual*>self.thisptr).stochastic_type()
+    #     def __set__(self, int i): (<c_SMSResidual*>self.thisptr).stochastic_type(i)

@@ -195,7 +195,9 @@ void sms_approxResidual(int sizeResidual, sfloat* residual,
 
     /* generate random phases */
     for(i = 0; i < residualParams->sizeStocMagSpectrum; i++)
+    {
         residualParams->stocPhaseSpectrum[i] =  TWO_PI * sms_random();
+    }
 
     /* IFFT with 50% overlap */
     sms_invQuickSpectrumW(residualParams->stocMagSpectrum,
@@ -208,7 +210,9 @@ void sms_approxResidual(int sizeResidual, sfloat* residual,
 
     /* output */
     for(i = 0; i < sizeApprox; i++)
+    {
         approx[i] = residualParams->approx[i] * residualParams->windowScale;
+    }
 }
 
 /*! \brief  synthesizes one frame of SMS data

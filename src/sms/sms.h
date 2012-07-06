@@ -193,7 +193,7 @@ typedef struct
  * This structure contains all the necessary settings and memory for residual synthesis.
  *
  */
-typedef struct
+typedef struct SMSResidualParams
 {
     int samplingRate;
     int hopSize;

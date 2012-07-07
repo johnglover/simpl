@@ -106,14 +106,6 @@ sms_sources = """
 sms_sources = map(lambda x: 'src/sms/' + x, sms_sources)
 sources.extend(sms_sources)
 
-# sms_sources.append("simpl/sms.i")
-
-# sms = Extension("simpl/_simplsms",
-#                 sources=sms_sources,
-#                 include_dirs=sms_include_dirs,
-#                 libraries=['m', 'fftw3', 'gsl', 'gslcblas'],
-#                 extra_compile_args=['-DMERSENNE_TWISTER'])
-
 # -----------------------------------------------------------------------------
 # Base
 # -----------------------------------------------------------------------------

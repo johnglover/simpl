@@ -13,10 +13,16 @@ import partial_tracking
 PartialTracking = partial_tracking.PartialTracking
 SMSPartialTracking = partial_tracking.SMSPartialTracking
 
+import synthesis
+Synthesis = synthesis.Synthesis
+SMSSynthesis = synthesis.SMSSynthesis
+
+import residual
+Residual = residual.Residual
+SMSResidual = residual.SMSResidual
+
 import pybase
 Partial = pybase.Partial
-# PartialTracking = pybase.PartialTracking
-Synthesis = pybase.Synthesis
 Residual = pybase.Residual
 compare_peak_amps = pybase.compare_peak_amps
 compare_peak_freqs = pybase.compare_peak_freqs
@@ -25,11 +31,6 @@ import sndobj
 SndObjPeakDetection = sndobj.SndObjPeakDetection
 SndObjPartialTracking = sndobj.SndObjPartialTracking
 SndObjSynthesis = sndobj.SndObjSynthesis
-
-import pysms
-# SMSPartialTracking = pysms.SMSPartialTracking
-SMSSynthesis = pysms.SMSSynthesis
-SMSResidual = pysms.SMSResidual
 
 import mq
 MQPeakDetection = mq.MQPeakDetection

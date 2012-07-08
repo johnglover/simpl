@@ -134,10 +134,10 @@ void SMSResidual::residual_frame(int synth_size, sample* synth,
 
 // Calculate and return one frame of the synthesised residual signal
 void SMSResidual::synth_frame(Frame* frame) {
-    residual_frame(frame->size(), frame->synth(),
-                   frame->size(), frame->audio(),
-                   frame->size(), frame->residual());
-    sms_approxResidual(frame->size(), frame->residual(),
-                       frame->size(), frame->synth_residual(),
+    residual_frame(_hop_size, frame->synth(),
+                   _hop_size, frame->audio(),
+                   _hop_size, frame->residual());
+    sms_approxResidual(_hop_size, frame->residual(),
+                       _hop_size, frame->synth_residual(),
                        &_residual_params);
 }

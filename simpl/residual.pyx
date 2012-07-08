@@ -54,44 +54,7 @@ cdef class Residual:
         return frame.audio
 
     def synth(self, np.ndarray[dtype_t, ndim=1] synth, np.ndarray[dtype_t, ndim=1] original):
-        # cdef vector[c_Frame*] c_frames
-        # cdef int i = 0
-        # cdef int j = 0
         cdef int hop = self.thisptr.hop_size()
-        # cdef int n = min(len(synth), len(original))
-        # cdef Frame f
-
-        # while i < (n - hop):
-            # f = Frame(hop, alloc_memory=True)
-            # frame_audio = np.zeros(hop)
-            # frame_synth = np.zeros(hop)
-            # for j in xrange(hop):
-                # frame_audio[j] = original[i+j]
-                # frame_synth[j] = synth[i+j]
-            # f.audio = frame_audio
-
-            # f.audio = original[i:i + hop]
-            # f.synth = synth[i:i + hop]
-            # f.synth = frame_synth
-
-            # c_frames.push_back(f.thisptr)
-
-            # c_frames.push_back(Frame(hop, alloc_memory=True).thisptr)
-            # c_frames[i / hop].audio = original[i:i + hop]
-            # for j in xrange(hop):
-            #     c_frames[i / hop].audio()[j] = original[i + j]
-
-            # print original[i:i + hop].data
-            # c_frames[i / hop].audio(<double*>(original[i:i + hop].data))
-            # c_frames[i / hop].synth = synth[i:i + hop]
-            # i += hop
-
-        # for i in range(c_frames.size()):
-        #     print c_frames[i].size()
-
-        # print
-        # f = Fra
-
         cdef vector[c_Frame*] output_frames = self.thisptr.synth(
             len(synth), <double*> synth.data,
             len(original), <double*> original.data

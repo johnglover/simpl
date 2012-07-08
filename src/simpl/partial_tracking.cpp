@@ -93,6 +93,7 @@ SMSPartialTracking::SMSPartialTracking() {
     _analysis_params.iCleanTracks = 0;
     _analysis_params.iFormat = SMS_FORMAT_HP;
     _analysis_params.nTracks = _max_partials;
+    _analysis_params.maxPeaks = _max_partials;
     _analysis_params.nGuides = _max_partials;
     _analysis_params.preEmphasis = 0;
     sms_initAnalysis(&_analysis_params);
@@ -100,6 +101,9 @@ SMSPartialTracking::SMSPartialTracking() {
     sms_fillHeader(&_header, &_analysis_params);
     sms_allocFrameH(&_header, &_data);
 
+    _peak_amplitude = NULL;
+    _peak_frequency = NULL;;
+    _peak_phase = NULL;
     init_peaks();
 }
 
@@ -111,6 +115,10 @@ SMSPartialTracking::~SMSPartialTracking() {
     delete [] _peak_amplitude;
     delete [] _peak_frequency;
     delete [] _peak_phase;
+
+    _peak_amplitude = NULL;
+    _peak_frequency = NULL;;
+    _peak_phase = NULL;
 }
 
 void SMSPartialTracking::init_peaks() {
@@ -146,6 +154,8 @@ void SMSPartialTracking::max_partials(int new_max_partials) {
     sms_initAnalysis(&_analysis_params);
     sms_fillHeader(&_header, &_analysis_params);
     sms_allocFrameH(&_header, &_data);
+
+    init_peaks();
 }
 
 Peaks SMSPartialTracking::update_partials(Frame* frame) {
@@ -161,7 +171,8 @@ Peaks SMSPartialTracking::update_partials(Frame* frame) {
         _peak_phase[i] = frame->peak(i)->phase;
     }
 
-    sms_setPeaks(&_analysis_params, _max_partials, _peak_amplitude,
+    sms_setPeaks(&_analysis_params,
+                 _max_partials, _peak_amplitude,
                  _max_partials, _peak_frequency,
                  _max_partials, _peak_phase);
 

@@ -99,6 +99,6 @@ class TestSMSPeakDetection(object):
         assert len(sms_frames) == len(frames)
 
         for frame in frames:
-            assert frame.num_peaks <= max_peaks
+            assert frame.num_peaks <= max_peaks, frame.num_peaks
             max_amp = max([p.amplitude for p in frame.peaks])
             assert max_amp

@@ -120,6 +120,11 @@ void PeakDetection::frames(Frames new_frames) {
 // Find and return all spectral peaks in a given frame of audio
 Peaks PeakDetection::find_peaks_in_frame(Frame* frame) {
     Peaks peaks;
+
+    for(int i = 0; i < peaks.size(); i++) {
+        frame->add_peak(peaks[i]);
+    }
+
     return peaks;
 }
 
@@ -143,10 +148,7 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
         f->max_peaks(_max_peaks);
 
         // find peaks
-        Peaks peaks = find_peaks_in_frame(f);
-        for(int i = 0; i < peaks.size(); i++) {
-            f->add_peak(peaks[i]);
-        }
+        find_peaks_in_frame(f);
 
         _frames.push_back(f);
         pos += _hop_size;
@@ -177,6 +179,7 @@ SMSPeakDetection::SMSPeakDetection() {
     _analysis_params.nGuides = _max_peaks;
     _analysis_params.preEmphasis = 0;
     sms_initAnalysis(&_analysis_params);
+    _analysis_params.iSizeSound = _hop_size;
 
     sms_initSpectralPeaks(&_peaks, _max_peaks);
 
@@ -203,6 +206,7 @@ void SMSPeakDetection::hop_size(int new_hop_size) {
     sms_freeAnalysis(&_analysis_params);
     _analysis_params.iFrameRate = _sampling_rate / _hop_size;
     sms_initAnalysis(&_analysis_params);
+    _analysis_params.iSizeSound = _hop_size;
 }
 
 void SMSPeakDetection::max_peaks(int new_max_peaks) {
@@ -235,6 +239,8 @@ Peaks SMSPeakDetection::find_peaks_in_frame(Frame* frame) {
         p->frequency = _peaks.pSpectralPeaks[i].fFreq;
         p->phase = _peaks.pSpectralPeaks[i].fPhase;
         peaks.push_back(p);
+
+        frame->add_peak(p);
     }
     return peaks;
 }
@@ -261,10 +267,7 @@ Frames SMSPeakDetection::find_peaks(int audio_size, sample* audio) {
         f->max_peaks(_max_peaks);
 
         // find peaks
-        Peaks peaks = find_peaks_in_frame(f);
-        for(int i = 0; i < peaks.size(); i++) {
-            f->add_peak(peaks[i]);
-        }
+        find_peaks_in_frame(f);
 
         _frames.push_back(f);
 

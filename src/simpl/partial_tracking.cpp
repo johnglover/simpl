@@ -57,6 +57,11 @@ void PartialTracking::max_gap(int new_max_gap) {
 // Streamable (real-time) partial-tracking.
 Peaks PartialTracking::update_partials(Frame* frame) {
     Peaks peaks;
+
+    for(int i = 0; i < peaks.size(); i++) {
+        frame->add_partial(peaks[i]);
+    }
+
     return peaks;
 }
 
@@ -66,11 +71,7 @@ Frames PartialTracking::find_partials(Frames frames) {
         if(frames[i]->max_partials() != _max_partials) {
             frames[i]->max_partials(_max_partials);
         }
-
-        Peaks peaks = update_partials(frames[i]);
-        for(int j = 0; j < peaks.size(); j++) {
-            frames[i]->add_partial(peaks[j]);
-        }
+        update_partials(frames[i]);
     }
     _frames = frames;
     return _frames;
@@ -188,6 +189,8 @@ Peaks SMSPartialTracking::update_partials(Frame* frame) {
         p->frequency = _data.pFSinFreq[i];
         p->phase = _data.pFSinPha[i];
         peaks.push_back(p);
+
+        frame->add_partial(p);
     }
 
     return peaks;

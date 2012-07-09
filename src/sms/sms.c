@@ -112,6 +112,7 @@ void sms_initAnalParams(SMS_AnalParams *pAnalParams)
     pAnalParams->fPeakContToGuide = .4;
     pAnalParams->fFundContToGuide = .5;
     pAnalParams->fFreqDeviation = .45;
+    pAnalParams->realtime = 0;
     pAnalParams->iSamplingRate = 44100; /* should be set to the real samplingrate with sms_initAnalysis */
     pAnalParams->iDefaultSizeWindow = 1001;
     pAnalParams->windowSize = 0;
@@ -839,7 +840,6 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
 
     pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  
         pAnalParams->ppFrames[iCurrentFrame - 1]->iFrameNum + 1;
-    pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = sizeWindow;
 
     /* if first frame set center of data around 0 */
     if(pAnalParams->ppFrames[iCurrentFrame]->iFrameNum == 1)
@@ -849,19 +849,30 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
         pAnalParams->ppFrames[iCurrentFrame]->iFrameSample = 
             pAnalParams->ppFrames[iCurrentFrame-1]->iFrameSample + pAnalParams->sizeHop;
 
-    /* check for end of sound */
-    if((pAnalParams->ppFrames[iCurrentFrame]->iFrameSample + (sizeWindow+1)/2) >= pAnalParams->iSizeSound
-         && pAnalParams->iSizeSound > 0)
+    if(pAnalParams->realtime == 0)
     {
-        pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  -1;
-        pAnalParams->ppFrames[iCurrentFrame]->iFrameSize =  0;
-        pAnalParams->ppFrames[iCurrentFrame]->iStatus =  SMS_FRAME_END;
+        pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = sizeWindow;
+
+        /* check for end of sound */
+        if((pAnalParams->ppFrames[iCurrentFrame]->iFrameSample + (sizeWindow+1)/2) >= pAnalParams->iSizeSound
+             && pAnalParams->iSizeSound > 0)
+        {
+            pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  -1;
+            pAnalParams->ppFrames[iCurrentFrame]->iFrameSize =  0;
+            pAnalParams->ppFrames[iCurrentFrame]->iStatus =  SMS_FRAME_END;
+        }
+        else
+        {
+            /* good status, ready to start computing */
+            pAnalParams->ppFrames[iCurrentFrame]->iStatus = SMS_FRAME_READY;
+        }
     }
     else
     {
-        /* good status, ready to start computing */
+        pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = pAnalParams->iSamplingRate / pAnalParams->iFrameRate;
         pAnalParams->ppFrames[iCurrentFrame]->iStatus = SMS_FRAME_READY;
     }
+
     return SMS_OK;
 }
 

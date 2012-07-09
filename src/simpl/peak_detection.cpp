@@ -178,6 +178,7 @@ SMSPeakDetection::SMSPeakDetection() {
     _analysis_params.maxPeaks = _max_peaks;
     _analysis_params.nGuides = _max_peaks;
     _analysis_params.preEmphasis = 0;
+    _analysis_params.realtime = 0;
     sms_initAnalysis(&_analysis_params);
     _analysis_params.iSizeSound = _hop_size;
 
@@ -224,6 +225,14 @@ void SMSPeakDetection::max_peaks(int new_max_peaks) {
 
     sms_initAnalysis(&_analysis_params);
     sms_initSpectralPeaks(&_peaks, _max_peaks);
+}
+
+int SMSPeakDetection::realtime() {
+    return _analysis_params.realtime;
+}
+
+void SMSPeakDetection::realtime(int new_realtime) {
+    _analysis_params.realtime = new_realtime;
 }
 
 // Find and return all spectral peaks in a given frame of audio

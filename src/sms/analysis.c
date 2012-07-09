@@ -174,19 +174,36 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
         sms_analyzeFrame(iCurrentFrame, pAnalParams, fRefFundamental);
 
         /* set the size of the next analysis window */
-        if(pAnalParams->ppFrames[iCurrentFrame]->fFundamental > 0 &&
-            pAnalParams->iSoundType != SMS_SOUND_TYPE_NOTE)
-            pAnalParams->windowSize = sms_sizeNextWindow(iCurrentFrame, pAnalParams);
+        /* if(pAnalParams->ppFrames[iCurrentFrame]->fFundamental > 0 && */
+        /*     pAnalParams->iSoundType != SMS_SOUND_TYPE_NOTE) */
+        /* { */
+        /*     pAnalParams->windowSize = sms_sizeNextWindow(iCurrentFrame, pAnalParams); */
+        /* } */
 
-        /* figure out how much needs to be read next time
-         * how many processed - sample no. of end of next frame
-         * = no. samples that we haven't processed yet from whenever, if sizeNextRead was 0
-         */
-        iExtraSamples = (pAnalParams->soundBuffer.iMarker + pAnalParams->soundBuffer.sizeBuffer) -
-                        (pAnalParams->ppFrames[iCurrentFrame]->iFrameSample + pAnalParams->sizeHop);
+        if(pAnalParams->realtime == 0)
+        {
+            /* set the size of the next analysis window */
+            if(pAnalParams->ppFrames[iCurrentFrame]->fFundamental > 0 &&
+                pAnalParams->iSoundType != SMS_SOUND_TYPE_NOTE) 
+            {
+                pAnalParams->windowSize = sms_sizeNextWindow(iCurrentFrame, pAnalParams);
+            }
 
-        pAnalParams->sizeNextRead = MAX(0, (pAnalParams->windowSize+1)/2 - iExtraSamples);
-        ReAnalyzeFrame(iCurrentFrame, pAnalParams);
+            /* figure out how much needs to be read next time
+             * how many processed - sample no. of end of next frame
+             * = no. samples that we haven't processed yet from whenever, if sizeNextRead was 0
+             */
+            iExtraSamples = (pAnalParams->soundBuffer.iMarker + pAnalParams->soundBuffer.sizeBuffer) -
+                            (pAnalParams->ppFrames[iCurrentFrame]->iFrameSample + pAnalParams->sizeHop);
+
+            pAnalParams->sizeNextRead = MAX(0, (pAnalParams->windowSize+1)/2 - iExtraSamples);
+            ReAnalyzeFrame(iCurrentFrame, pAnalParams);
+        }
+        else
+        {
+            pAnalParams->windowSize = sizeWaveform;
+            pAnalParams->sizeNextRead = sizeWaveform;
+        }
 
         /* save peaks */
         pSpectralPeaks->nPeaksFound = pAnalParams->ppFrames[iCurrentFrame]->nPeaks;

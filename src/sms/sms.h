@@ -242,6 +242,7 @@ typedef struct SMSAnalysisParams
     sfloat fPeakContToGuide;         /*!< contribution of previous peak to current guide (between 0 and 1) */
     sfloat fFundContToGuide;         /*!< contribution of current fundamental to current guide (between 0 and 1) */
     sfloat fFreqDeviation;           /*!< maximum deviation from peak to peak */				     
+    int realtime;                    /*!< perform realtime analysis */
     int iSamplingRate;               /*! sampling rate of sound to be analyzed */
     int iDefaultSizeWindow;          /*!< default size of analysis window in samples */
     int windowSize;                  /*!< the current window size */

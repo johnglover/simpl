@@ -83,6 +83,8 @@ class SMSPeakDetection : public PeakDetection {
         int next_frame_size();
         void hop_size(int new_hop_size);
         void max_peaks(int new_max_peaks);
+        int realtime();
+        void realtime(int new_realtime);
         Peaks find_peaks_in_frame(Frame* frame);
         Frames find_peaks(int audio_size, sample* audio);
 };

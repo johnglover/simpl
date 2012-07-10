@@ -7,14 +7,14 @@ class SMSPeakDetection(simpl.PeakDetection):
     "Sinusoidal peak detection using SMS"
 
     def __init__(self):
-        simpl.PeakDetection.__init__(self)
+        super(SMSPeakDetection, self).__init__()
         simplsms.sms_init()
         # analysis parameters
         self._analysis_params = simplsms.SMS_AnalParams()
         simplsms.sms_initAnalParams(self._analysis_params)
-        self._analysis_params.iSamplingRate = self._sampling_rate
+        self._analysis_params.iSamplingRate = self.sampling_rate
         # set default hop and frame sizes to match those in the parent class
-        self._analysis_params.iFrameRate = self.sampling_rate / self._hop_size
+        self._analysis_params.iFrameRate = self.sampling_rate / self.hop_size
         self._analysis_params.iWindowType = simplsms.SMS_WIN_HAMMING
         self._analysis_params.fHighestFreq = 20000
         self._analysis_params.iMaxDelayFrames = 4
@@ -22,13 +22,13 @@ class SMSPeakDetection(simpl.PeakDetection):
         self._analysis_params.minGoodFrames = 1
         self._analysis_params.iCleanTracks = 0
         self._analysis_params.iFormat = simplsms.SMS_FORMAT_HP
-        self._analysis_params.nTracks = self._max_peaks
-        self._analysis_params.maxPeaks = self._max_peaks
-        self._analysis_params.nGuides = self._max_peaks
+        self._analysis_params.nTracks = self.max_peaks
+        self._analysis_params.maxPeaks = self.max_peaks
+        self._analysis_params.nGuides = self.max_peaks
         self._analysis_params.preEmphasis = 0
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
-        self._peaks = simplsms.SMS_SpectralPeaks(self._max_peaks)
+        self._peaks = simplsms.SMS_SpectralPeaks(self.max_peaks)
         # By default, SMS will change the size of the frames being read
         # depending on the detected fundamental frequency (if any) of the
         # input sound. To prevent this behaviour (useful when comparing
@@ -142,10 +142,13 @@ class SMSPeakDetection(simpl.PeakDetection):
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
             raise Exception("Error allocating memory for analysis_params")
 
-    def get_hop_size(self):
-        return self._analysis_params.sizeHop
+    @property
+    def hop_size(self):
+        return super(SMSPeakDetection, self).hop_size
 
-    def set_hop_size(self, hop_size):
+    @hop_size.setter
+    def hop_size(self, hop_size):
+        simpl.PeakDetection.hop_size(self, hop_size)
         simplsms.sms_freeAnalysis(self._analysis_params)
         self._analysis_params.iFrameRate = self.sampling_rate / hop_size
         if simplsms.sms_initAnalysis(self._analysis_params) != 0:
@@ -172,9 +175,6 @@ class SMSPeakDetection(simpl.PeakDetection):
             raise Exception("Error allocating memory for analysis_params")
         # set peaks list
         self._peaks = simplsms.SMS_SpectralPeaks(max_peaks)
-
-    def get_sampling_rate(self):
-        return self._analysis_params.iSamplingRate
 
     def set_sampling_rate(self, sampling_rate):
         self._analysis_params.iSamplingRate = sampling_rate

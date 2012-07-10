@@ -33,13 +33,9 @@ cdef class Residual:
             print 'setting hop size...'
             self.thisptr.hop_size(i)
 
-    def residual_frame(self, np.ndarray[dtype_t, ndim=1] synth,
-                       np.ndarray[dtype_t, ndim=1] original):
-        cdef np.ndarray[dtype_t, ndim=1] residual = np.zeros(len(synth))
-        self.thisptr.residual_frame(len(synth), <double*> synth.data,
-                                    len(original), <double*> original.data,
-                                    len(residual), <double*> residual.data)
-        return residual
+    def residual_frame(self, Frame frame not None):
+        self.thisptr.residual_frame(frame.thisptr)
+        return frame.residual
 
     def find_residual(self, np.ndarray[dtype_t, ndim=1] synth,
                       np.ndarray[dtype_t, ndim=1] original):
@@ -53,10 +49,9 @@ cdef class Residual:
         self.thisptr.synth_frame(frame.thisptr)
         return frame.audio
 
-    def synth(self, np.ndarray[dtype_t, ndim=1] synth, np.ndarray[dtype_t, ndim=1] original):
+    def synth(self, np.ndarray[dtype_t, ndim=1] original):
         cdef int hop = self.thisptr.hop_size()
         cdef vector[c_Frame*] output_frames = self.thisptr.synth(
-            len(synth), <double*> synth.data,
             len(original), <double*> original.data
         )
 

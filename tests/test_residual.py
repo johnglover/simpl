@@ -75,23 +75,9 @@ class TestSMSResidual(object):
         assert len(residual_audio)
 
     def test_residual_synthesis(self):
-        pd = SMSPeakDetection()
-        pd.max_peaks = max_peaks
-        pd.hop_size = hop_size
-        frames = pd.find_peaks(self.audio)
-
-        pt = SMSPartialTracking()
-        pt.max_partials = max_partials
-        frames = pt.find_partials(frames)
-
-        synth = SMSSynthesis()
-        synth.hop_size = hop_size
-        synth.max_partials = max_partials
-        simpl_harmonic = synth.synth(frames)
-
         res = SMSResidual()
         res.hop_size = hop_size
-        simpl_residual = res.synth(simpl_harmonic, self.audio)
+        simpl_residual = res.synth(self.audio)
 
         sms_residual, sampling_rate = simpl.read_wav(
             libsms_residual_synthesis_path
@@ -99,10 +85,10 @@ class TestSMSResidual(object):
 
         assert len(simpl_residual) == len(sms_residual)
 
-        # import matplotlib.pyplot as plt
-        # plt.plot(simpl_residual)
-        # plt.plot(sms_residual)
-        # plt.show()
+        import matplotlib.pyplot as plt
+        plt.plot(simpl_residual)
+        plt.plot(sms_residual)
+        plt.show()
 
         for i in range(len(simpl_residual)):
             assert_almost_equals(simpl_residual[i], sms_residual[i],

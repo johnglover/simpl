@@ -37,18 +37,18 @@ void Residual::sampling_rate(int new_sampling_rate) {
     _sampling_rate = new_sampling_rate;
 }
 
-void Residual::residual_frame(int synth_size, sample* synth,
-                              int original_size, sample* original,
-                              int residual_size, sample* residual) {
+void Residual::residual_frame(Frame* frame) {
 }
 
 void Residual::find_residual(int synth_size, sample* synth,
                              int original_size, sample* original,
                              int residual_size, sample* residual) {
     for(int i = 0; i < synth_size; i += _hop_size) {
-        residual_frame(_hop_size, &synth[i],
-                       _hop_size, &original[i],
-                       _hop_size, &residual[i]);
+        Frame* f = new Frame(_hop_size);
+        f->audio(&original[i]);
+        f->synth(&synth[i]);
+        f->residual(&residual[i]);
+        residual_frame(f);
     }
 }
 
@@ -63,14 +63,12 @@ Frames Residual::synth(Frames& frames) {
     return frames;
 }
 
-Frames Residual::synth(int synth_size, sample* synth,
-                       int original_size, sample* original) {
+Frames Residual::synth(int original_size, sample* original) {
     Frames frames;
 
-    for(int i = 0; i < min(synth_size, original_size) - _hop_size; i += _hop_size) {
+    for(int i = 0; i <= original_size - _hop_size; i += _hop_size) {
         Frame* f = new Frame(_hop_size, true);
         f->audio(&original[i]);
-        f->synth(&synth[i]);
         synth_frame(f);
         frames.push_back(f);
     }
@@ -89,11 +87,23 @@ SMSResidual::SMSResidual() {
     sms_initResidualParams(&_residual_params);
     _residual_params.hopSize = _hop_size;
     sms_initResidual(&_residual_params);
+
+    _temp_synth = new sample[_hop_size];
+
+    _pd.hop_size(_hop_size);
+    _pd.realtime(1);
+    _synth.hop_size(_hop_size);
+    _synth.det_synthesis_type(SMS_STYPE_DET);
 }
 
 SMSResidual::~SMSResidual() {
     sms_freeResidual(&_residual_params);
     sms_free();
+
+    if(_temp_synth) {
+        delete[] _temp_synth;
+    }
+    _temp_synth = NULL;
 }
 
 void SMSResidual::hop_size(int new_hop_size) {
@@ -102,6 +112,11 @@ void SMSResidual::hop_size(int new_hop_size) {
     sms_freeResidual(&_residual_params);
     _residual_params.hopSize = _hop_size;
     sms_initResidual(&_residual_params);
+
+    if(_temp_synth) {
+        delete[] _temp_synth;
+    }
+    _temp_synth = new sample[_hop_size];
 }
 
 int SMSResidual::num_stochastic_coeffs() {
@@ -121,22 +136,24 @@ void SMSResidual::num_stochastic_coeffs(int new_num_stochastic_coeffs) {
 // void SMSResidual::stochastic_type(int new_stochastic_type) {
 // }
 
-void SMSResidual::residual_frame(int synth_size, sample* synth,
-                                 int original_size, sample* original,
-                                 int residual_size, sample* residual) {
+void SMSResidual::residual_frame(Frame* frame) {
+    frame->clear();
+    _pd.find_peaks_in_frame(frame);
+    _pt.update_partials(frame);
+    _synth.synth_frame(frame);
 
-    sms_findResidual(synth_size, synth, original_size, original, &_residual_params);
+    sms_findResidual(frame->size(), frame->synth(),
+                     frame->size(), frame->audio(),
+                     &_residual_params);
 
-    for(int i = 0; i < residual_size; i++) {
-        residual[i] = _residual_params.residual[i];
+    for(int i = 0; i < frame->size(); i++) {
+        frame->residual()[i] = _residual_params.residual[i];
     }
 }
 
 // Calculate and return one frame of the synthesised residual signal
 void SMSResidual::synth_frame(Frame* frame) {
-    residual_frame(_hop_size, frame->synth(),
-                   _hop_size, frame->audio(),
-                   _hop_size, frame->residual());
+    residual_frame(frame);
     sms_approxResidual(_hop_size, frame->residual(),
                        _hop_size, frame->synth_residual(),
                        &_residual_params);

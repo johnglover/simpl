@@ -20,15 +20,12 @@ cdef extern from "../src/simpl/residual.h" namespace "simpl":
         void hop_size(int new_hop_size)
         int sampling_rate()
         void sampling_rate(int new_sampling_rate)
-        void residual_frame(int synth_size, double* synth,
-                            int original_size, double* original,
-                            int residual_size, double* residual)
+        void residual_frame(c_Frame* frame)
         void find_residual(int synth_size, double* synth,
                            int original_size, double* original,
                            int residual_size, double* residual)
         void synth_frame(c_Frame* frame)
-        vector[c_Frame*] synth(int synth_size, double* synth,
-                               int original_size, double* original)
+        vector[c_Frame*] synth(int original_size, double* original)
 
     cdef cppclass c_SMSResidual "simpl::SMSResidual"(c_Residual):
         c_SMSResidual()

@@ -1,11 +1,9 @@
 Sinusoidal Modelling - A Python Library (SiMPL)
 ===============================================
 
-Version 0.3
+Version 0.3 (alpha)
 
-Copyright (c) 2012 John Glover, National University of Ireland, Maynooth
-http://simplsound.sourceforge.net
-j@johnglover.net
+http://simplsound.sourceforge.net  
 
 
 Introduction
@@ -21,29 +19,56 @@ in the field, allowing them to easily combine, compare and contrast many of the 
 analysis/synthesis algorithms.
 
 
-Dependencies
-------------
+C++ Library Dependencies
+------------------------
 
-* C/C++ compiler
+* CMake_
+* fftw3_
+* GNU Scientific Library (for libsms)
+
+.. _CMake: http://www.cmake.org
+.. _fftw3: http://www.fftw.org
+
+
+Additional Python Module Dependencies
+-------------------------------------
+
 * Python (>= 2.6.*)
+* Cython_
 * NumPy
 * SciPy
-* GNU Scientific Library (for libsms)
-* Developers who wish to run the unit tests also need the original open source libraries:
-    * sndobj: http://sndobj.sourceforge.net/
-    * libsms: http://mtg.upf.edu/static/libsms/
+
+.. _Cython: http://cython.org
+
+
+Additional Test Dependencies
+----------------------------
+
+* sndobj_
+* libsms_
+
+.. _sndobj: http://sndobj.sourceforge.net
+.. _libsms: http://mtg.upf.edu/static/libsms
 
 
 Installation
 ------------
 
-First build the extension module (so that the SWIG wrapper files are created) by running
-the following command in the root folder:
+To build and install the C++ module, from the simpl root folder run:
+
+::
+
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make
+    $ sudo make install
+
+To build and install the Python module, from the simpl root folder run:
+
+::
 
     $ python setup.py build
-
-Then to install the module in your Python site-packages directory:
-
     $ python setup.py install
 
 
@@ -67,27 +92,6 @@ The MQ algorithm is based on the following paper:
 R. McAulay, T. Quatieri, "Speech Analysis/Synthesis Based on a Sinusoidal Representation", 
 IEEE Transaction on Acoustics, Speech and Signal Processing, vol. 34, no. 4, pp. 744-754, 1986.
 
+Everything else: Copyright (c) 2012 John Glover, National University of Ireland, Maynooth  
 
-To Do
------
-
-general:
-
-* include new RT Audio code
-* tidy up code for HMM/LP partial tracking and Loris integration
-* include binaries for Mac OS X and Windows so compilation from source is not needed
-* performance issues: MQ, LP and HMM algorithms need to be coded in C/C++ really,
-  Python is just too slow, particularly for real-time use. The pure Python implementations
-  are useful for testing though.
-
-sndobj:
-
-* create exception objects
-* add a set_synthesis_type property to SndObjSynthesis
-* create properties for threshold and num_bins in SndObjPartialTracking class
-* make sndobjs use self.sampling_rate
-* make peak detection use the new window_size property
-
-sms:
-
-* move sms_scaleDet to the harmonic analysis phase
+john dot c dot glover @ nuim dot net

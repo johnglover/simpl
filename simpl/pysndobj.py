@@ -6,7 +6,7 @@ import numpy as np
 class SndObjPeakDetection(simpl.PeakDetection):
     "Sinusoidal peak detection using the SndObj library"
     def __init__(self):
-        simpl.PeakDetection.__init__(self)
+        super(SndObjPeakDetection, self).__init__()
         self._input = simplsndobj.SndObj()
         self._input.SetVectorSize(self.frame_size)
         self._window = simplsndobj.HammingTable(self.frame_size, 0.5)

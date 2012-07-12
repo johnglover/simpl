@@ -27,10 +27,10 @@ Residual = pybase.Residual
 compare_peak_amps = pybase.compare_peak_amps
 compare_peak_freqs = pybase.compare_peak_freqs
 
-import sndobj
-SndObjPeakDetection = sndobj.SndObjPeakDetection
-SndObjPartialTracking = sndobj.SndObjPartialTracking
-SndObjSynthesis = sndobj.SndObjSynthesis
+import pysndobj
+SndObjPeakDetection = pysndobj.SndObjPeakDetection
+SndObjPartialTracking = pysndobj.SndObjPartialTracking
+SndObjSynthesis = pysndobj.SndObjSynthesis
 
 import mq
 MQPeakDetection = mq.MQPeakDetection

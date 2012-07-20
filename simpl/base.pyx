@@ -48,6 +48,7 @@ cdef class Frame:
     def __dealloc__(self):
         if self.created and self.thisptr:
             del self.thisptr
+            self.thisptr = <c_Frame*>0
 
     cdef set_frame(self, c_Frame* f):
         self.thisptr = f

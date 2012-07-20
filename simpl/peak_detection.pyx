@@ -12,9 +12,11 @@ from base cimport c_Frame
 
 cdef class PeakDetection:
     cdef c_PeakDetection* thisptr
+    cdef public list frames
 
     def __cinit__(self):
         self.thisptr = new c_PeakDetection()
+        self.frames = []
 
     def __dealloc__(self):
         if self.thisptr:
@@ -61,15 +63,6 @@ cdef class PeakDetection:
         f.set_frame(c_f)
         return f
 
-    property frames:
-        def __get__(self):
-            return [self.frame(i) for i in range(self.thisptr.num_frames())]
-        def __set__(self, new_frames):
-            cdef vector[c_Frame*] c_frames
-            for f in new_frames:
-                c_frames.push_back((<Frame>f).thisptr)
-            self.thisptr.frames(c_frames)
-
     def find_peaks_in_frame(self, Frame frame not None):
         peaks = []
         cdef vector[c_Peak*] c_peaks = self.thisptr.find_peaks_in_frame(frame.thisptr)
@@ -80,13 +73,19 @@ cdef class PeakDetection:
         return peaks
 
     def find_peaks(self, np.ndarray[dtype_t, ndim=1] audio):
-        frames = []
-        cdef vector[c_Frame*] output_frames = self.thisptr.find_peaks(len(audio), <double*> audio.data)
-        for i in range(output_frames.size()):
-            f = Frame(output_frames[i].size(), False)
-            f.set_frame(output_frames[i])
-            frames.append(f)
-        return frames
+        self.frames = []
+        cdef int pos = 0
+        while pos < len(audio):
+            if not self.static_frame_size:
+                self.frame_size = self.next_frame_size()
+            frame = Frame(self.frame_size)
+            frame.audio = audio[pos:pos + self.frame_size]
+            frame.max_peaks = self.max_peaks
+            peaks = self.find_peaks_in_frame(frame)
+            self.frames.append(frame)
+            pos += self.hop_size
+
+        return self.frames
 
 
 cdef class SMSPeakDetection(PeakDetection):

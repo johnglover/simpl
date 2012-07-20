@@ -43,3 +43,9 @@ cdef extern from "../src/simpl/peak_detection.h" namespace "simpl":
         void max_peaks(int new_max_peaks)
         vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
         vector[c_Frame*] find_peaks(int audio_size, double* audio)
+
+    cdef cppclass c_SndObjPeakDetection "simpl::SndObjPeakDetection"(c_PeakDetection):
+        c_SndObjPeakDetection()
+        void hop_size(int new_hop_size)
+        void max_peaks(int new_max_peaks)
+        vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)

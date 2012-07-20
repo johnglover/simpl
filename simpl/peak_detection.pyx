@@ -99,3 +99,15 @@ cdef class SMSPeakDetection(PeakDetection):
         if self.thisptr:
             del self.thisptr
             self.thisptr = <c_PeakDetection*>0
+
+
+cdef class SndObjPeakDetection(PeakDetection):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_SndObjPeakDetection()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_PeakDetection*>0

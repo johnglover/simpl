@@ -7,6 +7,11 @@ extern "C" {
     #include "sms.h"
 }
 
+#include "SndObj.h"
+#include "HammingTable.h"
+#include "IFGram.h"
+#include "SinAnal.h"
+
 using namespace std;
 
 
@@ -90,6 +95,27 @@ class SMSPeakDetection : public PeakDetection {
 };
 
 
-} // end of namespace Simpl
+// ---------------------------------------------------------------------------
+// SndObjPeakDetection
+// ---------------------------------------------------------------------------
+class SndObjPeakDetection : public PeakDetection {
+    private:
+        SndObj* _input;
+        HammingTable* _window;
+        IFGram* _ifgram;
+        SinAnal* _analysis;
+        sample _threshold;
+
+    public:
+        SndObjPeakDetection();
+        ~SndObjPeakDetection();
+        void frame_size(int new_frame_size);
+        void hop_size(int new_hop_size);
+        void max_peaks(int new_max_peaks);
+        Peaks find_peaks_in_frame(Frame* frame);
+};
+
+
+} // end of namespace simpl
 
 #endif

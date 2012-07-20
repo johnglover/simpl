@@ -5,6 +5,7 @@ import simpl.peak_detection as peak_detection
 
 PeakDetection = peak_detection.PeakDetection
 SMSPeakDetection = peak_detection.SMSPeakDetection
+SndObjPeakDetection = peak_detection.SMSPeakDetection
 
 float_precision = 5
 frame_size = 512
@@ -59,14 +60,11 @@ class TestSMSPeakDetection(object):
         assert len(pd.frames[0].peaks)
 
     def test_size_next_read(self):
-        """
-        Make sure SMSPeakDetection is calculating the correct value for the
-        size of the next frame.
-        """
         audio, sampling_rate = simpl.read_wav(audio_path)
 
         pd = SMSPeakDetection()
         pd.hop_size = hop_size
+        pd.static_frame_size = False
         pd.max_peaks = max_peaks
         current_frame = 0
         sample_offset = 0
@@ -97,6 +95,23 @@ class TestSMSPeakDetection(object):
 
         print 'frames: %d (expected: %d)' % (len(frames), len(sms_frames))
         assert len(sms_frames) == len(frames)
+
+        for frame in frames:
+            assert frame.num_peaks <= max_peaks, frame.num_peaks
+            max_amp = max([p.amplitude for p in frame.peaks])
+            assert max_amp
+
+
+class TestSndObjPeakDetection(object):
+    def test_peak_detection(self):
+        audio, sampling_rate = simpl.read_wav(audio_path)
+
+        pd = SndObjPeakDetection()
+        pd.max_peaks = max_peaks
+        pd.hop_size = hop_size
+        frames = pd.find_peaks(audio[0:num_samples])
+
+        assert len(frames) == num_samples / hop_size
 
         for frame in frames:
             assert frame.num_peaks <= max_peaks, frame.num_peaks

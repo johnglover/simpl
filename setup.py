@@ -74,7 +74,7 @@ fftw_sources = """
 
 sndobj_sources = map(lambda x: 'src/sndobj/' + x, sndobj_sources)
 sndobj_sources.extend(map(lambda x: 'src/sndobj/rfftw/' + x, fftw_sources))
-# sources.extend(sndobj_sources)
+sources.extend(sndobj_sources)
 
 sndobj_sources.append("simpl/sndobj.i")
 

@@ -290,3 +290,78 @@ Frames SMSPeakDetection::find_peaks(int audio_size, sample* audio) {
 
     return _frames;
 }
+
+
+// ---------------------------------------------------------------------------
+// SndObjPeakDetection
+// ---------------------------------------------------------------------------
+SndObjPeakDetection::SndObjPeakDetection() {
+    _input = new SndObj();
+    _input->SetVectorSize(_frame_size);
+    _window = new HammingTable(_frame_size, 0.5);
+    _ifgram = new IFGram(_window, _input, 1, _frame_size, _hop_size);
+    _analysis = new SinAnal(_ifgram, _threshold, _max_peaks);
+    _threshold = 0.003;
+}
+
+SndObjPeakDetection::~SndObjPeakDetection() {
+    delete _input;
+    delete _window;
+    delete _ifgram;
+    delete _analysis;
+}
+
+void SndObjPeakDetection::frame_size(int new_frame_size) {
+    _frame_size = new_frame_size;
+    _input->SetVectorSize(_frame_size);
+
+    if(_window) {
+        delete _window;
+    }
+    _window = new HammingTable(_frame_size, 0.5);
+
+    _ifgram->Connect("window", _window);
+    _ifgram->Set("fft size", _frame_size);
+}
+
+void SndObjPeakDetection::hop_size(int new_hop_size) {
+    _hop_size = new_hop_size;
+    _ifgram->Set("hop size", _hop_size);
+}
+
+void SndObjPeakDetection::max_peaks(int new_max_peaks) {
+    _max_peaks = new_max_peaks;
+    _analysis->Set("max tracks", _max_peaks);
+}
+
+Peaks SndObjPeakDetection::find_peaks_in_frame(Frame* frame) {
+    Peaks peaks;
+
+    _input->PushIn(frame->audio(), frame->size());
+    _ifgram->DoProcess();
+    int num_peaks = _analysis->FindPeaks();
+
+    for(int i = 0; i < num_peaks; i++) {
+        Peak* p = new Peak();
+        p->amplitude = _analysis->Output(i * 3);
+        p->frequency = _analysis->Output((i * 3) + 1);
+        p->phase = _analysis->Output((i * 3) + 2);
+        peaks.push_back(p);
+
+        frame->add_peak(p);
+
+        // TODO: check that peaks are _min_peak_separation apart
+        //
+        // if not peaks:
+        //     peaks.append(p)
+        // else:
+        //     if np.abs(p.frequency - peaks[-1].frequency) > self._min_peak_separation:
+        //         peaks.append(p)
+        //     else:
+        //         if p.amplitude > peaks[-1].amplitude:
+        //             peaks.remove(peaks[-1])
+        //             peaks.append(p)
+    }
+
+    return peaks;
+}

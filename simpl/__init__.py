@@ -8,6 +8,7 @@ Peak = base.Peak
 import peak_detection
 PeakDetection = peak_detection.PeakDetection
 SMSPeakDetection = peak_detection.SMSPeakDetection
+SndObjPeakDetection = peak_detection.SndObjPeakDetection
 
 import partial_tracking
 PartialTracking = partial_tracking.PartialTracking
@@ -28,7 +29,6 @@ compare_peak_amps = pybase.compare_peak_amps
 compare_peak_freqs = pybase.compare_peak_freqs
 
 import pysndobj
-SndObjPeakDetection = pysndobj.SndObjPeakDetection
 SndObjPartialTracking = pysndobj.SndObjPartialTracking
 SndObjSynthesis = pysndobj.SndObjSynthesis
 

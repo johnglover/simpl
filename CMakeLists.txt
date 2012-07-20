@@ -21,7 +21,7 @@ set(source_files src/simpl/base.cpp
                  src/sms/peakContinuation.c
                  src/sms/peakDetection.c
                  src/sms/residual.c
-                 src//sms/sineSynth.c
+                 src/sms/sineSynth.c
                  src/sms/sms.c
                  src/sms/sms.h
                  src/sms/soundIO.c
@@ -34,6 +34,10 @@ set(source_files src/simpl/base.cpp
                  src/sms/windows.c
 )
 
+FILE(GLOB sndobj_src src/sndobj/*.cpp)
+FILE(GLOB rfftw_src src/sndobj/rfftw/*.c)
+LIST(APPEND source_files ${source_files} ${sndobj_src} ${rfftw_src})
+
 set(include_files src/simpl/simpl.h
                   src/simpl/base.h
                   src/simpl/peak_detection.h
@@ -41,9 +45,10 @@ set(include_files src/simpl/simpl.h
                   src/simpl/synthesis.h
                   src/simpl/residual.h
                   src/sms/sms.h
+                  src/sndobj/SndObj.h
 )
 
-include_directories(src/simpl src/sms)
+include_directories(src/simpl src/sms src/sndobj src/sndobj/rfftw)
 add_library(simpl SHARED ${source_files})
 target_link_libraries(simpl m fftw3 gsl gslcblas)
 

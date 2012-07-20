@@ -75,8 +75,8 @@ class FFT : public SndObj {
   int GetFFTSize() { return m_fftsize; }
   int GetHopSize() { return m_hopsize; }
   void SetWindow(Table* window){ m_table = window;}
-  int Connect(char* mess, void* input);
-  int Set(char* mess, double value);
+  int Connect(const char* mess, void* input);
+  int Set(const char* mess, double value);
   void SetScale(double scale){ m_scale = scale; m_norm = m_fftsize/m_scale;}
   virtual void SetFFTSize(int fftsize);
   virtual void SetHopSize(int hopsize);

@@ -53,7 +53,7 @@ PVA::~PVA(){
 
 
 int
-PVA::Set(char* mess, double value){
+PVA::Set(const char* mess, double value){
 
   switch(FindMsg(mess)){
 

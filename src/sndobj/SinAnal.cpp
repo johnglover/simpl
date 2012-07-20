@@ -311,7 +311,7 @@ SinAnal::SetIFGram(SndObj* input){
 }
 
 int
-SinAnal::Set(char* mess, double value){
+SinAnal::Set(const char* mess, double value){
 	switch(FindMsg(mess)){
         case 21:
             SetMaxTracks((int)value);
@@ -327,7 +327,7 @@ SinAnal::Set(char* mess, double value){
 }
 
 int
-SinAnal::Connect(char* mess, void *input){
+SinAnal::Connect(const char* mess, void *input){
 	switch(FindMsg(mess)){
         case 3:
             SetIFGram((SndObj *)input);

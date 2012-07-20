@@ -53,8 +53,8 @@ class IFGram : public PVA {
 
   ~IFGram();
  
-  int Set(char* mess, double value);
-  int Connect(char* mess, void* input);
+  int Set(const char* mess, double value);
+  int Connect(const char* mess, void* input);
   void SetFFTSize(int fftsize);
   short DoProcess();
   

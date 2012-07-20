@@ -51,7 +51,7 @@ class PVA : public FFT {
 
   ~PVA();
   double Outphases(int pos){ return m_phases[pos]; } // reads phase output.
-  int Set(char* mess, double value);
+  int Set(const char* mess, double value);
   void SetFFTSize(int fftsize);
   void SetHopSize(int hopsize);
   short DoProcess();

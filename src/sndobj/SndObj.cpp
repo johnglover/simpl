@@ -115,7 +115,7 @@ SndObj::AddMsg(const char* mess, int ID){
 }
 
 int
-SndObj::Connect(char* mess, void *input){
+SndObj::Connect(const char* mess, void *input){
 
   switch (FindMsg(mess)){
 
@@ -130,7 +130,7 @@ SndObj::Connect(char* mess, void *input){
 }
 
 int
-SndObj::Set(char* mess, double value){
+SndObj::Set(const char* mess, double value){
 
   switch (FindMsg(mess)){
 

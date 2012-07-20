@@ -60,7 +60,7 @@ IFGram::~IFGram(){
 
 
 int
-IFGram::Set(char* mess, double value){
+IFGram::Set(const char* mess, double value){
 
   switch(FindMsg(mess)){
 
@@ -75,7 +75,7 @@ IFGram::Set(char* mess, double value){
 }
 
 int
-IFGram::Connect(char* mess, void* input){
+IFGram::Connect(const char* mess, void* input){
 
   int i;
 

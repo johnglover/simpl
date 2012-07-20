@@ -81,8 +81,8 @@ class SinAnal : public SndObj {
   virtual int GetTrackID(int track){ return m_trndx[track]; }
   virtual int GetTracks(){ return m_tracks;}
 
-  int Set(char* mess, double value);
-  int Connect(char* mess, void* input);
+  int Set(const char* mess, double value);
+  int Connect(const char* mess, void* input);
 
   void SetThreshold(double threshold){ m_thresh = threshold; }
   void SetIFGram(SndObj* input);

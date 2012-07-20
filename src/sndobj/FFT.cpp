@@ -164,7 +164,7 @@ FFT::ReInit(){
 
 
 int
-FFT::Set(char* mess, double value){
+FFT::Set(const char* mess, double value){
 
   switch(FindMsg(mess)){
 
@@ -187,7 +187,7 @@ FFT::Set(char* mess, double value){
 }
 
 int
-FFT::Connect(char* mess, void *input){
+FFT::Connect(const char* mess, void *input){
 
   switch(FindMsg(mess)){
 

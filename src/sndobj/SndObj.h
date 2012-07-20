@@ -74,7 +74,7 @@ class SndObj {
 
   msg_link *m_msgtable;
 
-  inline int FindMsg(char* mess);
+  inline int FindMsg(const char* mess);
   void AddMsg(const char* mess, int ID);
 
 #if defined (WIN) && !defined(GCC)
@@ -254,8 +254,8 @@ class SndObj {
   void RestoreVectorSize(){ m_vecsize = m_vecsize_max; }
   double GetSr(){ return m_sr;}
   virtual void SetSr(double sr){ m_sr = sr;}
-  virtual int Set(char* mess, double value);
-  virtual int Connect(char* mess, void* input);
+  virtual int Set(const char* mess, double value);
+  virtual int Connect(const char* mess, void* input);
 
 
   void SetInput(SndObj* input){
@@ -276,7 +276,7 @@ class SndObj {
 };
 
 int
-SndObj::FindMsg(char* mess){
+SndObj::FindMsg(const char* mess){
   msg_link* iter = m_msgtable;
   while(iter->previous && iter->msg.compare(mess))
     iter = iter->previous;

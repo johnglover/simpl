@@ -32,7 +32,5 @@ simpl/residual.cpp
 tests/audio
 tests/testbase
 tests/testbase.dSYM
-tests/libsms_test_data.json
-tests/libsms_harmonic_synthesis_ifft.wav
-tests/libsms_harmonic_synthesis_sin.wav
-tests/libsms_residual_synthesis.wav
+tests/*.json
+tests/*.wav

@@ -3,6 +3,7 @@ import json
 import numpy as np
 import scipy.io.wavfile as wav
 import pysms
+import sndobj
 import simpl
 
 float_precision = 5
@@ -51,7 +52,7 @@ def _pysms_synthesis_params(sampling_rate):
     return synth_params
 
 
-def _size_next_read():
+def sms_size_next_read():
     pysms.sms_init()
     snd_header = pysms.SMS_SndHeader()
 
@@ -105,7 +106,7 @@ def _size_next_read():
     return next_read_sizes
 
 
-def _partial_tracking():
+def sms_partial_tracking():
     pysms.sms_init()
     snd_header = pysms.SMS_SndHeader()
 
@@ -178,7 +179,7 @@ def _partial_tracking():
     return sms_frames
 
 
-def _harmonic_synthesis(det_synth_type):
+def sms_harmonic_synthesis(det_synth_type):
     pysms.sms_init()
     snd_header = pysms.SMS_SndHeader()
 
@@ -251,7 +252,7 @@ def _harmonic_synthesis(det_synth_type):
     return synth_audio
 
 
-def _residual_synthesis():
+def sms_residual_synthesis():
     pysms.sms_init()
     snd_header = pysms.SMS_SndHeader()
 
@@ -322,24 +323,62 @@ def _residual_synthesis():
     return synth_audio
 
 
+def sndobj_partial_tracking():
+    input = sndobj.SndObj()
+    input.SetVectorSize(frame_size)
+    window = sndobj.HammingTable(frame_size, 0.5)
+    ifgram = sndobj.IFGram(window, input, 1, frame_size, hop_size)
+    analysis = sndobj.SinAnal(ifgram, 0.003, max_partials, 1, 3)
+
+    frames = []
+
+    i = 0
+    while i < len(audio) - hop_size:
+        frame = np.asarray(audio[i:i + frame_size], dtype=np.float32)
+        input.PushIn(frame)
+        ifgram.DoProcess()
+        analysis.DoProcess()
+
+        peaks = []
+        for p in range(max_partials):
+            peaks.append({
+                'amplitude': analysis.Output(p * 3),
+                'frequency': analysis.Output((p * 3) + 1),
+                'phase': analysis.Output((p * 3) + 2)
+            })
+        frames.append(peaks)
+        i += hop_size
+
+    return frames
+
+
 if __name__ == '__main__':
-    size_next_read = _size_next_read()
-    partial_tracking = _partial_tracking()
-    harmonic_synthesis_ifft = _harmonic_synthesis('ifft')
-    harmonic_synthesis_sin = _harmonic_synthesis('sin')
-    residual_synthesis = _residual_synthesis()
+    # SMS
+    sms_snr = sms_size_next_read()
+    sms_pt = sms_partial_tracking()
+    sms_harm_syn_ifft = sms_harmonic_synthesis('ifft')
+    sms_harm_syn_sin = sms_harmonic_synthesis('sin')
+    sms_res_syn = sms_residual_synthesis()
 
-    test_data = {'size_next_read': size_next_read,
-                 'peak_detection': partial_tracking,
-                 'partial_tracking': partial_tracking}
+    sms_test_data = {'size_next_read': sms_snr,
+                     'peak_detection': sms_pt,
+                     'partial_tracking': sms_pt}
 
-    test_data = json.dumps(test_data)
+    sms_test_data = json.dumps(sms_test_data)
     with open('libsms_test_data.json', 'w') as f:
-        f.write(test_data)
+        f.write(sms_test_data)
 
     wav.write('libsms_harmonic_synthesis_ifft.wav', sampling_rate,
-              harmonic_synthesis_ifft)
+              sms_harm_syn_ifft)
     wav.write('libsms_harmonic_synthesis_sin.wav', sampling_rate,
-              harmonic_synthesis_sin)
+              sms_harm_syn_sin)
     wav.write('libsms_residual_synthesis.wav', sampling_rate,
-              residual_synthesis)
+              sms_res_syn)
+
+    # SndObj
+    sndobj_pt = sndobj_partial_tracking()
+    sndobj_test_data = {'partial_tracking': sndobj_pt}
+
+    sndobj_test_data = json.dumps(sndobj_test_data)
+    with open('sndobj_test_data.json', 'w') as f:
+        f.write(sndobj_test_data)

@@ -1,5 +1,4 @@
 import os
-import numpy as np
 from nose.tools import assert_almost_equals
 import simpl
 import simpl.peak_detection as peak_detection
@@ -84,11 +83,6 @@ class TestSMSResidual(object):
         )
 
         assert len(simpl_residual) == len(sms_residual)
-
-        import matplotlib.pyplot as plt
-        plt.plot(simpl_residual)
-        plt.plot(sms_residual)
-        plt.show()
 
         for i in range(len(simpl_residual)):
             assert_almost_equals(simpl_residual[i], sms_residual[i],

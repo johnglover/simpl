@@ -1,4 +1,4 @@
- 
+
 ////////////////////////////////////////////////////////////////////////
 // This file is part of the SndObj library
 //
@@ -14,7 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // Copyright (c)Victor Lazzarini, 1997-2004
 // See License.txt for a disclaimer of all warranties
@@ -27,7 +27,7 @@
 //                                                            //
 //************************************************************//
 
-#ifndef _SNDOBJ_H 
+#ifndef _SNDOBJ_H
 #define _SNDOBJ_H
 #include <cstdlib>
 #include <cstring>
@@ -41,7 +41,13 @@
 using namespace std;
 
 class  SndIO;
+
+// PI is defined in a few places (rfftw, sms, etc) so check that it's
+// not already defined
+#ifndef PI
 const double PI = 4.*atan(1.);
+#endif
+
 const int DEF_FFTSIZE = 1024;
 const int DEF_VECSIZE = 256;
 const double DEF_SR = 44100.f;
@@ -65,7 +71,7 @@ class SndObj {
   int    m_altvecpos; // secondary counter
   int    m_error;     // error code
   short  m_enable;  // enable object
- 
+
   msg_link *m_msgtable;
 
   inline int FindMsg(char* mess);
@@ -95,10 +101,10 @@ class SndObj {
     _asm {
       fnstcw  oldcw      /*save current control reg*/
 	wait
-	mov     ax,oldcw                
+	mov     ax,oldcw
 	or      ah,0Ch     /*set truncation mode     */
 	mov     tempcw,ax
-	fldcw   tempcw          
+	fldcw   tempcw
 	fld     fval       /*do the conversion...    */
 	fistp   temp
 	fldcw   oldcw      /*restore register        */
@@ -106,7 +112,7 @@ class SndObj {
         }
     return temp;
   }
-#else 
+#else
   int Ftoi(double fval) { return (int) fval; }
   int Ftoi(float fval) { return (int) fval; }
 #endif
@@ -121,22 +127,22 @@ class SndObj {
   int GetError() { return m_error; }
 
 #ifndef SWIGJAVA
-  SndObj operator=(SndObj obj){					   
+  SndObj operator=(SndObj obj){
     if(&obj == this) return *this;
     for(int n = 0; n < m_vecsize; n++) m_output[n] = obj.Output(n);
     return *this;
   }
-	 
+
   SndObj& operator+=(SndObj& obj){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]+obj.Output(n);
     return *this;
   }
- 
+
   SndObj& operator-=(SndObj& obj){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]-obj.Output(n);
     return *this;
   }
-  
+
   SndObj& operator*=(SndObj& obj){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]*obj.Output(n);
     return *this;
@@ -146,12 +152,12 @@ class SndObj {
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]+val;
     return *this;
   }
- 
+
   SndObj& operator-=(double val){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]-val;
     return *this;
   }
-  
+
   SndObj& operator*=(double val){
     for(int n = 0; n < m_vecsize; n++) m_output[n] = m_output[n]*val;
     return *this;
@@ -162,7 +168,7 @@ class SndObj {
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]+obj.Output(n);
     return temp;
   }
- 
+
   SndObj operator-(SndObj& obj){
     SndObj temp(0, m_vecsize, m_sr);
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]-obj.Output(n);
@@ -180,7 +186,7 @@ class SndObj {
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]+val;
     return temp;
   }
- 
+
   SndObj operator-(double val){
     SndObj temp(0, m_vecsize, m_sr);
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]-val;
@@ -191,9 +197,9 @@ class SndObj {
     SndObj temp(0, m_vecsize, m_sr);
     for(int n = 0; n < m_vecsize; n++) temp.m_output[n] = m_output[n]*val;
     return temp;
-  } 
+  }
 
-  void operator<<(double val){        
+  void operator<<(double val){
     if(m_vecpos >= m_vecsize) m_vecpos=0;
     m_output[m_vecpos++] = val;
   }
@@ -206,7 +212,7 @@ class SndObj {
   void operator>>(SndIO& out);
   void operator<<(SndIO& in);
 
-#endif 
+#endif
 
   int PushIn(double *in_vector, int size){
     for(int i = 0; i<size; i++){
@@ -219,7 +225,7 @@ class SndObj {
   int PopOut(double *out_vector, int size){
     for(int i = 0; i<size; i++){
       if(m_altvecpos >= m_vecsize) m_altvecpos = 0;
-      out_vector[i] = m_output[m_altvecpos++]; 
+      out_vector[i] = m_output[m_altvecpos++];
     }
     return m_altvecpos;
   }
@@ -228,34 +234,34 @@ class SndObj {
   int AddOut(double *vector, int size){
     for(int i = 0; i<size; i++){
       if(m_altvecpos >= m_vecsize) m_altvecpos = 0;
-      vector[i] += m_output[m_altvecpos++]; 
+      vector[i] += m_output[m_altvecpos++];
     }
     return m_altvecpos;
   }
 
- 
-  void   GetMsgList(string* list);
-  void   Enable(){ m_enable = 1;  }
-  void   Disable(){ m_enable = 0; }
-  virtual double  Output(int pos){ return m_output[pos%m_vecsize];}
 
-  int GetVectorSize() { return m_vecsize; } 
+  void GetMsgList(string* list);
+  void Enable(){ m_enable = 1; }
+  void Disable(){ m_enable = 0; }
+  virtual double Output(int pos){ return m_output[pos%m_vecsize]; }
+
+  int GetVectorSize() { return m_vecsize; }
   void SetVectorSize(int vecsize);
   void LimitVectorSize(int limit) {
-        if(limit <= m_vecsize_max)      
-                 m_vecsize = limit; 
+        if(limit <= m_vecsize_max)
+                 m_vecsize = limit;
   }
   void RestoreVectorSize(){ m_vecsize = m_vecsize_max; }
-  double  GetSr(){ return m_sr;}
+  double GetSr(){ return m_sr;}
   virtual void SetSr(double sr){ m_sr = sr;}
   virtual int Set(char* mess, double value);
   virtual int Connect(char* mess, void* input);
 
- 
+
   void SetInput(SndObj* input){
     m_input = input;
   }
- 
+
   SndObj* GetInput(){ return m_input; }
 
   SndObj(SndObj* input, int vecsize = DEF_VECSIZE, double sr = DEF_SR);
@@ -265,14 +271,12 @@ class SndObj {
 #endif
 
   virtual ~SndObj();
-  virtual const char* ErrorMessage(); 
+  virtual const char* ErrorMessage();
   virtual short DoProcess();
- 
 };
 
 int
 SndObj::FindMsg(char* mess){
-
   msg_link* iter = m_msgtable;
   while(iter->previous && iter->msg.compare(mess))
     iter = iter->previous;

@@ -1,4 +1,4 @@
- 
+
 ////////////////////////////////////////////////////////////////////////
 // This file is part of the SndObj library
 //
@@ -14,7 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // Copyright (c)Victor Lazzarini, 1997-2004
 // See License.txt for a disclaimer of all warranties
@@ -29,13 +29,13 @@
 #include "SndObj.h"
 #include "SndIO.h"
 
-SndObj::SndObj(){ 
+SndObj::SndObj(){
   m_output = NULL;
   SetVectorSize(DEF_VECSIZE);
   m_input = 0;
   m_sr = DEF_SR;
   m_error =0;
-  for(m_vecpos = 0; m_vecpos < m_vecsize; m_vecpos++) 
+  for(m_vecpos = 0; m_vecpos < m_vecsize; m_vecpos++)
     m_output[m_vecpos]= 0.f;
   m_msgtable = new msg_link;
   m_msgtable->previous = 0;
@@ -43,32 +43,30 @@ SndObj::SndObj(){
   AddMsg("vector size", 2);
   AddMsg("input", 3);
   Enable();
-	
 }
 
 SndObj::SndObj(SndObj* input, int vecsize, double sr){
   m_output = NULL;
-  SetVectorSize(vecsize);	
-  m_input = input; 
+  SetVectorSize(vecsize);
+  m_input = input;
   m_sr = sr;
   m_error = 0;
   for(m_vecpos = 0; m_vecpos < m_vecsize; m_vecpos++) m_output[m_vecpos]= 0.f;
-	
+
   m_msgtable = new msg_link;
   m_msgtable->previous = 0;
   AddMsg("SR", 1);
   AddMsg("vector size", 2);
   AddMsg("input", 3);
   Enable();
-	
-}	
+}
 
 
 SndObj::SndObj(SndObj& obj){
   m_output = NULL;
   SetVectorSize(obj.GetVectorSize());
   SetSr(obj.GetSr());
-	
+
   for(int n=0; n<m_vecsize;n++)m_output[n]=obj.Output(n);
   m_input = obj.GetInput();
   m_error =0;
@@ -79,12 +77,10 @@ SndObj::SndObj(SndObj& obj){
   AddMsg("vector size", 2);
   AddMsg("input", 3);
   Enable();
-	
 }
 
 
 SndObj::~SndObj(){
-
   delete[] m_output;
 
   msg_link *todestroy = m_msgtable;
@@ -94,7 +90,6 @@ SndObj::~SndObj(){
     todestroy = m_msgtable;
   }
   delete m_msgtable;
-
 }
 
 void
@@ -114,7 +109,7 @@ SndObj::AddMsg(const char* mess, int ID){
   msg_link* newlink = new msg_link;
   msg_link* tmp = m_msgtable;
   newlink->msg = mess;
-  newlink->ID = ID; 
+  newlink->ID = ID;
   m_msgtable = newlink;
   m_msgtable->previous = tmp;
 }
@@ -134,7 +129,7 @@ SndObj::Connect(char* mess, void *input){
   }
 }
 
-int 
+int
 SndObj::Set(char* mess, double value){
 
   switch (FindMsg(mess)){
@@ -149,10 +144,8 @@ SndObj::Set(char* mess, double value){
 
   default:
     return 0;
-     
+
   }
-
-
 }
 
 
@@ -174,13 +167,12 @@ SndObj::SetVectorSize(int vecsize){
 
 short
 SndObj::DoProcess(){
-
   if(!m_error){
     if(m_input){
       for(m_vecpos = 0; m_vecpos < m_vecsize; m_vecpos++) {
 	if(m_enable) m_output[m_vecpos] = m_input->Output(m_vecpos);
 	else m_output[m_vecpos] = 0.f;
-      } 
+      }
       return 1;
     } else {
       return 0;
@@ -189,37 +181,33 @@ SndObj::DoProcess(){
   else return 0;
 }
 
-void 
+void
 SndObj::operator>>(SndIO& out){
   out.SetOutput(1, this);
   out.Write();
 }
 
-void 
+void
 SndObj::operator<<(SndIO& in){
   in.Read();
   for(int n=0;n<m_vecsize;n++) m_output[n]=in.Output(n,1);
 }
 
 const char* SndObj::ErrorMessage(){
-	   
   switch(m_error){
+    case 0:
+      return "No error\n";
+      break;
 
-  case 0:
-    return "No error\n";
-    break; 
+    case 1:
+      return "Failed to allocate vector memory\n";
+      break;
 
-  case 1:
-    return "Failed to allocate vector memory\n";
-    break;
+    case 3:
+      return "DoProcess() failed: no input object \n";
+      break;
 
-  case 3:
-    return "DoProcess() failed: no input object \n";
-    break;
-
-  default:
-    return "Undefined error\n";
-  
+    default:
+      return "Undefined error\n";
   }
-
 }

@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 input_file = '../../tests/audio/flute.wav'
 audio = simpl.read_wav(input_file)[0]
 
-# take just the first few frames
-audio = audio[0:4096]
+# take just a few frames
+audio = audio[len(audio) / 2:(len(audio) / 2) + 4096]
 
 # peak detection using the SndObj library
 pd = simpl.SndObjPeakDetection()

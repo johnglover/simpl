@@ -16,11 +16,13 @@ cdef class PeakDetection:
 
     def __cinit__(self):
         self.thisptr = new c_PeakDetection()
-        self.frames = []
 
     def __dealloc__(self):
         if self.thisptr:
             del self.thisptr
+
+    def __init__(self):
+        self.frames = []
 
     property sampling_rate:
         def __get__(self): return self.thisptr.sampling_rate()
@@ -70,18 +72,20 @@ cdef class PeakDetection:
             peak = Peak(False)
             peak.set_peak(c_peaks[i])
             peaks.append(peak)
+        frame.peaks = peaks
         return peaks
 
     def find_peaks(self, np.ndarray[dtype_t, ndim=1] audio):
         self.frames = []
+
         cdef int pos = 0
-        while pos < len(audio):
+        while pos < len(audio) - self.hop_size:
             if not self.static_frame_size:
                 self.frame_size = self.next_frame_size()
             frame = Frame(self.frame_size)
             frame.audio = audio[pos:pos + self.frame_size]
             frame.max_peaks = self.max_peaks
-            peaks = self.find_peaks_in_frame(frame)
+            self.find_peaks_in_frame(frame)
             self.frames.append(frame)
             pos += self.hop_size
 

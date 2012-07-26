@@ -79,38 +79,39 @@ class MQPeakDetection(simpl.PeakDetection):
     """
     def __init__(self):
         simpl.PeakDetection.__init__(self)
-        self._window = np.zeros(self._window_size, dtype=simpl.dtype)
+        self._frame_size = super(MQPeakDetection, self).frame_size
         self._create_analysis_window()
-        self._fundamental = float(self._sampling_rate) / self._window_size
-        self._static_frame_size = False
+        self._fundamental = float(self.sampling_rate) / self._frame_size
+        self.static_frame_size = False
         self._current_peaks = []
         self._freq_estimates = []
         # no. frames to use to estimate the average pitch (1/4 second window)
-        self._avg_freq_frames = int(0.25 * self.sampling_rate / self.frame_size)
+        self._avg_freq_frames = int(
+            0.25 * self.sampling_rate / self._frame_size
+        )
 
-    def set_frame_size(self, frame_size):
-        self._frame_size = frame_size
-        self.window_size = frame_size
+    @property
+    def frame_size(self):
+        return self._frame_size
 
-    def set_window_size(self, window_size):
-        self._window_size = window_size
-        self._fundamental = float(self._sampling_rate) / window_size
+    @frame_size.setter
+    def frame_size(self, new_frame_size):
+        self._frame_size = new_frame_size
+        self._fundamental = float(self.sampling_rate) / self._frame_size
         self._create_analysis_window()
 
     def _create_analysis_window(self):
         "Creates the analysis window, a normalised hamming window"
-        self._window = np.hamming(self._window_size)
-        s = 0
-        for i in range(self._window_size):
-            s += self._window[i]
-        self._window /= s
+        self._window = np.hamming(self._frame_size)
+        self._window /= np.sum(self._window)
 
-    def get_next_frame_size(self):
+    def next_frame_size(self):
         if not len(self._current_peaks):
             return self._frame_size
 
         # frame size must be at least 2.5 times the average pitch period,
         # where the average is taken over 1/4 second.
+        #
         # TODO: average should not include frames corresponding to unvoiced
         # speech, ie noisy frames
         self._freq_estimates.append(
@@ -134,9 +135,13 @@ class MQPeakDetection(simpl.PeakDetection):
         maximum of self._max_peaks peaks.
         """
         self._current_peaks = []
-        # fft of frame
+
+        if frame.max_peaks != self.max_peaks:
+            frame.max_peaks = self.max_peaks
+
         f = np.fft.rfft(frame.audio * self._window)
         spectrum = abs(f)
+
         # find all peaks in the spectrum
         prev_mag = np.abs(spectrum[0])
         current_mag = np.abs(spectrum[1])
@@ -158,11 +163,26 @@ class MQPeakDetection(simpl.PeakDetection):
         # of self.num_peaks peaks
         self._current_peaks.sort(cmp=simpl.compare_peak_amps)
         self._current_peaks.reverse()
-        if len(self._current_peaks) > self._max_peaks:
-            self._current_peaks = self._current_peaks[0:self._max_peaks]
+        if len(self._current_peaks) > self.max_peaks:
+            self._current_peaks = self._current_peaks[0:self.max_peaks]
+
         # put back into ascending frequency order
         self._current_peaks.sort(cmp=simpl.compare_peak_freqs)
+        frame.peaks = list(self._current_peaks)
         return self._current_peaks
+
+    # def find_peaks(self, audio):
+    #     frames = []
+    #     pos = 0
+    #     while pos < len(audio) - self.hop_size:
+    #         if not self.static_frame_size:
+    #             self.frame_size = self.next_frame_size()
+    #         frame = simpl.Frame(self.frame_size)
+    #         frame.audio = audio[pos:pos + self.frame_size]
+    #         self.find_peaks_in_frame(frame)
+    #         frames.append(frame)
+    #         pos += self.hop_size
+    #     return frames
 
 
 class MQPartialTracking(simpl.PartialTracking):

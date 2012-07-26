@@ -171,19 +171,6 @@ class MQPeakDetection(simpl.PeakDetection):
         frame.peaks = list(self._current_peaks)
         return self._current_peaks
 
-    # def find_peaks(self, audio):
-    #     frames = []
-    #     pos = 0
-    #     while pos < len(audio) - self.hop_size:
-    #         if not self.static_frame_size:
-    #             self.frame_size = self.next_frame_size()
-    #         frame = simpl.Frame(self.frame_size)
-    #         frame.audio = audio[pos:pos + self.frame_size]
-    #         self.find_peaks_in_frame(frame)
-    #         frames.append(frame)
-    #         pos += self.hop_size
-    #     return frames
-
 
 class MQPartialTracking(simpl.PartialTracking):
     "Partial tracking, based on the McAulay and Quatieri (MQ) algorithm"

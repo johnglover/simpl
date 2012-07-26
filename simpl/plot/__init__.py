@@ -2,24 +2,6 @@ import matplotlib.pyplot as plt
 import colours
 
 
-def plot_frame_peaks(peaks):
-    "Plot peaks in one frame"
-    x_values = []
-    y_values = []
-    for peak in peaks:
-        x_values.append(int(peak.frequency))
-        y_values.append(peak.amplitude)
-    plt.plot(x_values, y_values, 'ro')
-
-
-def _plot_frame_peaks(peaks, frame_number, max_amp=0):
-    "Plot one frame, which is a list of Peak objects"
-    for peak in peaks:
-        plt.plot(frame_number, int(peak.frequency), linestyle="None",
-                 marker="o", markersize=2, markeredgewidth=None,
-                 markerfacecolor=colours.pbj(peak.amplitude / max_amp))
-
-
 def plot_peaks(frames):
     "Plot peaks found by a peak detection algorithm"
     # Get the maximum peak amplitude, used to select an appropriate
@@ -28,13 +10,16 @@ def plot_peaks(frames):
     for frame in frames:
         if frame.peaks:
             max_amp = max(max_amp, max([p.amplitude for p in frame.peaks]))
-    # If no max amp then no peaks so return
+
     if not max_amp:
-        print "Warning: no peaks with an amplitude of > 0 to plot, returning"
+        print "No peaks with an amplitude of > 0 to plot"
         return
 
     for frame_number, frame in enumerate(frames):
-        _plot_frame_peaks(frame.peaks, frame_number, max_amp)
+        for peak in frame.peaks:
+            plt.plot(frame_number, int(peak.frequency), linestyle="None",
+                     marker="o", markersize=2, markeredgewidth=None,
+                     markerfacecolor=colours.pbj(peak.amplitude / max_amp))
 
 
 def plot_partials(frames, show_peaks=True):

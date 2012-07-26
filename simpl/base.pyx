@@ -36,6 +36,8 @@ cdef class Peak:
 
 cdef class Frame:
     def __cinit__(self, size=None, create_new=True, alloc_memory=False):
+        self._peaks = []
+
         if create_new:
             if size:
                 self.thisptr = new c_Frame(size, alloc_memory)
@@ -54,20 +56,9 @@ cdef class Frame:
         self.thisptr = f
 
     # peaks
-    property num_peaks:
-        def __get__(self): return self.thisptr.num_peaks()
-        def __set__(self, int i): self.thisptr.num_peaks(i)
-
     property max_peaks:
         def __get__(self): return self.thisptr.max_peaks()
         def __set__(self, int i): self.thisptr.max_peaks(i)
-
-    def add_peak(self, Peak p not None):
-        self.thisptr.add_peak(p.thisptr)
-
-    def add_peaks(self, peaks not None):
-        for p in peaks:
-            self.add_peak(p)
 
     def peak(self, int i):
         cdef c_Peak* c_p = self.thisptr.peak(i)
@@ -77,9 +68,11 @@ cdef class Frame:
 
     property peaks:
         def __get__(self):
-            return [self.peak(i) for i in range(self.thisptr.num_peaks())]
+            if not self._peaks:
+                self._peaks = [self.peak(i) for i in range(self.thisptr.num_peaks())]
+            return self._peaks
         def __set__(self, peaks):
-            self.add_peaks(peaks)
+            self._peaks = peaks
 
     def clear(self):
         self.thisptr.clear()

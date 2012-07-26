@@ -19,6 +19,7 @@ cdef class Frame:
     cdef c_Frame* thisptr
     cdef int created
     cdef set_frame(self, c_Frame* f)
+    cdef list _peaks
 
 
 cdef extern from "<string>" namespace "std":
@@ -44,9 +45,7 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void num_peaks(int new_num_peaks)
         int max_peaks()
         void max_peaks(int new_max_peaks)
-        void add_peak(c_Peak* peak)
         c_Peak* peak(int peak_number)
-        void peak(int peak_number, c_Peak* peak)
         void clear()
 
         # partials

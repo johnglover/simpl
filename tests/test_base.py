@@ -40,18 +40,15 @@ class TestFrame(object):
         p.phase = 0.0
 
         f = base.Frame()
-        assert f.num_peaks == 0
+        assert len(f.peaks) == 0
         assert f.max_peaks > 0
-        f.add_peak(p)
+        f.peaks = [p]
 
-        assert f.num_peaks == 1
-        assert_almost_equals(f.peak(0).amplitude, p.amplitude,
-                             float_precision)
         assert_almost_equals(f.peaks[0].amplitude, p.amplitude,
                              float_precision)
 
         f.clear()
-        assert f.num_peaks == 0
+        assert len(f.peaks) == 0
 
     def test_partials(self):
         N = 256

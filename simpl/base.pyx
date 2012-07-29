@@ -77,6 +77,8 @@ cdef class Frame:
 
     def clear(self):
         self.thisptr.clear()
+        self._peaks = []
+        self._partials = []
 
     # partials
     property max_partials:

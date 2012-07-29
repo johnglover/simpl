@@ -37,6 +37,7 @@ cdef class Peak:
 cdef class Frame:
     def __cinit__(self, size=None, create_new=True, alloc_memory=False):
         self._peaks = []
+        self._partials = []
 
         if create_new:
             if size:
@@ -78,10 +79,6 @@ cdef class Frame:
         self.thisptr.clear()
 
     # partials
-    property num_partials:
-        def __get__(self): return self.thisptr.num_partials()
-        def __set__(self, int i): raise Exception("NotImplemented")
-
     property max_partials:
         def __get__(self): return self.thisptr.max_partials()
         def __set__(self, int i): self.thisptr.max_partials(i)
@@ -105,9 +102,11 @@ cdef class Frame:
 
     property partials:
         def __get__(self):
-            return [self.partial(i) for i in range(self.thisptr.num_partials())]
+            if not self._partials:
+                self._partials = [self.partial(i) for i in range(self.thisptr.num_partials())]
+            return self._partials
         def __set__(self, peaks):
-            self.add_partials(peaks)
+            self._partials = peaks
 
     # audio buffers
     property size:

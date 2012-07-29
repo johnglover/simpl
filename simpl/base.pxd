@@ -20,6 +20,7 @@ cdef class Frame:
     cdef int created
     cdef set_frame(self, c_Frame* f)
     cdef list _peaks
+    cdef list _partials
 
 
 cdef extern from "<string>" namespace "std":

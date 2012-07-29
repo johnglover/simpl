@@ -46,10 +46,6 @@ class TestPartialTracking(object):
         pt = PartialTracking()
         frames = pt.find_partials(frames)
 
-        print 'frames: %d (expected: %d)' %\
-            (len(frames), len(self.audio) / hop_size)
-        assert len(frames) == len(self.audio) / hop_size
-
         assert len(frames[0].partials) == 0
         assert frames[0].max_partials == 100
 
@@ -64,6 +60,7 @@ class TestSMSPartialTracking(object):
     def test_basic(self):
         pd = SMSPeakDetection()
         pd.hop_size = hop_size
+        pd.frame_size = hop_size
         pd.max_peaks = max_peaks
         pd.static_frame_size = True
         frames = pd.find_peaks(self.audio)
@@ -72,11 +69,7 @@ class TestSMSPartialTracking(object):
         pt.max_partials = max_partials
         frames = pt.find_partials(frames)
 
-        print 'frames: %d (expected: %d)' %\
-            (len(frames), len(self.audio) / hop_size)
-        assert len(frames) == len(self.audio) / hop_size
-
-        assert frames[0].num_partials == max_partials
+        assert len(frames[0].partials) == max_partials
         assert frames[0].max_partials == max_partials
 
     def test_partial_tracking(self):

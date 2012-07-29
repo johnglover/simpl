@@ -45,18 +45,16 @@ cdef class PartialTracking:
             peak = Peak(False)
             peak.set_peak(c_peaks[i])
             peaks.append(peak)
+        frame.partials = peaks
         return peaks
 
     def find_partials(self, frames):
         partial_frames = []
-        cdef vector[c_Frame*] c_frames
         for frame in frames:
-            c_frames.push_back((<Frame>frame).thisptr)
-        cdef vector[c_Frame*] output_frames = self.thisptr.find_partials(c_frames)
-        for i in range(output_frames.size()):
-            f = Frame(output_frames[i].size(), False)
-            f.set_frame(output_frames[i])
-            partial_frames.append(f)
+            if frame.max_partials != self.thisptr.max_partials():
+                frame.max_partials = self.thisptr.max_partials()
+            self.update_partials(frame)
+            partial_frames.append(frame)
         return partial_frames
 
 

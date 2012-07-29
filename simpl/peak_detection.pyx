@@ -79,7 +79,7 @@ cdef class PeakDetection:
         self.frames = []
 
         cdef int pos = 0
-        while pos < len(audio) - self.hop_size:
+        while pos <= len(audio) - self.frame_size:
             if not self.static_frame_size:
                 self.frame_size = self.next_frame_size()
             frame = Frame(self.frame_size)
@@ -102,6 +102,15 @@ cdef class SMSPeakDetection(PeakDetection):
         if self.thisptr:
             del self.thisptr
             self.thisptr = <c_PeakDetection*>0
+
+    def find_peaks(self, np.ndarray[dtype_t, ndim=1] audio):
+        self.frames = []
+        cdef vector[c_Frame*] output_frames = self.thisptr.find_peaks(len(audio), <double*> audio.data)
+        for i in range(output_frames.size()):
+            f = Frame(output_frames[i].size(), False)
+            f.set_frame(output_frames[i])
+            self.frames.append(f)
+        return self.frames
 
 
 cdef class SndObjPeakDetection(PeakDetection):

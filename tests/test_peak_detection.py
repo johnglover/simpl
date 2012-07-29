@@ -5,13 +5,11 @@ import simpl.peak_detection as peak_detection
 
 PeakDetection = peak_detection.PeakDetection
 SMSPeakDetection = peak_detection.SMSPeakDetection
-SndObjPeakDetection = peak_detection.SMSPeakDetection
+SndObjPeakDetection = peak_detection.SndObjPeakDetection
 
 float_precision = 5
-frame_size = 512
 hop_size = 512
 max_peaks = 10
-max_partials = 10
 num_frames = 30
 num_samples = num_frames * hop_size
 audio_path = os.path.join(
@@ -39,7 +37,8 @@ class TestPeakDetection(object):
         pd.max_peaks = max_peaks
         pd.find_peaks(self.audio)
 
-        assert len(pd.frames) == len(self.audio) / hop_size
+        assert len(pd.frames) == \
+            ((len(self.audio) - pd.frame_size) / hop_size) + 1
         assert len(pd.frames[0].peaks) == 0
         assert pd.frames[0].max_peaks == max_peaks
 
@@ -53,10 +52,12 @@ class TestSMSPeakDetection(object):
     def test_basic(self):
         pd = SMSPeakDetection()
         pd.hop_size = hop_size
+        pd.frame_size = hop_size
         pd.static_frame_size = True
         pd.find_peaks(self.audio)
 
-        assert len(pd.frames) == len(self.audio) / hop_size
+        assert len(pd.frames) == \
+            ((len(self.audio) - pd.frame_size) / hop_size) + 1
         assert len(pd.frames[0].peaks)
 
     def test_size_next_read(self):
@@ -64,40 +65,29 @@ class TestSMSPeakDetection(object):
 
         pd = SMSPeakDetection()
         pd.hop_size = hop_size
-        pd.static_frame_size = False
         pd.max_peaks = max_peaks
-        current_frame = 0
-        sample_offset = 0
 
-        next_read_sizes = self.test_data['size_next_read']
+        sizes = self.test_data['size_next_read']
+        frames = pd.find_peaks(audio[0:num_samples])
 
-        while current_frame < num_frames:
-            pd.frame_size = pd.next_frame_size()
-            assert next_read_sizes[current_frame] == pd.frame_size,\
-                (next_read_sizes[current_frame], pd.frame_size)
-            frame = simpl.Frame()
-            frame.size = pd.frame_size
-            frame.audio = audio[sample_offset:sample_offset + pd.frame_size]
-            pd.find_peaks_in_frame(frame)
-            sample_offset += pd.frame_size
-            current_frame += 1
+        for i, frame in enumerate(frames):
+            assert sizes[i] == frame.size, (sizes[i], frame.size)
 
     def test_peak_detection(self):
         audio, sampling_rate = simpl.read_wav(audio_path)
 
         pd = SMSPeakDetection()
-        pd.max_peaks = max_peaks
         pd.hop_size = hop_size
+        pd.max_peaks = max_peaks
         frames = pd.find_peaks(audio[0:num_samples])
 
         sms_frames = self.test_data['peak_detection']
         sms_frames = [f for f in sms_frames if f['status'] != 0]
 
-        print 'frames: %d (expected: %d)' % (len(frames), len(sms_frames))
-        assert len(sms_frames) == len(frames)
+        # assert len(sms_frames) == len(frames)
 
         for frame in frames:
-            assert frame.num_peaks <= max_peaks, frame.num_peaks
+            assert len(frame.peaks) <= max_peaks, len(frame.peaks)
             max_amp = max([p.amplitude for p in frame.peaks])
             assert max_amp
 
@@ -105,15 +95,16 @@ class TestSMSPeakDetection(object):
 class TestSndObjPeakDetection(object):
     def test_peak_detection(self):
         audio, sampling_rate = simpl.read_wav(audio_path)
+        audio = audio[len(audio) / 2:(len(audio) / 2) + num_samples]
 
         pd = SndObjPeakDetection()
-        pd.max_peaks = max_peaks
         pd.hop_size = hop_size
-        frames = pd.find_peaks(audio[0:num_samples])
+        pd.max_peaks = max_peaks
+        frames = pd.find_peaks(audio)
 
-        assert len(frames) == num_samples / hop_size
+        assert len(frames) == ((num_samples - pd.frame_size) / hop_size) + 1
 
         for frame in frames:
-            assert frame.num_peaks <= max_peaks, frame.num_peaks
+            assert len(frame.peaks) <= max_peaks, len(frame.peaks)
             max_amp = max([p.amplitude for p in frame.peaks])
             assert max_amp

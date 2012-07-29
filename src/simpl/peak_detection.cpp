@@ -239,7 +239,7 @@ void SMSPeakDetection::realtime(int new_realtime) {
 Peaks SMSPeakDetection::find_peaks_in_frame(Frame* frame) {
     Peaks peaks;
 
-    int num_peaks = sms_findPeaks(frame->size(), frame->audio(), 
+    int num_peaks = sms_findPeaks(frame->size(), frame->audio(),
                                   &_analysis_params, &_peaks);
 
     for(int i = 0; i < num_peaks; i++) {
@@ -266,9 +266,9 @@ Frames SMSPeakDetection::find_peaks(int audio_size, sample* audio) {
 
     while(pos <= audio_size - _hop_size) {
         // get the next frame size
-        // if(!_static_frame_size) {
-        _frame_size = next_frame_size();
-        // }
+        if(!_static_frame_size) {
+            _frame_size = next_frame_size();
+        }
 
         // get the next frame
         Frame* f = new Frame(_frame_size);
@@ -315,13 +315,14 @@ void SndObjPeakDetection::frame_size(int new_frame_size) {
     _frame_size = new_frame_size;
     _input->SetVectorSize(_frame_size);
 
-    if(_window) {
-        delete _window;
-    }
+    delete _window;
     _window = new HammingTable(_frame_size, 0.5);
 
     _ifgram->Connect("window", _window);
     _ifgram->Set("fft size", _frame_size);
+
+    delete _analysis;
+    _analysis = new SinAnal(_ifgram, _threshold, _max_peaks);
 }
 
 void SndObjPeakDetection::hop_size(int new_hop_size) {

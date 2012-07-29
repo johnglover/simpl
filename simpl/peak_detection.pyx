@@ -79,11 +79,20 @@ cdef class PeakDetection:
         self.frames = []
 
         cdef int pos = 0
-        while pos <= len(audio) - self.frame_size:
+        while pos < len(audio):
             if not self.static_frame_size:
                 self.frame_size = self.next_frame_size()
+
             frame = Frame(self.frame_size)
-            frame.audio = audio[pos:pos + self.frame_size]
+
+            if pos < len(audio) - self.frame_size:
+                frame.audio = audio[pos:pos + self.frame_size]
+            else:
+                frame.audio = np.hstack((
+                    audio[pos:len(audio)],
+                    np.zeros(self.frame_size - (len(audio) - pos))
+                ))
+
             frame.max_peaks = self.max_peaks
             self.find_peaks_in_frame(frame)
             self.frames.append(frame)

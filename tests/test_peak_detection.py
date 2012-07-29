@@ -31,14 +31,14 @@ class TestPeakDetection(object):
     @classmethod
     def setup_class(cls):
         cls.audio = simpl.read_wav(audio_path)[0]
+        cls.audio = cls.audio[0:num_samples]
 
     def test_basic(self):
         pd = PeakDetection()
         pd.max_peaks = max_peaks
         pd.find_peaks(self.audio)
 
-        assert len(pd.frames) == \
-            ((len(self.audio) - pd.frame_size) / hop_size) + 1
+        assert len(pd.frames) == num_frames
         assert len(pd.frames[0].peaks) == 0
         assert pd.frames[0].max_peaks == max_peaks
 
@@ -93,16 +93,23 @@ class TestSMSPeakDetection(object):
 
 
 class TestSndObjPeakDetection(object):
-    def test_peak_detection(self):
-        audio, sampling_rate = simpl.read_wav(audio_path)
-        audio = audio[len(audio) / 2:(len(audio) / 2) + num_samples]
+    @classmethod
+    def setup_class(cls):
+        cls.audio = simpl.read_wav(audio_path)[0]
+        cls.audio = cls.audio[len(cls.audio) / 2:
+                              (len(cls.audio) / 2) + num_samples]
 
+    def test_peak_detection(self):
         pd = SndObjPeakDetection()
         pd.hop_size = hop_size
         pd.max_peaks = max_peaks
-        frames = pd.find_peaks(audio)
+        frames = pd.find_peaks(self.audio)
 
-        assert len(frames) == ((num_samples - pd.frame_size) / hop_size) + 1
+        assert len(frames) == num_frames
+
+        # last 4 frames could be empty (with default frame size of 2048
+        # and hop size of 512) so ignore
+        frames = frames[0:len(frames) - 4]
 
         for frame in frames:
             assert len(frame.peaks) <= max_peaks, len(frame.peaks)

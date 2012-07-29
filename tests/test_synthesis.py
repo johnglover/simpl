@@ -49,7 +49,8 @@ class TestSynthesis(object):
         s.hop_size = hop_size
         synth_audio = s.synth(frames)
 
-        assert len(synth_audio) == len(self.audio)
+        assert len(synth_audio) == len(self.audio),\
+            (len(synth_audio), len(self.audio))
 
 
 class TestSMSSynthesis(object):
@@ -71,7 +72,8 @@ class TestSMSSynthesis(object):
         s.hop_size = hop_size
         synth_audio = s.synth(frames)
 
-        assert len(synth_audio) == len(self.audio)
+        assert len(synth_audio) == len(self.audio),\
+            (len(synth_audio), len(self.audio))
 
     def test_harmonic_synthesis_ifft(self):
         pd = SMSPeakDetection()

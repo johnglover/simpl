@@ -73,13 +73,13 @@ class SinAnal : public SndObj {
 
   SinAnal();
   SinAnal(SndObj* input, double threshold, int maxtracks, int minpoints=1,
-	  int maxgap=3, double sr=DEF_SR);
+	      int maxgap=3, double sr=DEF_SR);
   SinAnal(SndObj* input, int numbins, double threshold, int maxtracks, int minpoints=1,
-  	  int maxgap=3, double sr=DEF_SR);
+  	      int maxgap=3, double sr=DEF_SR);
   ~SinAnal();
 
   virtual int GetTrackID(int track){ return m_trndx[track]; }
-  virtual int GetTracks(){ return m_tracks;}
+  virtual int GetTracks(){ return m_tracks; }
 
   int Set(const char* mess, double value);
   int Connect(const char* mess, void* input);

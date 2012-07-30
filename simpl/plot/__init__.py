@@ -36,11 +36,11 @@ def plot_partials(frames, show_peaks=True):
         return
 
     for n in range(len(frames) - 1):
-        for p in range(frame.max_partials):
+        for p in range(len(frames[n].partials)):
             x = [n, n + 1]
-            y = [frames[n].partial(p).frequency,
-                 frames[n + 1].partial(p).frequency]
-            amp = frames[n].partial(p).amplitude
+            y = [frames[n].partials[p].frequency,
+                 frames[n + 1].partials[p].frequency]
+            amp = frames[n].partials[p].amplitude
             plt.plot(x, y, color=colours.pbj(amp / max_amp))
 
     if show_peaks:

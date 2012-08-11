@@ -1,13 +1,11 @@
 import simpl
 import numpy as np
-from scipy.io.wavfile import read, write
+from scipy.io.wavfile import write
 
 input_file = '../../tests/audio/flute.wav'
 output_file = 'resynth.wav'
 
-audio_data = read(input_file)
-audio = simpl.asarray(audio_data[1]) / 32768.0  # values between -1 and 1
-sample_rate = audio_data[0]
+audio = simpl.read_wav(input_file)[0]
 
 pd = simpl.SMSPeakDetection()
 pd.max_peaks = 40

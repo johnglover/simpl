@@ -1,45 +1,37 @@
 import numpy as np
-dtype = np.double
-
 import base
+import peak_detection
+import partial_tracking
+import synthesis
+import residual
+import plot
+import audio
+import pybase
+
+dtype = np.double
 Frame = base.Frame
 Peak = base.Peak
-
-import peak_detection
 PeakDetection = peak_detection.PeakDetection
 SMSPeakDetection = peak_detection.SMSPeakDetection
 SndObjPeakDetection = peak_detection.SndObjPeakDetection
-
-import partial_tracking
 PartialTracking = partial_tracking.PartialTracking
 SMSPartialTracking = partial_tracking.SMSPartialTracking
-
-import synthesis
+SndObjPartialTracking = partial_tracking.SndObjPartialTracking
 Synthesis = synthesis.Synthesis
 SMSSynthesis = synthesis.SMSSynthesis
-
-import residual
 Residual = residual.Residual
 SMSResidual = residual.SMSResidual
-
-import pybase
+plot_peaks = plot.plot_peaks
+plot_partials = plot.plot_partials
+read_wav = audio.read_wav
 Partial = pybase.Partial
-Residual = pybase.Residual
 compare_peak_amps = pybase.compare_peak_amps
 compare_peak_freqs = pybase.compare_peak_freqs
 
 import pysndobj
-SndObjPartialTracking = pysndobj.SndObjPartialTracking
 SndObjSynthesis = pysndobj.SndObjSynthesis
 
 import mq
 MQPeakDetection = mq.MQPeakDetection
 MQPartialTracking = mq.MQPartialTracking
 MQSynthesis = mq.MQSynthesis
-
-import plot
-plot_peaks = plot.plot_peaks
-plot_partials = plot.plot_partials
-
-import audio
-read_wav = audio.read_wav

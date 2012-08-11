@@ -335,8 +335,21 @@ class MQPartialTracking(simpl.PartialTracking):
 class MQSynthesis(simpl.Synthesis):
     def __init__(self):
         simpl.Synthesis.__init__(self)
-        self._current_frame = np.zeros(self.frame_size, dtype=simpl.dtype)
-        self._previous_partials = [simpl.Peak() for i in range(self.max_partials)]
+        self._max_partials = super(MQSynthesis, self).max_partials
+        self._previous_partials = [
+            simpl.Peak() for i in range(self._max_partials)
+        ]
+
+    @property
+    def max_partials(self):
+        return self._max_partials
+
+    @max_partials.setter
+    def max_partials(self, new_max_partials):
+        self._max_partials = new_max_partials
+        self._previous_partials = [
+            simpl.Peak() for i in range(self._max_partials)
+        ]
 
     def hz_to_radians(self, frequency):
         if not frequency:
@@ -345,8 +358,8 @@ class MQSynthesis(simpl.Synthesis):
             return (frequency * 2.0 * np.pi) / self.sampling_rate
 
     def synth_frame(self, frame):
-        "Synthesises a frame of audio, given a list of peaks from tracks"
-        self._current_frame *= 0.0
+        output = np.zeros(self.hop_size, dtype=simpl.dtype)
+        size = self.hop_size
 
         for n, p in enumerate(frame.partials):
             # get values for last amplitude, frequency and phase
@@ -356,36 +369,42 @@ class MQSynthesis(simpl.Synthesis):
             prev_amp = self._previous_partials[n].amplitude
             if prev_amp == 0:
                 prev_freq = current_freq
-                prev_phase = p.phase - (current_freq * self.frame_size)
+                prev_phase = p.phase - (current_freq * size)
                 while prev_phase >= np.pi:
                     prev_phase -= 2.0 * np.pi
                 while prev_phase < -np.pi:
                     prev_phase += 2.0 * np.pi
             else:
-                prev_freq = self.hz_to_radians(self._previous_partials[n].frequency)
+                prev_freq = self.hz_to_radians(
+                    self._previous_partials[n].frequency
+                )
                 prev_phase = self._previous_partials[n].phase
 
             # amplitudes are linearly interpolated between frames
             inst_amp = prev_amp
-            amp_inc = (p.amplitude - prev_amp) / self.frame_size
+            amp_inc = (p.amplitude - prev_amp) / size
 
             # freqs/phases are calculated by cubic interpolation
             freq_diff = current_freq - prev_freq
-            x = ((prev_phase + (prev_freq * self.frame_size) - p.phase) +
-                 (freq_diff * (self.frame_size / 2.0)))
+            x = ((prev_phase + (prev_freq * size) - p.phase) +
+                 (freq_diff * (size / 2.0)))
             x /= (2.0 * np.pi)
             m = int(np.round(x))
-            phase_diff = p.phase - prev_phase - (prev_freq * self.frame_size) + (2.0 * np.pi * m)
-            alpha = ((3.0 / (self.frame_size**2)) * phase_diff) - (freq_diff / self.frame_size)
-            beta = ((-2.0 / (self.frame_size**3)) * phase_diff) + (freq_diff / (self.frame_size**2))
+            phase_diff = p.phase - prev_phase - (prev_freq * size) + \
+                         (2.0 * np.pi * m)
+            alpha = ((3.0 / (size ** 2)) * phase_diff) - (freq_diff / size)
+            beta = ((-2.0 / (size ** 3)) * phase_diff) + \
+                   (freq_diff / (size ** 2))
 
             # calculate output samples
-            for i in range(self.frame_size):
+            for i in range(size):
                 inst_amp += amp_inc
-                inst_phase = prev_phase + (prev_freq * i) + (alpha * (i ** 2)) + (beta * (i ** 3))
-                self._current_frame[i] += (2.0 * inst_amp) * np.cos(inst_phase)
+                inst_phase = prev_phase + (prev_freq * i) + \
+                             (alpha * (i ** 2)) + (beta * (i ** 3))
+                frame.synth[i] += (2.0 * inst_amp) * np.cos(inst_phase)
 
             # update previous partials list
             self._previous_partials[n] = p
 
-        return self._current_frame
+        frame.synth = output
+        return output

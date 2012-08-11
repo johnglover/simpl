@@ -401,7 +401,7 @@ class MQSynthesis(simpl.Synthesis):
                 inst_amp += amp_inc
                 inst_phase = prev_phase + (prev_freq * i) + \
                              (alpha * (i ** 2)) + (beta * (i ** 3))
-                frame.synth[i] += (2.0 * inst_amp) * np.cos(inst_phase)
+                output[i] += (2.0 * inst_amp) * np.cos(inst_phase)
 
             # update previous partials list
             self._previous_partials[n] = p

@@ -27,3 +27,6 @@ cdef extern from "../src/simpl/partial_tracking.h" namespace "simpl":
 
     cdef cppclass c_SMSPartialTracking "simpl::SMSPartialTracking"(c_PartialTracking):
         c_SMSPartialTracking()
+
+    cdef cppclass c_SndObjPartialTracking "simpl::SndObjPartialTracking"(c_PartialTracking):
+        c_SndObjPartialTracking()

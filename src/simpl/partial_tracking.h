@@ -7,6 +7,11 @@ extern "C" {
     #include "sms.h"
 }
 
+#include "SndObj.h"
+#include "HammingTable.h"
+#include "IFGram.h"
+#include "SinAnal.h"
+
 using namespace std;
 
 namespace simpl
@@ -63,6 +68,27 @@ class SMSPartialTracking : public PartialTracking {
     public:
         SMSPartialTracking();
         ~SMSPartialTracking();
+        void max_partials(int new_max_partials);
+        Peaks update_partials(Frame* frame);
+};
+
+// ---------------------------------------------------------------------------
+// SndObjPartialTracking
+// ---------------------------------------------------------------------------
+class SndObjPartialTracking : public PartialTracking {
+    private:
+        sample _threshold;
+        int _num_bins;
+        SndObj* _input;
+        SinAnal* _analysis;
+        sample* _peak_amplitude;
+        sample* _peak_frequency;
+        sample* _peak_phase;
+        void init_peaks();
+
+    public:
+        SndObjPartialTracking();
+        ~SndObjPartialTracking();
         void max_partials(int new_max_partials);
         Peaks update_partials(Frame* frame);
 };

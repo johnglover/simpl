@@ -333,7 +333,7 @@ def sndobj_partial_tracking():
     frames = []
 
     i = 0
-    while i < len(audio) - hop_size:
+    while (i < len(audio) - hop_size) and len(frames) < num_frames:
         frame = np.asarray(audio[i:i + frame_size], dtype=np.float32)
         input.PushIn(frame)
         ifgram.DoProcess()

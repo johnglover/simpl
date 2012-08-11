@@ -189,7 +189,101 @@ Peaks SMSPartialTracking::update_partials(Frame* frame) {
         p->frequency = _data.pFSinFreq[i];
         p->phase = _data.pFSinPha[i];
         peaks.push_back(p);
+        frame->add_partial(p);
+    }
 
+    return peaks;
+}
+
+// ---------------------------------------------------------------------------
+// SndObjPartialTracking
+// ---------------------------------------------------------------------------
+
+SndObjPartialTracking::SndObjPartialTracking() {
+    _threshold = 0.003;
+    _num_bins = 1025;
+    _input = new SndObj();
+    _analysis = new SinAnal(_input, _num_bins, _threshold, _max_partials);
+
+    _peak_amplitude = NULL;
+    _peak_frequency = NULL;;
+    _peak_phase = NULL;
+    init_peaks();
+}
+
+SndObjPartialTracking::~SndObjPartialTracking() {
+    delete _input;
+    delete _analysis;
+
+    _input = NULL;
+    _analysis = NULL;
+
+    delete [] _peak_amplitude;
+    delete [] _peak_frequency;
+    delete [] _peak_phase;
+
+    _peak_amplitude = NULL;
+    _peak_frequency = NULL;;
+    _peak_phase = NULL;
+}
+
+void SndObjPartialTracking::init_peaks() {
+    if(_peak_amplitude) {
+        delete [] _peak_amplitude;
+    }
+    if(_peak_frequency) {
+        delete [] _peak_frequency;
+    }
+    if(_peak_phase) {
+        delete [] _peak_phase;
+    }
+
+    _peak_amplitude = new sample[_max_partials];
+    _peak_frequency = new sample[_max_partials];
+    _peak_phase = new sample[_max_partials];
+
+    memset(_peak_amplitude, 0.0, sizeof(sample) * _max_partials);
+    memset(_peak_frequency, 0.0, sizeof(sample) * _max_partials);
+    memset(_peak_phase, 0.0, sizeof(sample) * _max_partials);
+}
+
+void SndObjPartialTracking::max_partials(int new_max_partials) {
+    _max_partials = new_max_partials;
+    _analysis->Set("max tracks", new_max_partials);
+}
+
+Peaks SndObjPartialTracking::update_partials(Frame* frame) {
+    int num_peaks = _max_partials;
+    if(num_peaks > frame->num_peaks()) {
+        num_peaks = frame->num_peaks();
+    }
+
+    for(int i = 0; i < num_peaks; i++) {
+        _peak_amplitude[i] = frame->peak(i)->amplitude;
+        _peak_frequency[i] = frame->peak(i)->frequency;
+        _peak_phase[i] = frame->peak(i)->phase;
+    }
+
+    _analysis->SetPeaks(_max_partials, _peak_amplitude,
+                        _max_partials, _peak_frequency,
+                        _max_partials, _peak_phase);
+    _analysis->PartialTracking();
+
+    int num_partials = _analysis->GetTracks();
+    Peaks peaks;
+
+    for(int i = 0; i < num_partials; i++) {
+        Peak* p = new Peak();
+        p->amplitude =  _analysis->Output(i * 3);
+        p->frequency = _analysis->Output((i * 3) + 1);
+        p->phase =  _analysis->Output((i * 3) + 2);
+        peaks.push_back(p);
+        frame->add_partial(p);
+    }
+
+    for(int i = num_partials; i < _max_partials; i++) {
+        Peak* p = new Peak();
+        peaks.push_back(p);
         frame->add_partial(p);
     }
 

@@ -68,3 +68,15 @@ cdef class SMSPartialTracking(PartialTracking):
         if self.thisptr:
             del self.thisptr
             self.thisptr = <c_PartialTracking*>0
+
+
+cdef class SndObjPartialTracking(PartialTracking):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_SndObjPartialTracking()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_PartialTracking*>0

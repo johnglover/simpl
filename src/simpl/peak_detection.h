@@ -105,6 +105,7 @@ class SndObjPeakDetection : public PeakDetection {
         IFGram* _ifgram;
         SinAnal* _analysis;
         sample _threshold;
+        void reset();
 
     public:
         SndObjPeakDetection();

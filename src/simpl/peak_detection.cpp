@@ -296,43 +296,63 @@ Frames SMSPeakDetection::find_peaks(int audio_size, sample* audio) {
 // SndObjPeakDetection
 // ---------------------------------------------------------------------------
 SndObjPeakDetection::SndObjPeakDetection() {
+    _threshold = 0.003;
+    _input = NULL;
+    _window = NULL;
+    _ifgram = NULL;
+    _analysis = NULL;
+    reset();
+}
+
+SndObjPeakDetection::~SndObjPeakDetection() {
+    if(_input) {
+        delete _input;
+    }
+    if(_window) {
+        delete _window;
+    }
+    if(_ifgram) {
+        delete _ifgram;
+    }
+    if(_analysis) {
+        delete _analysis;
+    }
+}
+
+void SndObjPeakDetection::reset() {
+    if(_input) {
+        delete _input;
+    }
+    if(_window) {
+        delete _window;
+    }
+    if(_ifgram) {
+        delete _ifgram;
+    }
+    if(_analysis) {
+        delete _analysis;
+    }
+
     _input = new SndObj();
     _input->SetVectorSize(_frame_size);
     _window = new HammingTable(_frame_size, 0.5);
     _ifgram = new IFGram(_window, _input, 1, _frame_size, _hop_size);
     _analysis = new SinAnal(_ifgram, _threshold, _max_peaks);
-    _threshold = 0.003;
-}
-
-SndObjPeakDetection::~SndObjPeakDetection() {
-    delete _input;
-    delete _window;
-    delete _ifgram;
-    delete _analysis;
 }
 
 void SndObjPeakDetection::frame_size(int new_frame_size) {
     _frame_size = new_frame_size;
-    _input->SetVectorSize(_frame_size);
-
-    delete _window;
-    _window = new HammingTable(_frame_size, 0.5);
-
-    _ifgram->Connect("window", _window);
-    _ifgram->Set("fft size", _frame_size);
-
-    delete _analysis;
-    _analysis = new SinAnal(_ifgram, _threshold, _max_peaks);
+    reset();
 }
 
 void SndObjPeakDetection::hop_size(int new_hop_size) {
     _hop_size = new_hop_size;
-    _ifgram->Set("hop size", _hop_size);
+    reset();
 }
 
 void SndObjPeakDetection::max_peaks(int new_max_peaks) {
     _max_peaks = new_max_peaks;
-    _analysis->Set("max tracks", _max_peaks);
+    reset();
 }
 
 Peaks SndObjPeakDetection::find_peaks_in_frame(Frame* frame) {

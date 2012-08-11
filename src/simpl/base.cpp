@@ -81,12 +81,14 @@ Peak* Partial::peak(int peak_number) {
 // ---------------------------------------------------------------------------
 Frame::Frame() {
     _size = 512;
+    _synth_size = 512;
     _alloc_memory = false;
     init();
 }
 
 Frame::Frame(int frame_size, bool alloc_memory) {
     _size = frame_size;
+    _synth_size = 512;
     _alloc_memory = alloc_memory;
     init();
 
@@ -119,14 +121,14 @@ void Frame::init() {
 
 void Frame::create_arrays() {
     _audio = new sample[_size];
-    _synth = new sample[_size];
+    _synth = new sample[_synth_size];
     _residual = new sample[_size];
-    _synth_residual = new sample[_size];
+    _synth_residual = new sample[_synth_size];
 
     memset(_audio, 0.0, sizeof(sample) * _size);
-    memset(_synth, 0.0, sizeof(sample) * _size);
+    memset(_synth, 0.0, sizeof(sample) * _synth_size);
     memset(_residual, 0.0, sizeof(sample) * _size);
-    memset(_synth_residual, 0.0, sizeof(sample) * _size);
+    memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
 }
 
 void Frame::destroy_arrays() {
@@ -235,6 +237,19 @@ void Frame::size(int new_size) {
     }
 }
 
+int Frame::synth_size() {
+    return _synth_size;
+}
+
+void Frame::synth_size(int new_size) {
+    _synth_size = new_size;
+
+    if(_alloc_memory) {
+        destroy_arrays();
+        create_arrays();
+    }
+}
+
 void Frame::audio(sample* new_audio) {
     if(_alloc_memory) {
         memcpy(_audio, new_audio, sizeof(sample) * _size);
@@ -250,7 +265,7 @@ sample* Frame::audio() {
 
 void Frame::synth(sample* new_synth) {
     if(_alloc_memory) {
-        memcpy(_synth, new_synth, sizeof(sample) * _size);
+        memcpy(_synth, new_synth, sizeof(sample) * _synth_size);
     }
     else {
         _synth = new_synth;
@@ -276,7 +291,7 @@ sample* Frame::residual() {
 
 void Frame::synth_residual(sample* new_synth_residual) {
     if(_alloc_memory) {
-        memcpy(_synth_residual, new_synth_residual, sizeof(sample) * _size);
+        memcpy(_synth_residual, new_synth_residual, sizeof(sample) * _synth_size);
     }
     else {
         _synth_residual = new_synth_residual;

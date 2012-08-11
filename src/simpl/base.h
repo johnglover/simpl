@@ -79,6 +79,7 @@ typedef std::vector<Partial*> Partials;
 class Frame {
     private:
         int _size;
+        int _synth_size;
         int _max_peaks;
         int _num_peaks;
         int _max_partials;
@@ -121,6 +122,8 @@ class Frame {
         // audio buffers
         int size();
         void size(int new_size);
+        int synth_size();
+        void synth_size(int new_size);
         void audio(sample* new_audio);
         sample* audio();
         void synth(sample* new_synth);

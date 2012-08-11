@@ -61,6 +61,8 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         # audio buffers
         int size()
         void size(int new_size)
+        int synth_size()
+        void synth_size(int new_size)
         void audio(double* new_audio)
         double* audio()
         void synth(double* new_synth)

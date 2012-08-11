@@ -15,7 +15,9 @@ class TestFrame(object):
     def test_buffers(self):
         N = 256
         f = base.Frame(N)
+        f.synth_size = N
         assert f.size == N
+        assert f.synth_size == N
 
         a = np.random.rand(N)
         f.audio = a

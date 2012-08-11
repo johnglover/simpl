@@ -35,15 +35,12 @@ cdef class Peak:
 
 
 cdef class Frame:
-    def __cinit__(self, size=None, create_new=True, alloc_memory=False):
+    def __cinit__(self, size=2048, create_new=True):
         self._peaks = []
         self._partials = []
 
         if create_new:
-            if size:
-                self.thisptr = new c_Frame(size, alloc_memory)
-            else:
-                self.thisptr = new c_Frame()
+            self.thisptr = new c_Frame(size, True)
             self.created = True
         else:
             self.created = False
@@ -115,6 +112,10 @@ cdef class Frame:
         def __get__(self): return self.thisptr.size()
         def __set__(self, int i): self.thisptr.size(i)
 
+    property synth_size:
+        def __get__(self): return self.thisptr.synth_size()
+        def __set__(self, int i): self.thisptr.synth_size(i)
+
     property audio:
         def __get__(self):
             cdef np.npy_intp shape[1]
@@ -126,7 +127,7 @@ cdef class Frame:
     property synth:
         def __get__(self):
             cdef np.npy_intp shape[1]
-            shape[0] = <np.npy_intp> self.thisptr.size()
+            shape[0] = <np.npy_intp> self.thisptr.synth_size()
             return np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.thisptr.synth())
         def __set__(self, np.ndarray[dtype_t, ndim=1] a):
             self.thisptr.synth(<double*> a.data)
@@ -142,7 +143,7 @@ cdef class Frame:
     property synth_residual:
         def __get__(self):
             cdef np.npy_intp shape[1]
-            shape[0] = <np.npy_intp> self.thisptr.size()
+            shape[0] = <np.npy_intp> self.thisptr.synth_size()
             return np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, self.thisptr.synth_residual())
         def __set__(self, np.ndarray[dtype_t, ndim=1] a):
             self.thisptr.synth_residual(<double*> a.data)

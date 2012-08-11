@@ -40,18 +40,12 @@ cdef class Synthesis:
         return frame.audio
 
     def synth(self, frames):
-        cdef vector[c_Frame*] c_frames
-        for frame in frames:
-            c_frames.push_back((<Frame>frame).thisptr)
-        cdef vector[c_Frame*] output_frames = self.thisptr.synth(c_frames)
-        cdef np.ndarray[dtype_t, ndim=1] output = np.zeros(
-            output_frames.size() * self.thisptr.hop_size()
-        )
-        cdef np.npy_intp shape[1]
-        shape[0] = <np.npy_intp> self.thisptr.hop_size()
-        for i in range(output_frames.size()):
-            frame_audio = np.PyArray_SimpleNewFromData(1, shape, np.NPY_DOUBLE, output_frames[i].synth())
-            output[i * self.thisptr.hop_size():(i + 1) * self.thisptr.hop_size()] = frame_audio
+        cdef int size = self.thisptr.hop_size()
+        cdef np.ndarray[dtype_t, ndim=1] output = np.zeros(len(frames) * size)
+        for i in range(len(frames)):
+            frames[i].synth = np.zeros(size)
+            self.synth_frame(frames[i])
+            output[i * size:(i + 1) * size] = frames[i].synth
         return output
 
 

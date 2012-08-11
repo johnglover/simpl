@@ -34,6 +34,11 @@ IFGram::IFGram(){
   m_diffsig = new double[m_fftsize];
   m_factor = m_sr/TWOPI;
   m_pdiff = new double[m_halfsize];
+
+  memset(m_diffwin, 0, sizeof(double) * m_fftsize);
+  memset(m_fftdiff, 0, sizeof(double) * m_fftsize);
+  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
+  memset(m_pdiff, 0, sizeof(double) * m_halfsize);
 }
 
 
@@ -45,10 +50,14 @@ IFGram::IFGram(Table* window, SndObj* input, double scale,
   m_fftdiff = new double[m_fftsize];
   m_diffsig = new double[m_fftsize];
   m_pdiff = new double[m_halfsize];
-  for(int i=0; i<m_fftsize; i++)
+  for(int i=0; i<m_fftsize; i++){
     m_diffwin[i] = m_table->Lookup(i) - m_table->Lookup(i+1);
+  }
   m_factor = m_sr/TWOPI;
 
+  memset(m_fftdiff, 0, sizeof(double) * m_fftsize);
+  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
+  memset(m_pdiff, 0, sizeof(double) * m_halfsize);
 }
 
 
@@ -78,7 +87,6 @@ IFGram::Connect(const char* mess, void* input){
   int i;
 
   switch(FindMsg(mess)){
-
   case 24:
     SetWindow((Table *) input);
     for(i=0; i<m_fftsize; i++)
@@ -87,7 +95,6 @@ IFGram::Connect(const char* mess, void* input){
 
   default:
     return  PVA::Connect(mess,input);
-
   }
 }
 
@@ -100,12 +107,18 @@ IFGram::SetFFTSize(int fftsize){
   delete[] m_phases;
 
   m_factor = m_sr*TWOPI/m_fftsize;
+
   m_diffwin = new double[m_fftsize];
   m_fftdiff = new double[m_fftsize];
   m_phases = new double[m_halfsize];
 
-  for(int i=0; i<m_fftsize; i++)
+  for(int i=0; i<m_fftsize; i++){
     m_diffwin[i] = m_table->Lookup(i) - m_table->Lookup(i+1);
+  }
+
+  memset(m_fftdiff, 0, sizeof(double) * m_fftsize);
+  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
+  memset(m_pdiff, 0, sizeof(double) * m_halfsize);
 }
 
 void

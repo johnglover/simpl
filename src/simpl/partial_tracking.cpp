@@ -202,32 +202,21 @@ Peaks SMSPartialTracking::update_partials(Frame* frame) {
 SndObjPartialTracking::SndObjPartialTracking() {
     _threshold = 0.003;
     _num_bins = 1025;
-    _input = new SndObj();
-    _analysis = new SinAnal(_input, _num_bins, _threshold, _max_partials);
-
+    _input = NULL;
+    _analysis = NULL;
     _peak_amplitude = NULL;
     _peak_frequency = NULL;;
     _peak_phase = NULL;
-    init_peaks();
+    reset();
 }
 
 SndObjPartialTracking::~SndObjPartialTracking() {
-    delete _input;
-    delete _analysis;
-
-    _input = NULL;
-    _analysis = NULL;
-
-    delete [] _peak_amplitude;
-    delete [] _peak_frequency;
-    delete [] _peak_phase;
-
-    _peak_amplitude = NULL;
-    _peak_frequency = NULL;;
-    _peak_phase = NULL;
-}
-
-void SndObjPartialTracking::init_peaks() {
+    if(_input) {
+        delete _input;
+    }
+    if(_analysis){
+        delete _analysis;
+    }
     if(_peak_amplitude) {
         delete [] _peak_amplitude;
     }
@@ -238,6 +227,32 @@ void SndObjPartialTracking::init_peaks() {
         delete [] _peak_phase;
     }
 
+    _input = NULL;
+    _analysis = NULL;
+    _peak_amplitude = NULL;
+    _peak_frequency = NULL;;
+    _peak_phase = NULL;
+}
+
+void SndObjPartialTracking::reset() {
+    if(_input) {
+        delete _input;
+    }
+    if(_analysis){
+        delete _analysis;
+    }
+    if(_peak_amplitude) {
+        delete [] _peak_amplitude;
+    }
+    if(_peak_frequency) {
+        delete [] _peak_frequency;
+    }
+    if(_peak_phase) {
+        delete [] _peak_phase;
+    }
+
+    _input = new SndObj();
+    _analysis = new SinAnal(_input, _num_bins, _threshold, _max_partials);
     _peak_amplitude = new sample[_max_partials];
     _peak_frequency = new sample[_max_partials];
     _peak_phase = new sample[_max_partials];
@@ -249,7 +264,7 @@ void SndObjPartialTracking::init_peaks() {
 
 void SndObjPartialTracking::max_partials(int new_max_partials) {
     _max_partials = new_max_partials;
-    _analysis->Set("max tracks", new_max_partials);
+    reset();
 }
 
 Peaks SndObjPartialTracking::update_partials(Frame* frame) {

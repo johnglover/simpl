@@ -84,7 +84,7 @@ class SndObjPartialTracking : public PartialTracking {
         sample* _peak_amplitude;
         sample* _peak_frequency;
         sample* _peak_phase;
-        void init_peaks();
+        void reset();
 
     public:
         SndObjPartialTracking();

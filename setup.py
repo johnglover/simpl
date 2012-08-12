@@ -33,7 +33,6 @@ except ImportError:
 
 macros = []
 link_args = []
-swig_opts = ['-c++']
 include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
                 'src/sndobj/rfftw', numpy_include, '/usr/local/include']
 libs = ['m', 'fftw3', 'gsl', 'gslcblas']
@@ -75,21 +74,6 @@ fftw_sources = """
 sndobj_sources = map(lambda x: 'src/sndobj/' + x, sndobj_sources)
 sndobj_sources.extend(map(lambda x: 'src/sndobj/rfftw/' + x, fftw_sources))
 sources.extend(sndobj_sources)
-
-sndobj_sources.append("simpl/sndobj.i")
-
-sndobj_macros = [('PYTHON_WRAP', None)]
-sndobj_macros.extend(macros)
-sndobj_swig_opts = ['-c++', '-DNUMPY']
-sndobj_swig_opts.extend(swig_opts)
-sndobj_include_dirs = ['src/sndobj/rfftw', 'src/sndobj']
-sndobj_include_dirs.extend(include_dirs)
-
-sndobj = Extension("simpl/_simplsndobj",
-                   sources=sndobj_sources,
-                   include_dirs=sndobj_include_dirs,
-                   define_macros=sndobj_macros,
-                   swig_opts=sndobj_swig_opts)
 
 # -----------------------------------------------------------------------------
 # SMS
@@ -182,8 +166,7 @@ setup(
     author_email='j@johnglover.net',
     platforms=["Linux", "Mac OS-X", "Unix", "Windows"],
     version='0.3',
-    ext_modules=[base, peak_detection, partial_tracking,
-                 synthesis, residual, sndobj],
+    ext_modules=[base, peak_detection, partial_tracking, synthesis, residual],
     cmdclass={'build_ext': build_ext},
     packages=['simpl', 'simpl.plot']
 )

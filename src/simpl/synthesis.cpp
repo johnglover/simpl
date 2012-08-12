@@ -138,3 +138,118 @@ void SMSSynthesis::synth_frame(Frame* frame) {
 
     sms_synthesize(&_data, frame->synth(), &_synth_params);
 }
+
+
+// ---------------------------------------------------------------------------
+// SndObjSynthesis
+// ---------------------------------------------------------------------------
+SimplSndObjAnalysisWrapper::SimplSndObjAnalysisWrapper(int max_partials) {
+    partials.resize(max_partials);
+}
+
+SimplSndObjAnalysisWrapper::~SimplSndObjAnalysisWrapper() {
+    partials.clear();
+}
+
+int SimplSndObjAnalysisWrapper::GetTrackID(int track) {
+    if(track < partials.size()) {
+        return track;
+    }
+    return 0;
+}
+
+int SimplSndObjAnalysisWrapper::GetTracks() {
+    return partials.size();
+}
+
+double SimplSndObjAnalysisWrapper::Output(int pos) {
+    int peak = pos / 3;
+
+    if(peak > partials.size()) {
+        return 0.0;
+    }
+
+    int data_field = pos % 3;
+
+    if(partials[peak]) {
+        if(data_field == 0) {
+            return partials[peak]->amplitude;
+        }
+        else if(data_field == 1) {
+            return partials[peak]->frequency;
+        }
+        return partials[peak]->phase;
+    }
+
+    return 0.0;
+}
+
+SndObjSynthesis::SndObjSynthesis() {
+    _analysis = NULL;
+    _table = NULL;
+    _synth = NULL;
+    reset();
+}
+
+SndObjSynthesis::~SndObjSynthesis() {
+    if(_analysis) {
+        delete _analysis;
+    }
+    if(_table) {
+        delete _table;
+    }
+    if(_synth) {
+        delete _synth;
+    }
+
+    _analysis = NULL;
+    _table = NULL;
+    _synth = NULL;
+}
+
+void SndObjSynthesis::reset() {
+    if(_analysis) {
+        delete _analysis;
+    }
+    if(_table) {
+        delete _table;
+    }
+    if(_synth) {
+        delete _synth;
+    }
+
+    _analysis = new SimplSndObjAnalysisWrapper(_max_partials);
+    _table = new HarmTable(10000, 1, 1, 0.25);
+    _synth = new AdSyn(_analysis, _max_partials, _table, 1, 1, _hop_size);
+}
+
+void SndObjSynthesis::hop_size(int new_hop_size) {
+    _hop_size = new_hop_size;
+    reset();
+}
+
+void SndObjSynthesis::max_partials(int new_max_partials) {
+    _max_partials = new_max_partials;
+    reset();
+}
+
+
+void SndObjSynthesis::synth_frame(Frame* frame) {
+    int num_partials = _max_partials;
+    if(frame->num_partials() < _max_partials) {
+        num_partials = frame->num_partials();
+    }
+
+    for(int i = 0; i < num_partials; i++) {
+        _analysis->partials[i] = frame->partial(i);
+    }
+    for(int i = num_partials; i < _max_partials; i++) {
+        _analysis->partials[i] = NULL;
+    }
+
+    _synth->DoProcess();
+
+    for(int i = 0; i < _hop_size; i++) {
+        frame->synth()[i] = _synth->Output(i);
+    }
+}

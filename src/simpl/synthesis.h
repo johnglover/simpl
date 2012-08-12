@@ -7,6 +7,11 @@ extern "C" {
     #include "sms.h"
 }
 
+#include "SndObj.h"
+#include "HarmTable.h"
+#include "SinAnal.h"
+#include "AdSyn.h"
+
 using namespace std;
 
 namespace simpl
@@ -62,6 +67,35 @@ class SMSSynthesis : public Synthesis {
         void synth_frame(Frame* frame);
 };
 
+
+// ---------------------------------------------------------------------------
+// SndObjSynthesis
+// ---------------------------------------------------------------------------
+class SimplSndObjAnalysisWrapper : public SinAnal {
+    public:
+        SimplSndObjAnalysisWrapper(int max_partials);
+        ~SimplSndObjAnalysisWrapper();
+        Peaks partials;
+        int GetTrackID(int track);
+        int GetTracks();
+        double Output(int pos);
+};
+
+
+class SndObjSynthesis : public Synthesis {
+    private:
+        SimplSndObjAnalysisWrapper* _analysis;
+        HarmTable* _table;
+        AdSyn* _synth;
+        void reset();
+
+    public:
+        SndObjSynthesis();
+        ~SndObjSynthesis();
+        void hop_size(int new_hop_size);
+        void max_partials(int new_max_partials);
+        void synth_frame(Frame* frame);
+};
 
 } // end of namespace Simpl
 

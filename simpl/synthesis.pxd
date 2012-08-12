@@ -31,3 +31,6 @@ cdef extern from "../src/simpl/synthesis.h" namespace "simpl":
         int stochastic_type()
         int det_synthesis_type()
         void det_synthesis_type(int new_det_synthesis_type)
+
+    cdef cppclass c_SndObjSynthesis "simpl::SndObjSynthesis"(c_Synthesis):
+        c_SndObjSynthesis()

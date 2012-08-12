@@ -328,7 +328,8 @@ class MQPartialTracking(simpl.PartialTracking):
                 partials[i] = simpl.Peak()
 
         self._current_frame = frame
-        frame.partials = partials
+        for p in partials:
+            frame.add_partial(p)
         return frame
 
 

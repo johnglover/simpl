@@ -74,3 +74,15 @@ cdef class SMSSynthesis(Synthesis):
     property det_synthesis_type:
         def __get__(self): return (<c_SMSSynthesis*>self.thisptr).det_synthesis_type()
         def __set__(self, int i): (<c_SMSSynthesis*>self.thisptr).det_synthesis_type(i)
+
+
+cdef class SndObjSynthesis(Synthesis):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_SndObjSynthesis()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_Synthesis*>0

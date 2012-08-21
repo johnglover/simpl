@@ -1,4 +1,3 @@
- 
 ////////////////////////////////////////////////////////////////////////
 // This file is part of the SndObj library
 //
@@ -31,12 +30,10 @@
 #define _FFT_H
 #include "SndObj.h"
 #include "Table.h"
-#include <rfftw/rfftw.h>
+#include <fftw3.h>
 
 class FFT : public SndObj {
-
  protected:
-
   // m_vecsize is FFT size
   // m_hopsize should always be set to the time-domain
   // vector size
@@ -44,14 +41,15 @@ class FFT : public SndObj {
   int m_hopsize;  // hopsize
   int m_halfsize; // 1/2 fftsize
   int *m_counter; // counter 
-  rfftw_plan m_plan; // FFTW initialisation
+  double* m_fftIn;
+  fftw_complex* m_fftOut;
+  fftw_plan m_plan;
   double m_fund;
 
   double m_scale; // scaling factor
   double m_norm;  // norm factor
   int m_frames;  // frame overlaps
   double** m_sigframe; // signal frames
-  double* m_ffttmp; // tmp vector for fft transform
   int m_cur;    // index into current frame 
 
   Table*  m_table; // window
@@ -59,17 +57,14 @@ class FFT : public SndObj {
  private:
   // fft wrapper method
   void inline fft(double* signal);
-
   // reset memory and initialisation
   void ReInit();
 
  public:
-
   FFT();
   FFT(Table* window, SndObj* input, double scale=1.f, 
       int fftsize=DEF_FFTSIZE, int hopsize=DEF_VECSIZE,
       double m_sr=DEF_SR);
-
   ~FFT();
   
   int GetFFTSize() { return m_fftsize; }
@@ -82,12 +77,6 @@ class FFT : public SndObj {
   virtual void SetHopSize(int hopsize);
 
   short DoProcess();
-  
 };
 
 #endif
-
-
-
-
-

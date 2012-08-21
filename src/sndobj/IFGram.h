@@ -1,4 +1,3 @@
- 
 ////////////////////////////////////////////////////////////////////////
 // This file is part of the SndObj library
 //
@@ -32,37 +31,26 @@
 #include "PVA.h"
 
 class IFGram : public PVA {
-
  protected:
-
-
   double* m_diffwin; // difference window
-  double* m_fftdiff; // holds fft of diff window
   double* m_diffsig;
   double* m_pdiff;
+  fftw_complex* m_fftdiff;  // fft of diff window
+  fftw_plan m_diffplan;
 
  private:
-
   void inline IFAnalysis(double* signal); 
 
  public:
-
   IFGram();
   IFGram(Table* window, SndObj* input, double scale=1.f,
 	 int fftsize=DEF_FFTSIZE, int hopsize=DEF_VECSIZE, double sr=DEF_SR);
-
   ~IFGram();
  
   int Set(const char* mess, double value);
   int Connect(const char* mess, void* input);
   void SetFFTSize(int fftsize);
   short DoProcess();
-  
 };
 
 #endif
-
-
-
-
-

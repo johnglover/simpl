@@ -1,4 +1,3 @@
- 
 ////////////////////////////////////////////////////////////////////////
 // This file is part of the SndObj library
 //
@@ -14,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // Copyright (c)Victor Lazzarini, 1997-2004
 // See License.txt for a disclaimer of all warranties
@@ -28,7 +27,6 @@
 #include "FFT.h"
 
 FFT::FFT(){
-
   m_table = 0;
 
   // hopsize controls decimation
@@ -46,11 +44,9 @@ FFT::FFT(){
   m_frames = m_fftsize/m_hopsize;
 
   m_sigframe = new double*[m_frames];
-  m_ffttmp = new double[m_fftsize];
   m_counter = new int[m_frames];
   m_halfsize = m_fftsize/2;
   m_fund = m_sr/m_fftsize;
-  memset(m_ffttmp, 0, m_fftsize*sizeof(double));
   int i;
   for(i = 0; i < m_frames; i++){
     m_sigframe[i] = new double[m_fftsize];
@@ -58,7 +54,11 @@ FFT::FFT(){
     m_counter[i] = i*m_hopsize;
   }
 
-  m_plan = rfftw_create_plan(m_fftsize, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+  m_fftIn = (double*) fftw_malloc(sizeof(double) * m_fftsize);
+  m_fftOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * m_fftsize);
+  m_plan = fftw_plan_dft_r2c_1d(m_fftsize, m_fftIn, m_fftOut, FFTW_ESTIMATE);
+  memset(m_fftIn, 0, m_fftsize*sizeof(double));
+
 
   AddMsg("scale", 21);
   AddMsg("fft size", 22);
@@ -69,11 +69,9 @@ FFT::FFT(){
   m_cur =0;
 }
 
-
-FFT::FFT(Table* window, SndObj* input, double scale, 
-	 int fftsize, int hopsize, double sr):
+FFT::FFT(Table* window, SndObj* input, double scale,
+     int fftsize, int hopsize, double sr):
   SndObj(input, fftsize, sr){
-
   m_table = window;
 
   m_hopsize = hopsize;
@@ -81,11 +79,9 @@ FFT::FFT(Table* window, SndObj* input, double scale,
   m_frames = m_fftsize/m_hopsize;
 
   m_sigframe = new double*[m_frames];
-  m_ffttmp = new double[m_fftsize];
   m_counter = new int[m_frames];
   m_halfsize = m_fftsize/2;
   m_fund = m_sr/m_fftsize;
-  memset(m_ffttmp, 0, m_fftsize*sizeof(double));
   int i;
   for(i = 0; i < m_frames; i++){
     m_sigframe[i] = new double[m_fftsize];
@@ -93,7 +89,10 @@ FFT::FFT(Table* window, SndObj* input, double scale,
     m_counter[i] = i*m_hopsize;
   }
 
-  m_plan = rfftw_create_plan(m_fftsize, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+  m_fftIn = (double*) fftw_malloc(sizeof(double) * m_fftsize);
+  m_fftOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * m_fftsize);
+  m_plan = fftw_plan_dft_r2c_1d(m_fftsize, m_fftIn, m_fftOut, FFTW_ESTIMATE);
+  memset(m_fftIn, 0, m_fftsize*sizeof(double));
 
   AddMsg("scale", 21);
   AddMsg("fft size", 22);
@@ -104,14 +103,12 @@ FFT::FFT(Table* window, SndObj* input, double scale,
   m_cur =0;
 }
 
-
 FFT::~FFT(){
-#ifndef WIN
-  rfftw_destroy_plan(m_plan);
-#endif
+  fftw_destroy_plan(m_plan);
+  fftw_free(m_fftIn);
+  fftw_free(m_fftOut);
   delete[] m_counter;
   delete[] m_sigframe;
-  delete[] m_ffttmp;
 }
 
 void
@@ -126,13 +123,14 @@ FFT::SetHopSize(int hopsize){
   ReInit();
 }
 
-void 
-FFT::ReInit(){	
+void
+FFT::ReInit(){
+  fftw_destroy_plan(m_plan);
+  fftw_free(m_fftIn);
+  fftw_free(m_fftOut);
 
-  rfftw_destroy_plan(m_plan);
   delete[] m_counter;
   delete[] m_sigframe;
-  delete[] m_ffttmp;
   delete[] m_output;
 
   if(!(m_output = new double[m_vecsize])){
@@ -143,10 +141,8 @@ FFT::ReInit(){
     return;
   }
 
-
   m_frames = m_fftsize/m_hopsize;
   m_sigframe = new double*[m_frames];
-  m_ffttmp = new double[m_fftsize];
   m_counter = new int[m_frames];
   m_halfsize = m_fftsize/2;
   m_fund = m_sr/m_fftsize;
@@ -157,15 +153,17 @@ FFT::ReInit(){
     m_counter[i] = i*m_hopsize;
   }
 
-  m_plan = rfftw_create_plan(m_vecsize, FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE);
+  m_fftIn = (double*) fftw_malloc(sizeof(double) * m_fftsize);
+  m_fftOut = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * m_fftsize);
+  m_plan = fftw_plan_dft_r2c_1d(m_fftsize, m_fftIn, m_fftOut, FFTW_ESTIMATE);
+  memset(m_fftIn, 0, m_fftsize*sizeof(double));
+
   m_cur =0;
   m_norm = m_fftsize/m_scale;
 }
 
-
 int
 FFT::Set(const char* mess, double value){
-
   switch(FindMsg(mess)){
 
   case 21:
@@ -179,16 +177,14 @@ FFT::Set(const char* mess, double value){
   case 23:
     SetHopSize((int) value);
     return 1;
-	
-  default:
-    return	SndObj::Set(mess, value);
 
+  default:
+    return  SndObj::Set(mess, value);
   }
 }
 
 int
 FFT::Connect(const char* mess, void *input){
-
   switch(FindMsg(mess)){
 
   case 24:
@@ -199,63 +195,66 @@ FFT::Connect(const char* mess, void *input){
     return SndObj::Connect(mess, input);
 
   }
-
 }
 
 short
 FFT::DoProcess(){
-
   if(!m_error){
     if(m_input && m_table){
       if(m_enable){
-	int i; double sig = 0.f;
-	for(m_vecpos = 0; m_vecpos < m_hopsize; m_vecpos++) {
-	  // signal input
-	  sig = m_input->Output(m_vecpos);		
-	  // distribute to the signal fftframes and apply the window
-	  // according to a time pointer (kept by counter[n])
-	  for(i=0;i < m_frames; i++){
-	    m_sigframe[i][m_counter[i]]= sig*m_table->Lookup(m_counter[i]);
-	    m_counter[i]++;		   
-	  }  
-	} 
-	// every hopsize samples
-	// set the current sigframe to be transformed
-	m_cur--; if(m_cur<0) m_cur = m_frames-1;  
-	// transform it and fill the output buffer
-	fft(m_sigframe[m_cur]); 
-	// zero the current sigframe time pointer
-	m_counter[m_cur] = 0;
-	return 1;
+        int i; double sig = 0.f;
 
-      } else { // if disabled
-	for(m_vecpos=0; m_vecpos < m_hopsize; m_vecpos++)
-	  m_output[m_vecpos] = 0.f;
-	return 1;
+        for(m_vecpos = 0; m_vecpos < m_hopsize; m_vecpos++){
+          // signal input
+          sig = m_input->Output(m_vecpos);
+          // distribute to the signal fftframes and apply the window
+          // according to a time pointer (kept by counter[n])
+          for(i=0;i < m_frames; i++){
+            m_sigframe[i][m_counter[i]]= sig*m_table->Lookup(m_counter[i]);
+            m_counter[i]++;
+          }
+        }
+
+        // every hopsize samples
+        // set the current sigframe to be transformed
+        m_cur--;
+        if(m_cur<0) m_cur = m_frames-1;
+
+        // transform it and fill the output buffer
+        fft(m_sigframe[m_cur]);
+
+        // zero the current sigframe time pointer
+        m_counter[m_cur] = 0;
+        return 1;
+
       }
-    } else {
+      else{ // if disabled
+        for(m_vecpos=0; m_vecpos < m_hopsize; m_vecpos++)
+        m_output[m_vecpos] = 0.f;
+        return 1;
+      }
+    }
+    else {
       m_error = 3;
       return 0;
     }
   }
-  else 
+  else
     return 0;
 }
 
 void
 FFT::fft(double* signal){
-  // FFT function
-  rfftw_one(m_plan, signal, m_ffttmp);
+  memcpy(m_fftIn, &signal[0], sizeof(double) * m_fftsize);
+  fftw_execute(m_plan);
 
-  // re-arrange output into re, im format
-  // packing re[0] and re[nyquist] together,
-  // normalise it and fill the output buffer
+  m_output[0] = m_fftOut[0][0] / m_norm;
+  m_output[1] = m_fftOut[0][1] / m_norm;
 
-  m_output[0] = m_ffttmp[0]/m_norm;
-  m_output[1] = m_ffttmp[m_halfsize]/m_norm;
-  for(int i=2, i2=1; i<m_fftsize; i+=2){
-    i2 = i/2;
-    m_output[i] = m_ffttmp[i2]/m_norm;
-    m_output[i+1] = m_ffttmp[m_fftsize-(i2)]/m_norm;
+  int i = 2;
+  for(int bin = 1; bin < m_halfsize; bin++){
+    m_output[i] = (m_fftOut[bin][0] * 2) / m_norm;
+    m_output[i+1] = (m_fftOut[bin][1] * 2) / m_norm;
+    i += 2;
   }
 }

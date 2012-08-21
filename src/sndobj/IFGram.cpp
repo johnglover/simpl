@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////////////////
 // This file is part of the SndObj library
 //
@@ -30,43 +29,43 @@
 
 IFGram::IFGram(){
   m_diffwin = new double[m_fftsize];
-  m_fftdiff = new double[m_fftsize];
-  m_diffsig = new double[m_fftsize];
   m_factor = m_sr/TWOPI;
   m_pdiff = new double[m_halfsize];
 
-  memset(m_diffwin, 0, sizeof(double) * m_fftsize);
-  memset(m_fftdiff, 0, sizeof(double) * m_fftsize);
-  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
-  memset(m_pdiff, 0, sizeof(double) * m_halfsize);
-}
+  m_diffsig = (double*) fftw_malloc(sizeof(double) * m_fftsize);
+  m_fftdiff = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * m_fftsize);
+  m_diffplan = fftw_plan_dft_r2c_1d(m_fftsize, m_diffsig, m_fftdiff, FFTW_ESTIMATE);
 
+  memset(m_diffwin, 0, sizeof(double) * m_fftsize);
+  memset(m_pdiff, 0, sizeof(double) * m_halfsize);
+  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
+}
 
 IFGram::IFGram(Table* window, SndObj* input, double scale,
                int fftsize, int hopsize, double sr)
-  :PVA(window, input, scale, fftsize, hopsize, sr)
-{
+  :PVA(window, input, scale, fftsize, hopsize, sr){
   m_diffwin = new double[m_fftsize];
-  m_fftdiff = new double[m_fftsize];
-  m_diffsig = new double[m_fftsize];
   m_pdiff = new double[m_halfsize];
   for(int i=0; i<m_fftsize; i++){
     m_diffwin[i] = m_table->Lookup(i) - m_table->Lookup(i+1);
   }
   m_factor = m_sr/TWOPI;
 
-  memset(m_fftdiff, 0, sizeof(double) * m_fftsize);
-  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
-  memset(m_pdiff, 0, sizeof(double) * m_halfsize);
-}
+  m_diffsig = (double*) fftw_malloc(sizeof(double) * m_fftsize);
+  m_fftdiff = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * m_fftsize);
+  m_diffplan = fftw_plan_dft_r2c_1d(m_fftsize, m_diffsig, m_fftdiff, FFTW_ESTIMATE);
 
+  memset(m_pdiff, 0, sizeof(double) * m_halfsize);
+  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
+}
 
 IFGram::~IFGram(){
   delete[] m_diffwin;
-  delete[] m_fftdiff;
-  delete[] m_diffsig;
-}
 
+  fftw_destroy_plan(m_diffplan);
+  fftw_free(m_diffsig);
+  fftw_free(m_fftdiff);
+}
 
 int
 IFGram::Set(const char* mess, double value){
@@ -103,36 +102,39 @@ IFGram::SetFFTSize(int fftsize){
   FFT::SetFFTSize(fftsize);
 
   delete[] m_diffwin;
-  delete[] m_fftdiff;
   delete[] m_phases;
+
+  fftw_destroy_plan(m_diffplan);
+  fftw_free(m_diffsig);
+  fftw_free(m_fftdiff);
 
   m_factor = m_sr*TWOPI/m_fftsize;
 
   m_diffwin = new double[m_fftsize];
-  m_fftdiff = new double[m_fftsize];
   m_phases = new double[m_halfsize];
+
+  m_diffsig = (double*) fftw_malloc(sizeof(double) * m_fftsize);
+  m_fftdiff = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * m_fftsize);
 
   for(int i=0; i<m_fftsize; i++){
     m_diffwin[i] = m_table->Lookup(i) - m_table->Lookup(i+1);
   }
 
-  memset(m_fftdiff, 0, sizeof(double) * m_fftsize);
-  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
   memset(m_pdiff, 0, sizeof(double) * m_halfsize);
+  memset(m_diffsig, 0, sizeof(double) * m_fftsize);
 }
 
 void
 IFGram::IFAnalysis(double* signal){
   double powerspec, da,db, a, b, ph,d;
-  int i2, i;
 
-  for(i=0; i<m_fftsize; i++){
+  for(int i = 0; i < m_fftsize; i++){
     m_diffsig[i] = signal[i]*m_diffwin[i];
     signal[i] = signal[i]*m_table->Lookup(i);
   }
 
   double tmp1, tmp2;
-  for(i=0; i<m_halfsize; i++){
+  for(int i = 0; i < m_halfsize; i++){
     tmp1 = m_diffsig[i+m_halfsize];
     tmp2 = m_diffsig[i];
     m_diffsig[i] = tmp1;
@@ -142,38 +144,37 @@ IFGram::IFAnalysis(double* signal){
     tmp2 = signal[i];
     signal[i] = tmp1;
     signal[i+m_halfsize] = tmp2;
-
   }
 
-  rfftw_one(m_plan, signal, m_ffttmp);
-  rfftw_one(m_plan, m_diffsig, m_fftdiff);
+  memcpy(m_fftIn, &signal[0], sizeof(double) * m_fftsize);
+  fftw_execute(m_plan);
+  fftw_execute(m_diffplan);
 
-  m_output[0] = m_ffttmp[0]/m_norm;
-  m_output[1] = m_ffttmp[m_halfsize]/m_norm;
+  m_output[0] = m_fftOut[0][0] / m_norm;
+  m_output[1] = m_fftOut[0][1] / m_norm;
 
-  for(i=2; i<m_fftsize; i+=2){
-
-    i2 = i/2;
-    a = m_ffttmp[i2]*2/m_norm;
-    b = m_ffttmp[m_fftsize-(i2)]*2/m_norm;
-    da = m_fftdiff[i2]*2/m_norm;
-    db = m_fftdiff[m_fftsize-(i2)]*2/m_norm;
-    powerspec = a*a+b*b;
+  int i = 2;
+  for(int bin = 1; bin < m_halfsize; bin++){
+    a = (m_fftOut[bin][0] * 2) / m_norm;
+    b = (m_fftOut[bin][1] * 2) / m_norm;
+    da = (m_fftdiff[bin][0] * 2) / m_norm;
+    db = (m_fftdiff[bin][1] * 2) / m_norm;
+    powerspec = (a * a) + (b * b);
 
     if((m_output[i] = (double)sqrt(powerspec)) != 0.f){
-      m_output[i+1] = ((a*db - b*da)/powerspec)*m_factor + i2*m_fund;
+      m_output[i+1] = ((a*db - b*da)/powerspec)*m_factor + bin*m_fund;
       ph = (double) atan2(b, a);
-      d = ph - m_phases[i2];
+      d = ph - m_phases[bin];
       while(d > PI) d -= TWOPI;
       while(d < -PI) d += TWOPI;
-      m_phases[i2] += d;
+      m_phases[bin] += d;
     }
     else{
-      m_output[i+1] = i2*m_fund;
-      m_phases[i2] = 0.f ;
+      m_output[i+1] = bin*m_fund;
+      m_phases[bin] = 0.f ;
     }
+    i += 2;
   }
-
 }
 
 short

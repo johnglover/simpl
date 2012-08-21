@@ -1,4 +1,3 @@
- 
 ////////////////////////////////////////////////////////////////////////
 // This file is part of the SndObj library
 //
@@ -32,35 +31,25 @@
 #include "FFT.h"
 
 class PVA : public FFT {
-
  protected:
-
   int  m_rotcount; // rotation counter 
   double m_factor;  // conversion factor
   double* m_phases;
 
  private:
-
   void inline pvanalysis(double* signal); 
 
  public:
-
   PVA();
   PVA(Table* window, SndObj* input, double scale=1.f,
       int fftsize=DEF_FFTSIZE, int hopsize=DEF_VECSIZE, double sr=DEF_SR);
-
   ~PVA();
+
   double Outphases(int pos){ return m_phases[pos]; } // reads phase output.
   int Set(const char* mess, double value);
   void SetFFTSize(int fftsize);
   void SetHopSize(int hopsize);
   short DoProcess();
-  
 };
 
 #endif
-
-
-
-
-

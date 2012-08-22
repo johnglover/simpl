@@ -6,37 +6,15 @@ set(source_files src/simpl/base.cpp
                  src/simpl/partial_tracking.cpp
                  src/simpl/synthesis.cpp
                  src/simpl/residual.cpp
-                 src/sms/OOURA.c
-                 src/sms/OOURA.h
-                 src/sms/SFMT
-                 src/sms/SFMT.c
-                 src/sms/SFMT.h
-                 src/sms/analysis.c
-                 src/sms/cepstrum.c
-                 src/sms/fileIO.c
-                 src/sms/filters.c
-                 src/sms/fixTracks.c
-                 src/sms/harmDetection.c
-                 src/sms/modify.c
-                 src/sms/peakContinuation.c
-                 src/sms/peakDetection.c
-                 src/sms/residual.c
-                 src/sms/sineSynth.c
-                 src/sms/sms.c
-                 src/sms/sms.h
-                 src/sms/soundIO.c
-                 src/sms/spectralApprox.c
-                 src/sms/spectrum.c
-                 src/sms/stocAnalysis.c
-                 src/sms/synthesis.c
-                 src/sms/tables.c
-                 src/sms/transforms.c
-                 src/sms/windows.c
 )
 
+FILE(GLOB sms_src src/sms/*.c)
 FILE(GLOB sndobj_src src/sndobj/*.cpp)
-FILE(GLOB rfftw_src src/sndobj/rfftw/*.c)
-LIST(APPEND source_files ${source_files} ${sndobj_src} ${rfftw_src})
+FILE(GLOB loris_src src/loris/*.C)
+LIST(APPEND source_files ${source_files}
+                         ${sndobj_src}
+                         ${sms_src}
+                         ${loris_src})
 
 set(include_files src/simpl/simpl.h
                   src/simpl/base.h
@@ -46,11 +24,26 @@ set(include_files src/simpl/simpl.h
                   src/simpl/residual.h
                   src/sms/sms.h
                   src/sndobj/SndObj.h
+                  src/loris/Analyzer.h
 )
 
-include_directories(src/simpl src/sms src/sndobj src/sndobj/rfftw)
+add_definitions(-DHAVE_FFTW3_H)
+
+set(libs m fftw3 gsl gslcblas)
+
+include_directories(src/simpl src/sms src/sndobj src/sndobj/rfftw src/loris)
+
 add_library(simpl SHARED ${source_files})
-target_link_libraries(simpl m fftw3 gsl gslcblas)
+target_link_libraries(simpl ${libs})
 
 install(TARGETS simpl LIBRARY DESTINATION lib)
 install(FILES ${include_files} DESTINATION include/simpl)
+
+# tests
+set(test_base_src ${source_files} tests/test_base.cpp)
+set(test_peak_detection_src ${source_files} tests/test_peak_detection.cpp)
+LIST(APPEND libs cppunit sndfile)
+add_executable(test_base ${test_base_src})
+add_executable(test_peak_detection ${test_peak_detection_src})
+target_link_libraries(test_base ${libs})
+target_link_libraries(test_peak_detection ${libs})

@@ -89,78 +89,6 @@ static double compare2nd( const Pair & p1, const Pair & p2 )
     return p1.second < p2.second;
 }
 
-// ---------------------------------------------------------------------------
-//  LinearEnvelopeBuilder
-// ---------------------------------------------------------------------------
-//  Base class for envelope builders that add a point (possibly) at each
-//  analysis frame. 
-//
-//  TODO: make a dictionary of these things and allow clients to add their
-//  own envelope builders and builder functions, and retrieve them after
-//  analysis.
-class LinearEnvelopeBuilder
-{
-public:
-    virtual ~LinearEnvelopeBuilder( void ) {}
-    virtual LinearEnvelopeBuilder * clone( void ) const = 0;
-    virtual void build( const Peaks & peaks, double frameTime ) = 0;
-    
-    const LinearEnvelope & envelope( void ) const { return mEnvelope; }
-    
-    //  reset (clear) envelope, override if necesssary:
-    virtual void reset( void ) { mEnvelope.clear(); }
-    
-protected:
-
-    LinearEnvelope mEnvelope;   //  build this
-};
-
-// ---------------------------------------------------------------------------
-//  FundamentalBuilder - for constructing an F0 envelope during analysis
-// ---------------------------------------------------------------------------
-class FundamentalBuilder : public LinearEnvelopeBuilder
-{
-    std::auto_ptr< Envelope > mFminEnv;
-    std::auto_ptr< Envelope > mFmaxEnv; 
-    
-    double mAmpThresh, mFreqThresh;
-    
-    std::vector< double > amplitudes, frequencies;
-    
-    const double mMinConfidence;    // 0.9, this could be made a parameter, 
-                                    // or raised to make estimates smoother
-    
-public:
-    FundamentalBuilder( double fmin, double fmax, double threshDb = -60, double threshHz = 8000 ) :
-        mFminEnv( new LinearEnvelope( fmin ) ), 
-        mFmaxEnv( new LinearEnvelope( fmax ) ), 
-        mAmpThresh( std::pow( 10., 0.05*(threshDb) ) ),
-        mFreqThresh( threshHz ),
-        mMinConfidence( 0.9 )
-        {}
-
-    FundamentalBuilder( const Envelope & fmin, const Envelope & fmax, 
-    					double threshDb = -60, double threshHz = 8000 ) :
-        mFminEnv( fmin.clone() ), 
-        mFmaxEnv( fmax.clone() ), 
-        mAmpThresh( std::pow( 10., 0.05*(threshDb) ) ),
-        mFreqThresh( threshHz ),
-        mMinConfidence( 0.9 )
-        {}
-        	
-    FundamentalBuilder( const FundamentalBuilder & rhs ) :
-        mFminEnv( rhs.mFminEnv->clone() ), 
-        mFmaxEnv( rhs.mFmaxEnv->clone() ), 
-        mAmpThresh( rhs.mAmpThresh ),
-        mFreqThresh( rhs.mFreqThresh ),
-        mMinConfidence( rhs.mMinConfidence )
-        {}
-    
-        
-	FundamentalBuilder * clone( void ) const { return new FundamentalBuilder(*this); }
-	
-    void build( const Peaks & peaks, double frameTime );
-};
 
 // ---------------------------------------------------------------------------
 //  FundamentalBuilder::build
@@ -198,19 +126,6 @@ void FundamentalBuilder::build( const Peaks & peaks, double frameTime )
     
 }
 
-// ---------------------------------------------------------------------------
-//  AmpEnvBuilder - for constructing an amplitude envelope during analysis
-// ---------------------------------------------------------------------------
-class AmpEnvBuilder : public LinearEnvelopeBuilder
-{
-public:
-    AmpEnvBuilder( void ) {}
-		
-	AmpEnvBuilder * clone( void ) const { return new AmpEnvBuilder(*this); }
-	
-    void build( const Peaks & peaks, double frameTime );
-
-};
 
 // ---------------------------------------------------------------------------
 //  AmpEnvBuilder::build
@@ -732,11 +647,6 @@ Analyzer::analyze( const double * bufBegin, const double * bufEnd, double srate,
     }
 }
 
-void 
-Analyzer::analyze_peaks( const std::vector<double> & vec, double srate )
-{
-    printf("analyze_peaks\n");
-}
 // -- parameter access --
 
 // ---------------------------------------------------------------------------

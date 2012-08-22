@@ -132,3 +132,15 @@ cdef class SndObjPeakDetection(PeakDetection):
         if self.thisptr:
             del self.thisptr
             self.thisptr = <c_PeakDetection*>0
+
+
+cdef class LorisPeakDetection(PeakDetection):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_LorisPeakDetection()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_PeakDetection*>0

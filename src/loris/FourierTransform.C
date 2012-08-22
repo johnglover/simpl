@@ -328,7 +328,7 @@ public:
 #define SORRY_NO_FFTW  1
 
 //  function prototype, definition in fftsg.c
-extern "C" void cdft(int, int, double *, int *, double *);
+/* extern "C" void cdft(int, int, double *, int *, double *); */
 
 //  function prototype, definition below
 static void slowDFT( double * in, double * out, int N );
@@ -444,7 +444,8 @@ public:
     {        
         if ( mIsPO2 )
         {
-            cdft( 2*N, -1, mTxInOut, mWorkspace, mTwiddle );
+            /* cdft( 2*N, -1, mTxInOut, mWorkspace, mTwiddle ); */
+            slowDFT( mTxInOut, mTwiddle, N );
         }
         else
         {

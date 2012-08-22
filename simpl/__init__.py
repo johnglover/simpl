@@ -19,6 +19,7 @@ read_wav = audio.read_wav
 PeakDetection = peak_detection.PeakDetection
 SMSPeakDetection = peak_detection.SMSPeakDetection
 SndObjPeakDetection = peak_detection.SndObjPeakDetection
+LorisPeakDetection = peak_detection.LorisPeakDetection
 
 PartialTracking = partial_tracking.PartialTracking
 SMSPartialTracking = partial_tracking.SMSPartialTracking

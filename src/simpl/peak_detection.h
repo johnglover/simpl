@@ -12,6 +12,14 @@ extern "C" {
 #include "IFGram.h"
 #include "SinAnal.h"
 
+#include "Analyzer.h"
+#include "KaiserWindow.h"
+#include "ReassignedSpectrum.h"
+#include "SpectralPeakSelector.h"
+#include "PartialBuilder.h"
+#include "AssociateBandwidth.h"
+#include "BreakpointEnvelope.h"
+
 using namespace std;
 
 
@@ -110,6 +118,43 @@ class SndObjPeakDetection : public PeakDetection {
     public:
         SndObjPeakDetection();
         ~SndObjPeakDetection();
+        void frame_size(int new_frame_size);
+        void hop_size(int new_hop_size);
+        void max_peaks(int new_max_peaks);
+        Peaks find_peaks_in_frame(Frame* frame);
+};
+
+
+// ---------------------------------------------------------------------------
+// LorisPeakDetection
+// ---------------------------------------------------------------------------
+class SimplLorisAnalyzer : public Loris::Analyzer {
+    protected:
+        sample _window_shape;
+        std::vector<sample> _window;
+        std::vector<sample> _window_deriv;
+        Loris::ReassignedSpectrum* _spectrum;
+        Loris::SpectralPeakSelector* _peak_selector;
+        std::auto_ptr<Loris::AssociateBandwidth> _bw_associator;
+
+    public:
+        SimplLorisAnalyzer(int window_size, sample resolution,
+                           int hop_size, sample sampling_rate);
+        ~SimplLorisAnalyzer();
+        Loris::Peaks peaks;
+        void analyze(int audio_size, sample* audio);
+};
+
+
+class LorisPeakDetection : public PeakDetection {
+    private:
+        double _resolution;
+        SimplLorisAnalyzer* _analyzer;
+        void reset();
+
+    public:
+        LorisPeakDetection();
+        ~LorisPeakDetection();
         void frame_size(int new_frame_size);
         void hop_size(int new_hop_size);
         void max_peaks(int new_max_peaks);

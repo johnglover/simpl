@@ -136,6 +136,6 @@ class Frame {
 
 typedef std::vector<Frame*> Frames;
 
-} // end of namespace Simpl
+} // end of namespace simpl
 
 #endif

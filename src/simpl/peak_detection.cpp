@@ -368,20 +368,115 @@ Peaks SndObjPeakDetection::find_peaks_in_frame(Frame* frame) {
         p->frequency = _analysis->Output((i * 3) + 1);
         p->phase = _analysis->Output((i * 3) + 2);
         peaks.push_back(p);
-
         frame->add_peak(p);
+    }
 
-        // TODO: check that peaks are _min_peak_separation apart
-        //
-        // if not peaks:
-        //     peaks.append(p)
-        // else:
-        //     if np.abs(p.frequency - peaks[-1].frequency) > self._min_peak_separation:
-        //         peaks.append(p)
-        //     else:
-        //         if p.amplitude > peaks[-1].amplitude:
-        //             peaks.remove(peaks[-1])
-        //             peaks.append(p)
+    return peaks;
+}
+
+
+// ---------------------------------------------------------------------------
+// LorisPeakDetection
+// ---------------------------------------------------------------------------
+SimplLorisAnalyzer::SimplLorisAnalyzer(int window_size, sample resolution,
+                                       int hop_size, sample sampling_rate) :
+    Loris::Analyzer(resolution, 2 * resolution) {
+
+    buildFundamentalEnv(false);
+
+    _window_shape = Loris::KaiserWindow::computeShape(sidelobeLevel());
+    _window.resize(window_size);
+    Loris::KaiserWindow::buildWindow(_window, _window_shape);
+
+    _window_deriv.resize(window_size);
+    Loris::KaiserWindow::buildTimeDerivativeWindow(_window_deriv, _window_shape);
+
+    _spectrum = new Loris::ReassignedSpectrum(_window, _window_deriv);
+    m_cropTime = 2 * hop_size;
+    _peak_selector = new Loris::SpectralPeakSelector(sampling_rate, m_cropTime);
+
+    if(m_bwAssocParam > 0) {
+        _bw_associator.reset(new Loris::AssociateBandwidth(bwRegionWidth(), sampling_rate));
+    }
+}
+
+SimplLorisAnalyzer::~SimplLorisAnalyzer() {
+    delete _spectrum;
+    delete _peak_selector;
+}
+
+void SimplLorisAnalyzer::analyze(int audio_size, sample* audio) {
+    m_ampEnvBuilder->reset();
+    m_f0Builder->reset();
+    m_partials.clear();
+    peaks.clear();
+
+    _spectrum->transform(audio, audio + (audio_size / 2), audio + audio_size);
+    peaks = _peak_selector->selectPeaks(*_spectrum, m_freqFloor);
+
+    // Loris::Peaks::iterator rejected = thinPeaks(peaks, 0);
+    // fixBandwidth(peaks);
+    // if(m_bwAssocParam > 0) {
+    //     _bw_associator->associateBandwidth(peaks.begin(), rejected, peaks.end());
+    // }
+    // peaks.erase(rejected, peaks.end());
+}
+
+// ---------------------------------------------------------------------------
+
+LorisPeakDetection::LorisPeakDetection() {
+    _resolution = (_sampling_rate / 2) / _max_peaks;
+    _analyzer = NULL;
+    reset();
+}
+
+LorisPeakDetection::~LorisPeakDetection() {
+    if(_analyzer) {
+        delete _analyzer;
+    }
+}
+
+void LorisPeakDetection::reset() {
+    if(_analyzer) {
+        delete _analyzer;
+    }
+    _analyzer = new SimplLorisAnalyzer(_frame_size, _resolution,
+                                       _hop_size, _sampling_rate);
+}
+
+void LorisPeakDetection::frame_size(int new_frame_size) {
+    _frame_size = new_frame_size;
+    reset();
+}
+
+void LorisPeakDetection::hop_size(int new_hop_size) {
+    _hop_size = new_hop_size;
+    reset();
+}
+
+void LorisPeakDetection::max_peaks(int new_max_peaks) {
+    _max_peaks = new_max_peaks;
+    _resolution = (_sampling_rate / 2) / _max_peaks;
+    reset();
+}
+
+Peaks LorisPeakDetection::find_peaks_in_frame(Frame* frame) {
+    Peaks peaks;
+
+    _analyzer->analyze(frame->size(), frame->audio());
+
+    int num_peaks = _analyzer->peaks.size();
+    if(num_peaks > _max_peaks) {
+        num_peaks = _max_peaks;
+    }
+
+    for(int i = 0; i < num_peaks; i++) {
+        Peak* p = new Peak();
+        p->amplitude = _analyzer->peaks[i].amplitude();
+        p->frequency = _analyzer->peaks[i].frequency();
+        p->phase = 0.f;
+        peaks.push_back(p);
+        frame->add_peak(p);
     }
 
     return peaks;

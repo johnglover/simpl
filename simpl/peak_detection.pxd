@@ -49,3 +49,9 @@ cdef extern from "../src/simpl/peak_detection.h" namespace "simpl":
         void hop_size(int new_hop_size)
         void max_peaks(int new_max_peaks)
         vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
+
+    cdef cppclass c_LorisPeakDetection "simpl::LorisPeakDetection"(c_PeakDetection):
+        c_LorisPeakDetection()
+        void hop_size(int new_hop_size)
+        void max_peaks(int new_max_peaks)
+        vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)

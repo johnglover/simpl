@@ -24,6 +24,7 @@ LorisPeakDetection = peak_detection.LorisPeakDetection
 PartialTracking = partial_tracking.PartialTracking
 SMSPartialTracking = partial_tracking.SMSPartialTracking
 SndObjPartialTracking = partial_tracking.SndObjPartialTracking
+LorisPartialTracking = partial_tracking.LorisPartialTracking
 
 Synthesis = synthesis.Synthesis
 SMSSynthesis = synthesis.SMSSynthesis

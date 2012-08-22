@@ -12,6 +12,15 @@ extern "C" {
 #include "IFGram.h"
 #include "SinAnal.h"
 
+#include "Analyzer.h"
+#include "AssociateBandwidth.h"
+#include "BreakpointEnvelope.h"
+#include "KaiserWindow.h"
+#include "PartialBuilder.h"
+#include "PartialList.h"
+#include "ReassignedSpectrum.h"
+#include "SpectralPeakSelector.h"
+
 using namespace std;
 
 namespace simpl
@@ -72,6 +81,7 @@ class SMSPartialTracking : public PartialTracking {
         Peaks update_partials(Frame* frame);
 };
 
+
 // ---------------------------------------------------------------------------
 // SndObjPartialTracking
 // ---------------------------------------------------------------------------
@@ -93,7 +103,36 @@ class SndObjPartialTracking : public PartialTracking {
         Peaks update_partials(Frame* frame);
 };
 
+// ---------------------------------------------------------------------------
+// LorisPartialTracking
+// ---------------------------------------------------------------------------
+class SimplLorisPTAnalyzer : public Loris::Analyzer {
+    protected:
+        Loris::BreakpointEnvelope _env;
+        Loris::PartialBuilder* _partial_builder;
 
-} // end of namespace Simpl
+    public:
+        SimplLorisPTAnalyzer();
+        ~SimplLorisPTAnalyzer();
+        Loris::Peaks peaks;
+        void analyze();
+};
+
+
+class LorisPartialTracking : public PartialTracking {
+    private:
+        SimplLorisPTAnalyzer* _analyzer;
+        Loris::PartialList _partials;
+        void reset();
+
+    public:
+        LorisPartialTracking();
+        ~LorisPartialTracking();
+        void max_partials(int new_max_partials);
+        Peaks update_partials(Frame* frame);
+};
+
+
+} // end of namespace simpl
 
 #endif

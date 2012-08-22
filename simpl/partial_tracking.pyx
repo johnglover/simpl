@@ -80,3 +80,15 @@ cdef class SndObjPartialTracking(PartialTracking):
         if self.thisptr:
             del self.thisptr
             self.thisptr = <c_PartialTracking*>0
+
+
+cdef class LorisPartialTracking(PartialTracking):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_LorisPartialTracking()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_PartialTracking*>0

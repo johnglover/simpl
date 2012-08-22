@@ -13,12 +13,12 @@ extern "C" {
 #include "SinAnal.h"
 
 #include "Analyzer.h"
-#include "KaiserWindow.h"
-#include "ReassignedSpectrum.h"
-#include "SpectralPeakSelector.h"
-#include "PartialBuilder.h"
 #include "AssociateBandwidth.h"
 #include "BreakpointEnvelope.h"
+#include "KaiserWindow.h"
+#include "PartialBuilder.h"
+#include "ReassignedSpectrum.h"
+#include "SpectralPeakSelector.h"
 
 using namespace std;
 

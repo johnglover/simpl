@@ -11,6 +11,7 @@ Peak::Peak() {
     amplitude = 0.0;
     frequency = 0.0;
     phase = 0.0;
+    bandwidth = 0.0;
     next_peak = NULL;
     previous_peak = NULL;
     partial_id = 0;

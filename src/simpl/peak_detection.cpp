@@ -144,7 +144,7 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
 
         // get the next frame
         Frame* f = new Frame(_frame_size);
-        f->audio(&audio[pos]);
+        f->audio(&(audio[pos]));
         f->max_peaks(_max_peaks);
 
         // find peaks
@@ -414,12 +414,10 @@ void SimplLorisAnalyzer::analyze(int audio_size, sample* audio) {
     _spectrum->transform(audio, audio + (audio_size / 2), audio + audio_size);
     peaks = _peak_selector->selectPeaks(*_spectrum, m_freqFloor);
 
-    // Loris::Peaks::iterator rejected = thinPeaks(peaks, 0);
-    // fixBandwidth(peaks);
-    // if(m_bwAssocParam > 0) {
-    //     _bw_associator->associateBandwidth(peaks.begin(), rejected, peaks.end());
-    // }
-    // peaks.erase(rejected, peaks.end());
+    fixBandwidth(peaks);
+    if(m_bwAssocParam > 0) {
+        _bw_associator->associateBandwidth(peaks.begin(), peaks.end(), peaks.end());
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -474,7 +472,7 @@ Peaks LorisPeakDetection::find_peaks_in_frame(Frame* frame) {
         Peak* p = new Peak();
         p->amplitude = _analyzer->peaks[i].amplitude();
         p->frequency = _analyzer->peaks[i].frequency();
-        p->phase = 0.f;
+        p->bandwidth = _analyzer->peaks[i].bandwidth();
         peaks.push_back(p);
         frame->add_peak(p);
     }

@@ -22,6 +22,7 @@ class Peak {
         sample amplitude;
         sample frequency;
         sample phase;
+        sample bandwidth;
         Peak* next_peak;
         Peak* previous_peak;
         int partial_id;

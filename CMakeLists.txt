@@ -43,13 +43,16 @@ install(FILES ${include_files} DESTINATION include/simpl)
 set(test_base_src ${source_files} tests/test_base.cpp)
 set(test_peak_detection_src ${source_files} tests/test_peak_detection.cpp)
 set(test_partial_tracking_src ${source_files} tests/test_partial_tracking.cpp)
+set(test_synthesis_src ${source_files} tests/test_synthesis.cpp)
 
 LIST(APPEND libs cppunit sndfile)
 
 add_executable(test_base ${test_base_src})
 add_executable(test_peak_detection ${test_peak_detection_src})
 add_executable(test_partial_tracking ${test_partial_tracking_src})
+add_executable(test_synthesis ${test_synthesis_src})
 
 target_link_libraries(test_base ${libs})
 target_link_libraries(test_peak_detection ${libs})
 target_link_libraries(test_partial_tracking ${libs})
+target_link_libraries(test_synthesis ${libs})

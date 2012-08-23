@@ -12,6 +12,9 @@ extern "C" {
 #include "SinAnal.h"
 #include "AdSyn.h"
 
+#include "Breakpoint.h"
+#include "Oscillator.h"
+
 using namespace std;
 
 namespace simpl
@@ -92,8 +95,28 @@ class SndObjSynthesis : public Synthesis {
     public:
         SndObjSynthesis();
         ~SndObjSynthesis();
+        void frame_size(int new_frame_size);
         void hop_size(int new_hop_size);
         void max_partials(int new_max_partials);
+        void synth_frame(Frame* frame);
+};
+
+
+// ---------------------------------------------------------------------------
+// LorisSynthesis
+// ---------------------------------------------------------------------------
+class LorisSynthesis : public Synthesis {
+    private:
+        std::vector<Loris::Oscillator> _oscs;
+        sample _bandwidth;
+        void reset();
+
+    public:
+        LorisSynthesis();
+        ~LorisSynthesis();
+        void max_partials(int new_max_partials);
+        sample bandwidth();
+        void bandwidth(sample new_bandwidth);
         void synth_frame(Frame* frame);
 };
 

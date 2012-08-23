@@ -86,3 +86,19 @@ cdef class SndObjSynthesis(Synthesis):
         if self.thisptr:
             del self.thisptr
             self.thisptr = <c_Synthesis*>0
+
+
+cdef class LorisSynthesis(Synthesis):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_LorisSynthesis()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_Synthesis*>0
+
+    property bandwidth:
+        def __get__(self): return (<c_LorisSynthesis*>self.thisptr).bandwidth()
+        def __set__(self, double d): (<c_LorisSynthesis*>self.thisptr).bandwidth(d)

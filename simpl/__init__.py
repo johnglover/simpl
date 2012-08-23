@@ -29,6 +29,7 @@ LorisPartialTracking = partial_tracking.LorisPartialTracking
 Synthesis = synthesis.Synthesis
 SMSSynthesis = synthesis.SMSSynthesis
 SndObjSynthesis = synthesis.SndObjSynthesis
+LorisSynthesis = synthesis.LorisSynthesis
 
 Residual = residual.Residual
 SMSResidual = residual.SMSResidual

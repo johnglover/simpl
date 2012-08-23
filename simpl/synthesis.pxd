@@ -34,3 +34,8 @@ cdef extern from "../src/simpl/synthesis.h" namespace "simpl":
 
     cdef cppclass c_SndObjSynthesis "simpl::SndObjSynthesis"(c_Synthesis):
         c_SndObjSynthesis()
+
+    cdef cppclass c_LorisSynthesis "simpl::LorisSynthesis"(c_Synthesis):
+        c_LorisSynthesis()
+        double bandwidth()
+        void bandwidth(double new_bandwidth)

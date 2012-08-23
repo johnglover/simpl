@@ -254,7 +254,58 @@ void SndObjSynthesis::synth_frame(Frame* frame) {
 
     _synth->DoProcess();
 
-    for(int i = 0; i < _hop_size; i++) {
+    for(int i = 0; i < _frame_size; i++) {
         frame->synth()[i] = _synth->Output(i);
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+// LorisSynthesis
+// ---------------------------------------------------------------------------
+LorisSynthesis::LorisSynthesis() {
+    _bandwidth = 1.0;
+    reset();
+}
+
+LorisSynthesis::~LorisSynthesis() {
+}
+
+void LorisSynthesis::reset() {
+    _oscs.clear();
+    _oscs.resize(_max_partials);
+    for(int i = 0; i < _max_partials; i++) {
+        _oscs.push_back(Loris::Oscillator());
+    }
+}
+
+void LorisSynthesis::max_partials(int new_max_partials) {
+    _max_partials = new_max_partials;
+    reset();
+}
+
+sample LorisSynthesis::bandwidth() {
+    return _bandwidth;
+}
+
+void LorisSynthesis::bandwidth(sample new_bandwidth) {
+    _bandwidth = new_bandwidth;
+}
+
+void LorisSynthesis::synth_frame(Frame* frame) {
+    int num_partials = frame->num_partials();
+    if(num_partials > _max_partials) {
+        num_partials = _max_partials;
+    }
+
+    for(int i = 0; i < num_partials; i++) {
+        Loris::Breakpoint bp = Loris::Breakpoint(
+            frame->partial(i)->frequency,
+            frame->partial(i)->amplitude,
+            frame->partial(i)->bandwidth * _bandwidth,
+            frame->partial(i)->phase
+        );
+        _oscs[i].oscillate(frame->synth(), frame->synth() + _hop_size,
+                           bp, _sampling_rate);
     }
 }

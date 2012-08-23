@@ -21,6 +21,12 @@ cdef class Peak:
     cdef set_peak(self, c_Peak* p):
         self.thisptr = p
 
+    cdef copy(self, c_Peak* p):
+        self.thisptr.amplitude = p.amplitude
+        self.thisptr.frequency = p.frequency
+        self.thisptr.phase = p.phase
+        self.thisptr.bandwidth = p.bandwidth
+
     property amplitude:
         def __get__(self): return self.thisptr.amplitude
         def __set__(self, double x): self.thisptr.amplitude = x
@@ -32,6 +38,10 @@ cdef class Peak:
     property phase:
         def __get__(self): return self.thisptr.phase
         def __set__(self, double x): self.thisptr.phase = x
+
+    property bandwidth:
+        def __get__(self): return self.thisptr.bandwidth
+        def __set__(self, double x): self.thisptr.bandwidth = x
 
 
 cdef class Frame:
@@ -58,18 +68,26 @@ cdef class Frame:
         def __get__(self): return self.thisptr.max_peaks()
         def __set__(self, int i): self.thisptr.max_peaks(i)
 
+    def add_peak(self, Peak p not None):
+        self.thisptr.add_peak(p.thisptr)
+
+    def add_peaks(self, peaks not None):
+        for p in peaks:
+            self.add_peak(p)
+
     def peak(self, int i):
         cdef c_Peak* c_p = self.thisptr.peak(i)
-        p = Peak(False)
-        p.set_peak(c_p)
+        p = Peak()
+        p.copy(c_p)
         return p
 
     property peaks:
         def __get__(self):
-            if not self._peaks:
-                self._peaks = [self.peak(i) for i in range(self.thisptr.num_peaks())]
+            self._peaks = [self.peak(i) for i in range(self.thisptr.num_peaks())]
             return self._peaks
         def __set__(self, peaks):
+            self.thisptr.clear_peaks()
+            self.add_peaks(peaks)
             self._peaks = peaks
 
     def clear(self):
@@ -93,18 +111,19 @@ cdef class Frame:
         cdef c_Peak* c_p
         if not p:
             c_p = self.thisptr.partial(i)
-            peak = Peak(False)
-            peak.set_peak(c_p)
+            peak = Peak()
+            peak.copy(c_p)
             return peak
         else:
             self.thisptr.partial(i, p.thisptr)
 
     property partials:
         def __get__(self):
-            if not self._partials:
-                self._partials = [self.partial(i) for i in range(self.thisptr.num_partials())]
+            self._partials = [self.partial(i) for i in range(self.thisptr.num_partials())]
             return self._partials
         def __set__(self, peaks):
+            self.thisptr.clear_partials()
+            self.add_partials(peaks)
             self._partials = peaks
 
     # audio buffers

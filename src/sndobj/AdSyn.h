@@ -26,14 +26,23 @@
 #include "ReSyn.h"
 
 class AdSyn : public ReSyn {
-
  public:
-
   AdSyn();
   AdSyn(SinAnal* input, int maxtracks, Table* table,
 	    double pitch = 1.f, double scale=1.f,
 	    int vecsize=DEF_VECSIZE, double sr=DEF_SR);
   ~AdSyn();
+  short DoProcess();
+};
+
+
+class SimplAdSyn : public AdSyn {
+ public:
+  SimplAdSyn();
+  SimplAdSyn(SinAnal* input, int maxtracks, Table* table,
+	         double pitch = 1.f, double scale=1.f,
+	         int vecsize=DEF_VECSIZE, double sr=DEF_SR);
+  ~SimplAdSyn();
   short DoProcess();
 };
 

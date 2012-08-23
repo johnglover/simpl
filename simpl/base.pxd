@@ -13,6 +13,7 @@ cdef class Peak:
     cdef c_Peak* thisptr
     cdef int created
     cdef set_peak(self, c_Peak* p)
+    cdef copy(self, c_Peak* p)
 
 
 cdef class Frame:
@@ -36,10 +37,13 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         double amplitude
         double frequency
         double phase
+        double bandwidth
 
     cdef cppclass c_Frame "simpl::Frame":
         c_Frame()
         c_Frame(int frame_size, bool alloc_memory)
+
+        void clear()
 
         # peaks
         int num_peaks()
@@ -47,7 +51,8 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         int max_peaks()
         void max_peaks(int new_max_peaks)
         c_Peak* peak(int peak_number)
-        void clear()
+        void add_peak(c_Peak* peak)
+        void clear_peaks()
 
         # partials
         int num_partials()
@@ -57,6 +62,7 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void add_partial(c_Peak* peak)
         c_Peak* partial(int partial_number)
         void partial(int partial_number, c_Peak* peak)
+        void clear_partials()
 
         # audio buffers
         int size()

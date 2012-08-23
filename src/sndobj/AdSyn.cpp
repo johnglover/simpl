@@ -14,7 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // Copyright (c)Victor Lazzarini, 1997-2004
 // See License.txt for a disclaimer of all warranties
@@ -26,7 +26,7 @@ AdSyn::AdSyn(){
 }
 
 AdSyn::AdSyn(SinAnal* input, int maxtracks, Table* table,
-             double pitch, double scale, int vecsize, double sr)      
+             double pitch, double scale, int vecsize, double sr)
       :ReSyn(input, maxtracks, table, pitch, scale, 1.f, vecsize, sr){
 }
 
@@ -41,7 +41,7 @@ AdSyn::DoProcess(){
         int notcontin = 0;
         bool contin = false;
         int oldtracks = m_tracks;
-        double* tab = m_ptable->GetTable(); 
+        double* tab = m_ptable->GetTable();
         if((m_tracks = ((SinAnal *)m_input)->GetTracks()) > m_maxtracks){
             m_tracks = m_maxtracks;
         }
@@ -52,16 +52,16 @@ AdSyn::DoProcess(){
         while(i < m_tracks*3){
             i3 = i/3;
             ampnext =  m_input->Output(i)*m_scale;
-            freqnext = m_input->Output(i+1)*m_pitch; 
+            freqnext = m_input->Output(i+1)*m_pitch;
             ID = ((SinAnal *)m_input)->GetTrackID(i3);
 
-            j = i3+notcontin;    
+            j = i3+notcontin;
 
             if(i3 < oldtracks-notcontin){
-                if(m_trackID[j]==ID){   
-                    // if this is a continuing track      
+                if(m_trackID[j]==ID){
+                    // if this is a continuing track
                     track = j;
-                    contin = true;    
+                    contin = true;
                     freq = m_freqs[track];
                     phase = m_phases[track];
                     amp = m_amps[track];
@@ -72,11 +72,11 @@ AdSyn::DoProcess(){
                     track = j;
                     freqnext = freq = m_freqs[track];
                     phase = m_phases[track];
-                    amp = m_amps[track]; 
+                    amp = m_amps[track];
                     ampnext = 0.f;
                 }
-            }         
-            else{ 
+            }
+            else{
                 // new tracks
                 contin = true;
                 track = -1;
@@ -93,7 +93,7 @@ AdSyn::DoProcess(){
             incra = (ampnext - amp)/m_vecsize;
             incrph = (freqnext - freq)/m_vecsize;
             for(m_vecpos=0; m_vecpos < m_vecsize; m_vecpos++){
-                if(m_enable) {    
+                if(m_enable) {
                     // table lookup oscillator
                     phase += f*m_ratio;
                     while(phase < 0) phase += m_size;
@@ -104,7 +104,7 @@ AdSyn::DoProcess(){
                     a += incra;
                     f += incrph;
                 }
-                else m_output[m_vecpos] = 0.f;      
+                else m_output[m_vecpos] = 0.f;
             }
 
             // keep amp, freq, and phase values for next time
@@ -112,11 +112,74 @@ AdSyn::DoProcess(){
                 m_amps[i3] = ampnext;
                 m_freqs[i3] = freqnext;
                 m_phases[i3] = phase;
-                m_trackID[i3] = ID;    
+                m_trackID[i3] = ID;
                 i += 3;
-            } 
+            }
             else notcontin++;
-        } 
+        }
+        return 1;
+    }
+    else{
+        m_error  = 1;
+        return 0;
+    }
+}
+
+SimplAdSyn::SimplAdSyn(){
+}
+
+SimplAdSyn::SimplAdSyn(SinAnal* input, int maxtracks, Table* table,
+                       double pitch, double scale, int vecsize, double sr)
+    :AdSyn(input, maxtracks, table, pitch, scale, vecsize, sr){
+}
+
+SimplAdSyn::~SimplAdSyn(){
+}
+
+short
+SimplAdSyn::DoProcess(){
+    if(m_input){
+        double ampnext, amp, freq, freqnext, phase;
+        double* tab = m_ptable->GetTable();
+        if((m_tracks = ((SinAnal *)m_input)->GetTracks()) > m_maxtracks){
+            m_tracks = m_maxtracks;
+        }
+        memset(m_output, 0, sizeof(double)*m_vecsize);
+
+        for(int track = 0; track < m_tracks; track++){
+            ampnext =  m_input->Output(track * 3) * m_scale;
+            freqnext = m_input->Output((track * 3) + 1) * m_pitch;
+            freq = m_freqs[track];
+            phase = m_phases[track];
+            amp = m_amps[track];
+
+            // interpolation & track synthesis loop
+            double a, f, frac, incra, incrph;
+            int ndx;
+            a = amp;
+            f = freq;
+            incra = (ampnext - amp) / m_vecsize;
+            incrph = (freqnext - freq) / m_vecsize;
+            for(m_vecpos=0; m_vecpos < m_vecsize; m_vecpos++){
+                if(m_enable) {
+                    // table lookup oscillator
+                    phase += f * m_ratio;
+                    while(phase < 0) phase += m_size;
+                    while(phase >= m_size) phase -= m_size;
+                    ndx = Ftoi(phase);
+                    frac = phase - ndx;
+                    m_output[m_vecpos] += a*(tab[ndx] + (tab[ndx+1] - tab[ndx])*frac);
+                    a += incra;
+                    f += incrph;
+                }
+                else m_output[m_vecpos] = 0.f;
+            }
+
+            // keep amp, freq, and phase values for next time
+            m_amps[track] = ampnext;
+            m_freqs[track] = freqnext;
+            m_phases[track] = phase;
+        }
         return 1;
     }
     else{

@@ -139,6 +139,21 @@ void Frame::destroy_arrays() {
     delete [] _synth_residual;
 }
 
+void Frame::clear() {
+    clear_peaks();
+    clear_partials();
+}
+
+void Frame::clear_peaks() {
+    _peaks.clear();
+    _num_peaks = 0;
+}
+
+void Frame::clear_partials() {
+    _partials.clear();
+    _num_partials = 0;
+}
+
 // Frame - peaks
 // -------------
 
@@ -175,13 +190,6 @@ Peak* Frame::peak(int peak_number) {
 
 void Frame::peak(int peak_number, Peak* peak) {
     _peaks[peak_number] = peak;
-}
-
-void Frame::clear() {
-    _peaks.clear();
-    _partials.clear();
-    _num_peaks = 0;
-    _num_partials = 0;
 }
 
 // Frame - partials

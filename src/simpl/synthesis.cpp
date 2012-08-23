@@ -51,9 +51,10 @@ void Synthesis::synth_frame(Frame* frame) {
 
 Frames Synthesis::synth(Frames frames) {
     for(int i = 0; i < frames.size(); i++) {
-        sample* synth_audio = new sample[_hop_size];
-        memset(synth_audio, 0.0, sizeof(sample) * _hop_size);
+        sample* synth_audio = new sample[_frame_size];
+        memset(synth_audio, 0.0, sizeof(sample) * _frame_size);
         frames[i]->synth(synth_audio);
+        frames[i]->synth_size(_frame_size);
         synth_frame(frames[i]);
     }
     return frames;
@@ -220,7 +221,12 @@ void SndObjSynthesis::reset() {
 
     _analysis = new SimplSndObjAnalysisWrapper(_max_partials);
     _table = new HarmTable(10000, 1, 1, 0.25);
-    _synth = new AdSyn(_analysis, _max_partials, _table, 1, 1, _hop_size);
+    _synth = new SimplAdSyn(_analysis, _max_partials, _table, 1, 1, _frame_size);
+}
+
+void SndObjSynthesis::frame_size(int new_frame_size) {
+    _frame_size = new_frame_size;
+    reset();
 }
 
 void SndObjSynthesis::hop_size(int new_hop_size) {
@@ -232,7 +238,6 @@ void SndObjSynthesis::max_partials(int new_max_partials) {
     _max_partials = new_max_partials;
     reset();
 }
-
 
 void SndObjSynthesis::synth_frame(Frame* frame) {
     int num_partials = _max_partials;

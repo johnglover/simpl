@@ -100,6 +100,9 @@ class Frame {
         Frame();
         Frame(int frame_size, bool alloc_memory=false);
         ~Frame();
+        void clear();
+        void clear_peaks();
+        void clear_partials();
 
         // peaks
         int num_peaks();
@@ -109,7 +112,6 @@ class Frame {
         void add_peak(Peak* peak);
         Peak* peak(int peak_number);
         void peak(int peak_number, Peak* peak);
-        void clear();
 
         // partials
         int num_partials();

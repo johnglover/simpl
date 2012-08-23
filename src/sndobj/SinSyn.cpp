@@ -23,7 +23,6 @@
 #include "SinSyn.h"
 
 SinSyn::SinSyn(){
-
     m_factor = m_vecsize/m_sr;
     m_facsqr = m_factor*m_factor;
     m_ptable = 0;
@@ -45,7 +44,6 @@ SinSyn::SinSyn(){
 SinSyn::SinSyn(SinAnal* input, int maxtracks, Table* table, 
         double scale, int vecsize, double sr)      
 :SndObj(input, vecsize, sr){
-
     m_ptable = table;
     m_size = m_ptable->GetLen();
     m_LoTWOPI = m_size/TWOPI;
@@ -61,7 +59,10 @@ SinSyn::SinSyn(SinAnal* input, int maxtracks, Table* table,
     m_phases = new double[m_maxtracks];
     m_trackID = new int[m_maxtracks];
 
-    memset(m_phases, 0, sizeof(double)*m_maxtracks);
+    memset(m_freqs, 0, sizeof(double) * m_maxtracks);
+    memset(m_amps, 0, sizeof(double) * m_maxtracks);
+    memset(m_phases, 0, sizeof(double) * m_maxtracks);
+    memset(m_trackID, 0, sizeof(int) * m_maxtracks);
 
     m_incr = 0.f;
     m_ratio = m_size/m_sr;
@@ -70,21 +71,17 @@ SinSyn::SinSyn(SinAnal* input, int maxtracks, Table* table,
     AddMsg("table", 24);
     AddMsg("timescale", 24);
     memset(m_trackID, 0, sizeof(int));
-
 }
 
 SinSyn::~SinSyn(){
-
     delete[] m_freqs;  
     delete[] m_amps;  
     delete[] m_phases;  
     delete[] m_trackID;
-
 }
 
-    void
-SinSyn::SetTable(Table *table)
-{
+void
+SinSyn::SetTable(Table *table){
     m_ptable = table;
     m_size = m_ptable->GetLen();
     m_LoTWOPI = m_size/TWOPI;
@@ -93,26 +90,19 @@ SinSyn::SetTable(Table *table)
 
 int
 SinSyn::Connect(char* mess, void* input){
-
     switch (FindMsg(mess)){
-
         case 24:
             SetTable((Table *) input);
             return 1;
 
         default:
             return SndObj::Connect(mess,input);
-
     }
-
 }
-
 
 int
 SinSyn::Set(char* mess, double value){
-
     switch(FindMsg(mess)){
-
         case 21:
             SetMaxTracks((int)value);
             return 1;
@@ -123,36 +113,34 @@ SinSyn::Set(char* mess, double value){
 
         default:
             return SndObj::Set(mess, value);
-
     }
 }
 
-
 void
 SinSyn::SetMaxTracks(int maxtracks){
-
     if(m_maxtracks){
-
         delete[] m_freqs;  
         delete[] m_amps;  
         delete[] m_phases;  
         delete[] m_trackID;
-
     }
 
     m_maxtracks = maxtracks;
+
     m_freqs = new double[m_maxtracks];
     m_amps = new double[m_maxtracks];
     m_phases = new double[m_maxtracks];
     m_trackID = new int[m_maxtracks];
 
+    memset(m_freqs, 0, sizeof(double) * m_maxtracks);
+    memset(m_amps, 0, sizeof(double) * m_maxtracks);
+    memset(m_phases, 0, sizeof(double) * m_maxtracks);
+    memset(m_trackID, 0, sizeof(int) * m_maxtracks);
 }
 
 short
-SinSyn::DoProcess() {
-
+SinSyn::DoProcess(){
     if(m_input){
-
         double ampnext,amp,freq, freqnext, phase,phasenext;
         double a2, a3, phasediff, cph;
         int i3, i, j, ID, track;
@@ -265,4 +253,3 @@ SinSyn::DoProcess() {
     }
 
 }
-

@@ -236,7 +236,7 @@ class MQPartialTracking(simpl.PartialTracking):
 
     def update_partials(self, frame):
         """
-        Streamable (real-time) MQ peak-tracking.
+        Streamable (real-time) MQ partial-tracking.
 
         1. If there is no peak within the matching interval, the track dies.
         If there is at least one peak within the matching interval, the closest
@@ -328,8 +328,7 @@ class MQPartialTracking(simpl.PartialTracking):
                 partials[i] = simpl.Peak()
 
         self._current_frame = frame
-        for p in partials:
-            frame.add_partial(p)
+        frame.partials = partials
         return frame
 
 

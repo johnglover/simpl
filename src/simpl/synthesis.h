@@ -34,7 +34,7 @@ class Synthesis {
     public:
         Synthesis();
         int frame_size();
-        void frame_size(int new_frame_size);
+        virtual void frame_size(int new_frame_size);
         int hop_size();
         virtual void hop_size(int new_hop_size);
         int max_partials();
@@ -86,7 +86,7 @@ class SndObjSynthesis : public Synthesis {
     private:
         SimplSndObjAnalysisWrapper* _analysis;
         HarmTable* _table;
-        AdSyn* _synth;
+        SimplAdSyn* _synth;
         void reset();
 
     public:

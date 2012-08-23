@@ -51,6 +51,7 @@ public:
 
     void tearDown() {
         delete pd;
+        delete pt;
     }
 };
 

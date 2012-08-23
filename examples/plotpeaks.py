@@ -1,8 +1,13 @@
+import sys
 import simpl
 import matplotlib.pyplot as plt
 
-input_file = '../../tests/audio/flute.wav'
-audio = simpl.read_wav(input_file)[0]
+usage = 'Usage: python {0} <wav file>'.format(__file__)
+if len(sys.argv) != 2:
+    print usage
+    sys.exit(1)
+
+audio = simpl.read_wav(sys.argv[1])[0]
 
 # take just a few frames
 audio = audio[len(audio) / 2:(len(audio) / 2) + 4096]

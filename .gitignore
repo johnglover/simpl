@@ -5,6 +5,7 @@ Thumbs.db
 
 # Distutils/pip files
 build
+build_release
 *.egg-info
 
 # Compiled source

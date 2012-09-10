@@ -142,6 +142,13 @@ void Frame::destroy_arrays() {
 void Frame::clear() {
     clear_peaks();
     clear_partials();
+
+    if(_alloc_memory) {
+        memset(_audio, 0.0, sizeof(sample) * _size);
+        memset(_synth, 0.0, sizeof(sample) * _synth_size);
+        memset(_residual, 0.0, sizeof(sample) * _size);
+        memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
+    }
 }
 
 void Frame::clear_peaks() {

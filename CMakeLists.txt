@@ -7,7 +7,6 @@ set(source_files src/simpl/base.cpp
                  src/simpl/synthesis.cpp
                  src/simpl/residual.cpp
 )
-
 FILE(GLOB sms_src src/sms/*.c)
 FILE(GLOB sndobj_src src/sndobj/*.cpp)
 FILE(GLOB loris_src src/loris/*.C)
@@ -16,19 +15,22 @@ LIST(APPEND source_files ${source_files}
                          ${sms_src}
                          ${loris_src})
 
-set(include_files src/simpl/simpl.h
+set(simpl_include src/simpl/simpl.h
                   src/simpl/base.h
                   src/simpl/peak_detection.h
                   src/simpl/partial_tracking.h
                   src/simpl/synthesis.h
                   src/simpl/residual.h
-                  src/sms/sms.h
-                  src/sndobj/SndObj.h
-                  src/loris/Analyzer.h
 )
+set(sms_include src/sms/sms.h)
+FILE(GLOB sndobj_include src/sndobj/*.h)
+FILE(GLOB loris_include src/loris/*.h)
+LIST(APPEND include_files ${simpl_include}
+                          ${sms_include}
+                          ${sndobj_include}
+                          ${loris_include})
 
 add_definitions(-DHAVE_FFTW3_H)
-
 set(libs m fftw3 gsl gslcblas)
 
 include_directories(src/simpl src/sms src/sndobj src/sndobj/rfftw src/loris)

@@ -22,7 +22,7 @@ def plot_peaks(frames):
                      markerfacecolor=colours.pbj(peak.amplitude / max_amp))
 
 
-def plot_partials(frames, show_peaks=True):
+def plot_partials(frames, show_peaks=False):
     "Plot partials created by a partial tracking algorithm"
     # Get the maximum peak amplitude, used to select an appropriate
     # colour for each peak.

@@ -131,8 +131,9 @@ void Frame::max_peaks(int new_max_peaks) {
         // losing data here, allow but warn
         printf("Warning: max peaks changed to less than current number "
                "of peaks, some existing data was lost.\n");
-        _peaks.resize(_max_peaks);
     }
+
+    _peaks.resize(_max_peaks);
 }
 
 void Frame::add_peak(Peak* peak) {
@@ -170,8 +171,9 @@ void Frame::max_partials(int new_max_partials) {
         // losing data here, allow but warn
         printf("Warning: max partials changed to less than current number"
                " of partials, some existing data was lost.\n");
-        _partials.resize(_max_partials);
     }
+
+    _partials.resize(_max_partials);
 }
 
 void Frame::add_partial(Peak* peak) {

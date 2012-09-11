@@ -1,4 +1,4 @@
-"""
+'''
 Simpl is an open source library for sinusoidal modelling written in C/C++ and
 Python, and making use of Scientific Python (SciPy). The aim of this project
 is to tie together many of the existing sinusoidal modelling implementations
@@ -7,7 +7,7 @@ implementations of some recently published sinusoidal modelling algorithms,
 many of which have yet to be released in software. Simpl is primarily intended
 as a tool for other researchers in the field, allowing them to easily combine,
 compare and contrast many of the published analysis/synthesis algorithms.
-"""
+'''
 import os
 import glob
 from distutils.core import setup
@@ -29,7 +29,7 @@ try:
     except AttributeError:
         numpy_include = numpy.get_numpy_include()
 except ImportError:
-    print "Error: Numpy was not found."
+    print 'Error: Numpy was not found.'
     exit(1)
 
 macros = []
@@ -42,24 +42,23 @@ sources = []
 # -----------------------------------------------------------------------------
 # SndObj Library
 # -----------------------------------------------------------------------------
-
-sndobj_sources = """
+sndobj_sources = '''
     SndObj.cpp SndIO.cpp FFT.cpp PVA.cpp IFGram.cpp SinAnal.cpp
     SinSyn.cpp AdSyn.cpp ReSyn.cpp HarmTable.cpp HammingTable.cpp
-    """.split()
+    '''.split()
 sndobj_sources = map(lambda x: 'src/sndobj/' + x, sndobj_sources)
 sources.extend(sndobj_sources)
 
 # -----------------------------------------------------------------------------
 # SMS
 # -----------------------------------------------------------------------------
-sms_sources = """
+sms_sources = '''
     OOURA.c cepstrum.c peakContinuation.c soundIO.c tables.c
     fileIO.c peakDetection.c spectralApprox.c transforms.c
     filters.c residual.c spectrum.c windows.c SFMT.c fixTracks.c
     sineSynth.c stocAnalysis.c harmDetection.c sms.c synthesis.c
     analysis.c modify.c
-    """.split()
+    '''.split()
 sms_sources = map(lambda x: 'src/sms/' + x, sms_sources)
 sources.extend(sms_sources)
 
@@ -73,77 +72,83 @@ sources.extend(loris_sources)
 # Base
 # -----------------------------------------------------------------------------
 base = Extension(
-    "simpl.base",
-    sources=["simpl/base.pyx", "src/simpl/base.cpp"],
+    'simpl.base',
+    sources=['simpl/base.pyx',
+             'src/simpl/base.cpp',
+             'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,
-    language="c++"
+    language='c++'
 )
 
 # -----------------------------------------------------------------------------
 # Peak Detection
 # -----------------------------------------------------------------------------
 peak_detection = Extension(
-    "simpl.peak_detection",
-    sources=sources + ["simpl/peak_detection.pyx",
-                       "src/simpl/peak_detection.cpp",
-                       "src/simpl/base.cpp"],
+    'simpl.peak_detection',
+    sources=sources + ['simpl/peak_detection.pyx',
+                       'src/simpl/peak_detection.cpp',
+                       'src/simpl/base.cpp',
+                       'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,
     libraries=libs,
     extra_compile_args=['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H'],
-    language="c++"
+    language='c++'
 )
 
 # -----------------------------------------------------------------------------
 # Partial Tracking
 # -----------------------------------------------------------------------------
 partial_tracking = Extension(
-    "simpl.partial_tracking",
-    sources=["simpl/partial_tracking.pyx", "src/simpl/partial_tracking.cpp",
-             "src/simpl/base.cpp"],
+    'simpl.partial_tracking',
+    sources=['simpl/partial_tracking.pyx',
+             'src/simpl/partial_tracking.cpp',
+             'src/simpl/base.cpp',
+             'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,
-    language="c++"
+    language='c++'
 )
-
 
 # -----------------------------------------------------------------------------
 # Synthesis
 # -----------------------------------------------------------------------------
 synthesis = Extension(
-    "simpl.synthesis",
-    sources=["simpl/synthesis.pyx", "src/simpl/synthesis.cpp",
-             "src/simpl/base.cpp"],
+    'simpl.synthesis',
+    sources=['simpl/synthesis.pyx',
+             'src/simpl/synthesis.cpp',
+             'src/simpl/base.cpp',
+             'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,
-    language="c++"
+    language='c++'
 )
-
 
 # -----------------------------------------------------------------------------
 # Residual
 # -----------------------------------------------------------------------------
 residual = Extension(
-    "simpl.residual",
-    sources=["simpl/residual.pyx", "src/simpl/residual.cpp",
-             "src/simpl/base.cpp"],
+    'simpl.residual',
+    sources=['simpl/residual.pyx',
+             'src/simpl/residual.cpp',
+             'src/simpl/base.cpp',
+             'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,
-    language="c++"
+    language='c++'
 )
 
 # -----------------------------------------------------------------------------
 # Package
 # -----------------------------------------------------------------------------
-
-doc_lines = __doc__.split("\n")
+doc_lines = __doc__.split('\n')
 
 setup(
     name='simpl',
     description=doc_lines[0],
-    long_description="\n".join(doc_lines[2:]),
+    long_description='\n'.join(doc_lines[2:]),
     url='http://simplsound.sourceforge.net',
     download_url='http://simplsound.sourceforge.net',
     license='GPL',
     author='John Glover',
     author_email='j@johnglover.net',
-    platforms=["Linux", "Mac OS-X", "Unix"],
+    platforms=['Linux', 'Mac OS-X', 'Unix'],
     version='0.3',
     ext_modules=[base, peak_detection, partial_tracking, synthesis, residual],
     cmdclass={'build_ext': build_ext},

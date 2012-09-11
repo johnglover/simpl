@@ -1,27 +1,16 @@
 cmake_minimum_required(VERSION 2.6)
 project(simpl)
 
-set(source_files src/simpl/base.cpp
-                 src/simpl/peak_detection.cpp
-                 src/simpl/partial_tracking.cpp
-                 src/simpl/synthesis.cpp
-                 src/simpl/residual.cpp
-)
+FILE(GLOB simpl_src src/simpl/*.cpp)
 FILE(GLOB sms_src src/sms/*.c)
 FILE(GLOB sndobj_src src/sndobj/*.cpp)
 FILE(GLOB loris_src src/loris/*.C)
-LIST(APPEND source_files ${source_files}
+LIST(APPEND source_files ${simpl_src}
                          ${sndobj_src}
                          ${sms_src}
                          ${loris_src})
 
-set(simpl_include src/simpl/simpl.h
-                  src/simpl/base.h
-                  src/simpl/peak_detection.h
-                  src/simpl/partial_tracking.h
-                  src/simpl/synthesis.h
-                  src/simpl/residual.h
-)
+FILE(GLOB simpl_include src/simpl/*.h)
 set(sms_include src/sms/sms.h)
 FILE(GLOB sndobj_include src/sndobj/*.h)
 FILE(GLOB loris_include src/loris/*.h)

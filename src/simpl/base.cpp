@@ -117,10 +117,8 @@ void Frame::clear() {
 
     if(_alloc_memory) {
         memset(_audio, 0.0, sizeof(sample) * _size);
-        memset(_synth, 0.0, sizeof(sample) * _synth_size);
-        memset(_residual, 0.0, sizeof(sample) * _size);
-        memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
     }
+    clear_synth();
 }
 
 void Frame::clear_peaks() {
@@ -131,6 +129,14 @@ void Frame::clear_peaks() {
 void Frame::clear_partials() {
     _partials.clear();
     _num_partials = 0;
+}
+
+void Frame::clear_synth() {
+    if(_alloc_memory) {
+        memset(_synth, 0.0, sizeof(sample) * _synth_size);
+        memset(_residual, 0.0, sizeof(sample) * _size);
+        memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
+    }
 }
 
 // Frame - peaks

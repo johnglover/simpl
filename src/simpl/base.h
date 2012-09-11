@@ -93,6 +93,7 @@ class Frame {
         void clear();
         void clear_peaks();
         void clear_partials();
+        void clear_synth();
 
         // peaks
         int num_peaks();

@@ -12,37 +12,9 @@ Peak::Peak() {
     frequency = 0.0;
     phase = 0.0;
     bandwidth = 0.0;
-    next_peak = NULL;
-    previous_peak = NULL;
-    partial_id = 0;
-    partial_position = 0;
-    frame_number = 0;
 }
 
 Peak::~Peak() {
-}
-
-// Returns true iff this peak is unmatched in the given direction, and has positive amplitude
-bool Peak::is_free(const string direction) {
-    if(amplitude <= 0.0) {
-        return false;
-    }
-
-    if(direction == "forwards") {
-        if(next_peak != NULL) {
-            return false;
-        }
-    }
-    else if(direction == "backwards") {
-        if(previous_peak != NULL) {
-            return false;
-        }
-    }
-    else {
-        return false;
-    }
-
-    return true;
 }
 
 
@@ -275,6 +247,22 @@ void Frame::audio(sample* new_audio) {
     }
 }
 
+void Frame::audio(sample* new_audio, int size) {
+    // this should only be called if the Frame is managing the memory
+    // for the sample arrays
+    if(!_alloc_memory) {
+        throw Exception(std::string("Memory not managed by Frame."));
+    }
+
+    // copy size should also be less than or equal to the current frame size
+    if(size > _size) {
+        throw Exception(std::string("Specified copy size is too large, "
+                                    "it must be less than the Frame size."));
+    }
+
+    memcpy(_audio, new_audio, sizeof(sample) * size);
+}
+
 sample* Frame::audio() {
     return _audio;
 }
@@ -286,6 +274,22 @@ void Frame::synth(sample* new_synth) {
     else {
         _synth = new_synth;
     }
+}
+
+void Frame::synth(sample* new_synth, int size) {
+    // this should only be called if the Frame is managing the memory
+    // for the sample arrays
+    if(!_alloc_memory) {
+        throw Exception(std::string("Memory not managed by Frame."));
+    }
+
+    // copy size should also be less than or equal to the current frame synth size
+    if(size > _synth_size) {
+        throw Exception(std::string("Specified copy size is too large, "
+                                    "it must be less than the Frame synth size."));
+    }
+
+    memcpy(_synth, new_synth, sizeof(sample) * size);
 }
 
 sample* Frame::synth() {
@@ -301,6 +305,22 @@ void Frame::residual(sample* new_residual) {
     }
 }
 
+void Frame::residual(sample* new_residual, int size) {
+    // this should only be called if the Frame is managing the memory
+    // for the sample arrays
+    if(!_alloc_memory) {
+        throw Exception(std::string("Memory not managed by Frame."));
+    }
+
+    // copy size should also be less than or equal to the current frame size
+    if(size > _size) {
+        throw Exception(std::string("Specified copy size is too large, "
+                                    "it must be less than the Frame size."));
+    }
+
+    memcpy(_residual, new_residual, sizeof(sample) * size);
+}
+
 sample* Frame::residual() {
     return _residual;
 }
@@ -312,6 +332,22 @@ void Frame::synth_residual(sample* new_synth_residual) {
     else {
         _synth_residual = new_synth_residual;
     }
+}
+
+void Frame::synth_residual(sample* new_synth_residual, int size) {
+    // this should only be called if the Frame is managing the memory
+    // for the sample arrays
+    if(!_alloc_memory) {
+        throw Exception(std::string("Memory not managed by Frame."));
+    }
+
+    // copy size should also be less than or equal to the current frame synth size
+    if(size > _synth_size) {
+        throw Exception(std::string("Specified copy size is too large, "
+                                    "it must be less than the Frame synth size."));
+    }
+
+    memcpy(_synth_residual, new_synth_residual, sizeof(sample) * size);
 }
 
 sample* Frame::synth_residual() {

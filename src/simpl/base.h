@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-using namespace std;
+#include "exceptions.h"
 
 namespace simpl
 {
@@ -23,19 +23,9 @@ class Peak {
         sample frequency;
         sample phase;
         sample bandwidth;
-        Peak* next_peak;
-        Peak* previous_peak;
-        int partial_id;
-        int partial_position;
-        int frame_number;
 
         Peak();
         ~Peak();
-
-        bool is_start_of_partial() {
-            return previous_peak == NULL;
-        };
-        bool is_free(const string direction = string("forwards"));
 };
 
 typedef std::vector<Peak*> Peaks;
@@ -128,12 +118,16 @@ class Frame {
         int synth_size();
         void synth_size(int new_size);
         void audio(sample* new_audio);
+        void audio(sample* new_audio, int size);
         sample* audio();
         void synth(sample* new_synth);
+        void synth(sample* new_synth, int size);
         sample* synth();
         void residual(sample* new_residual);
+        void residual(sample* new_residual, int size);
         sample* residual();
         void synth_residual(sample* new_synth_residual);
+        void synth_residual(sample* new_synth_residual, int size);
         sample* synth_residual();
 };
 

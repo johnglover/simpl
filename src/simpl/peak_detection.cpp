@@ -143,8 +143,15 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
         }
 
         // get the next frame
-        Frame* f = new Frame(_frame_size);
-        f->audio(&(audio[pos]));
+        Frame* f = new Frame(_frame_size, true);
+
+        if((int)pos <= (audio_size - _frame_size)) {
+            f->audio(&(audio[pos]), _frame_size);
+        }
+        else {
+            f->audio(&(audio[pos]), audio_size - pos);
+        }
+
         f->max_peaks(_max_peaks);
 
         // find peaks

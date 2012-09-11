@@ -32,31 +32,6 @@ typedef std::vector<Peak*> Peaks;
 
 
 // ---------------------------------------------------------------------------
-// Partial
-//
-// Represents a sinuoidal partial or track, an ordered sequence of Peaks
-// ---------------------------------------------------------------------------
-class Partial {
-    private:
-        int _starting_frame;
-        long _partial_number;
-        Peaks _peaks;
-
-    public:
-        Partial();
-        ~Partial();
-
-        void add_peak(Peak* peak);
-        int length();
-        int first_frame_number();
-        int last_frame_number();
-        Peak* peak(int peak_number);
-};
-
-typedef std::vector<Partial*> Partials;
-
-
-// ---------------------------------------------------------------------------
 // Frame
 //
 // Represents a frame of audio information.

@@ -11,7 +11,6 @@ import pybase
 dtype = np.double
 Frame = base.Frame
 Peak = base.Peak
-Partial = pybase.Partial
 compare_peak_amps = pybase.compare_peak_amps
 compare_peak_freqs = pybase.compare_peak_freqs
 read_wav = audio.read_wav

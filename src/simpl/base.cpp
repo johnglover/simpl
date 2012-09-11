@@ -19,37 +19,6 @@ Peak::~Peak() {
 
 
 // ---------------------------------------------------------------------------
-// Partial
-// ---------------------------------------------------------------------------
-Partial::Partial() {
-    _starting_frame = 0;
-    _partial_number = -1;
-}
-
-Partial::~Partial() {
-    _peaks.clear();
-}
-
-void Partial::add_peak(Peak* peak) {
-}
-
-int Partial::length() {
-    return _peaks.size();
-}
-
-int Partial::first_frame_number() {
-    return _starting_frame;
-}
-
-int Partial::last_frame_number() {
-    return _starting_frame + length();
-}
-
-Peak* Partial::peak(int peak_number) {
-    return _peaks[peak_number];
-}
-
-// ---------------------------------------------------------------------------
 // Frame
 // ---------------------------------------------------------------------------
 Frame::Frame() {

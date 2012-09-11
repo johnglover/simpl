@@ -127,8 +127,10 @@ int Frame::max_peaks() {
 void Frame::max_peaks(int new_max_peaks) {
     _max_peaks = new_max_peaks;
 
-    // TODO: potentially losing data here, should prevent or complain
-    if((int)_peaks.size() > _max_peaks) {
+    if(_num_peaks > _max_peaks) {
+        // losing data here, allow but warn
+        printf("Warning: max peaks changed to less than current number "
+               "of peaks, some existing data was lost.\n");
         _peaks.resize(_max_peaks);
     }
 }
@@ -164,8 +166,10 @@ int Frame::max_partials() {
 void Frame::max_partials(int new_max_partials) {
     _max_partials = new_max_partials;
 
-    // TODO: potentially losing data here, should prevent or complain
-    if((int)_partials.size() > _max_partials) {
+    if(_num_partials > _max_partials) {
+        // losing data here, allow but warn
+        printf("Warning: max partials changed to less than current number"
+               " of partials, some existing data was lost.\n");
         _partials.resize(_max_partials);
     }
 }

@@ -129,15 +129,11 @@ void SMSResidual::num_stochastic_coeffs(int new_num_stochastic_coeffs) {
     sms_initResidual(&_residual_params);
 }
 
-// int SMSResidual::stochastic_type() {
-//     return _residual_params.
-// }
-
-// void SMSResidual::stochastic_type(int new_stochastic_type) {
-// }
-
 void SMSResidual::residual_frame(Frame* frame) {
-    frame->clear();
+    frame->clear_peaks();
+    frame->clear_partials();
+    frame->clear_synth();
+
     _pd.find_peaks_in_frame(frame);
     _pt.update_partials(frame);
     _synth.synth_frame(frame);
@@ -157,4 +153,9 @@ void SMSResidual::synth_frame(Frame* frame) {
     sms_approxResidual(_hop_size, frame->residual(),
                        _hop_size, frame->synth_residual(),
                        &_residual_params);
+
+    // SMS stochastic component is currently a bit loud so scaled here
+    for(int i = 0; i < frame->synth_size(); i++) {
+        frame->synth_residual()[i] *= 0.2;
+    }
 }

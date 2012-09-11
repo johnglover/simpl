@@ -67,9 +67,6 @@ class SMSResidual : public Residual {
         int num_stochastic_coeffs();
         void num_stochastic_coeffs(int new_num_stochastic_coeffs);
 
-        // int stochastic_type();
-        // void stochastic_type(int new_stochastic_type);
-
         void residual_frame(Frame* frame);
         void synth_frame(Frame* frame);
 };

@@ -31,4 +31,3 @@ cdef extern from "../src/simpl/residual.h" namespace "simpl":
         c_SMSResidual()
         int num_stochastic_coeffs()
         void num_stochastic_coeffs(int new_num_stochastic_coeffs)
-        # int stochastic_type()

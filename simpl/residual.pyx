@@ -84,7 +84,3 @@ cdef class SMSResidual(Residual):
     property num_stochastic_coeffs:
         def __get__(self): return (<c_SMSResidual*>self.thisptr).num_stochastic_coeffs()
         def __set__(self, int i): (<c_SMSResidual*>self.thisptr).num_stochastic_coeffs(i)
-
-    # property stochastic_type:
-    #     def __get__(self): return (<c_SMSResidual*>self.thisptr).stochastic_type()
-    #     def __set__(self, int i): (<c_SMSResidual*>self.thisptr).stochastic_type(i)

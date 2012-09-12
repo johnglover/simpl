@@ -112,9 +112,10 @@ class SimplLorisPTAnalyzer : public Loris::Analyzer {
         Loris::PartialBuilder* _partial_builder;
 
     public:
-        SimplLorisPTAnalyzer();
+        SimplLorisPTAnalyzer(int max_partials);
         ~SimplLorisPTAnalyzer();
         Loris::Peaks peaks;
+        Loris::Peaks partials;
         void analyze();
 };
 
@@ -122,12 +123,11 @@ class SimplLorisPTAnalyzer : public Loris::Analyzer {
 class LorisPartialTracking : public PartialTracking {
     private:
         SimplLorisPTAnalyzer* _analyzer;
-        Loris::PartialList _partials;
-        void reset();
 
     public:
         LorisPartialTracking();
         ~LorisPartialTracking();
+        void reset();
         void max_partials(int new_max_partials);
         Peaks update_partials(Frame* frame);
 };

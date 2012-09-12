@@ -69,11 +69,14 @@ public:
     
     double amplitude( void ) const { return m_breakpoint.amplitude(); }
     double frequency( void ) const { return m_breakpoint.frequency(); }
+    double phase( void ) const { return m_breakpoint.phase(); }
     double bandwidth( void ) const { return m_breakpoint.bandwidth(); }
     
     //  --- mutation ---
     
     void setAmplitude( double x ) { m_breakpoint.setAmplitude(x); }
+    void setFrequency( double x ) { m_breakpoint.setFrequency(x); }
+    void setPhase( double x ) { m_breakpoint.setPhase(x); }
     void setBandwidth( double x ) { m_breakpoint.setBandwidth(x); }
     
     //  this REALLY shouldn't be in here...

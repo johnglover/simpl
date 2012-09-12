@@ -308,11 +308,12 @@ Peaks SndObjPartialTracking::update_partials(Frame* frame) {
 // ---------------------------------------------------------------------------
 // LorisPartialTracking
 // ---------------------------------------------------------------------------
-SimplLorisPTAnalyzer::SimplLorisPTAnalyzer() :
+SimplLorisPTAnalyzer::SimplLorisPTAnalyzer(int max_partials) :
     Loris::Analyzer(50, 100),
     _env(1.0) {
     buildFundamentalEnv(false);
-    _partial_builder = new Loris::PartialBuilder(m_freqDrift, _env);
+    _partial_builder = new Loris::PartialBuilder(m_freqDrift);
+    _partial_builder->maxPartials(max_partials);
 }
 
 SimplLorisPTAnalyzer::~SimplLorisPTAnalyzer() {
@@ -322,20 +323,16 @@ SimplLorisPTAnalyzer::~SimplLorisPTAnalyzer() {
 void SimplLorisPTAnalyzer::analyze() {
     m_ampEnvBuilder->reset();
     m_f0Builder->reset();
-    m_partials.clear();
 
-    //  estimate the amplitude in this frame:
+    // estimate the amplitude in this frame
     m_ampEnvBuilder->build(peaks, 0);
 
-    //  collect amplitudes and frequencies and try to
-    //  estimate the fundamental
+    // estimate the fundamental frequency
     m_f0Builder->build(peaks, 0);
 
-    //  form Partials from the extracted Breakpoints:
-    _partial_builder->buildPartials(peaks, 0);
-
-    //  unwarp the Partial frequency envelopes:
-    _partial_builder->finishBuilding(m_partials);
+    // form partials
+    _partial_builder->buildPartials(peaks);
+    partials = _partial_builder->getPartials();
 }
 
 // ---------------------------------------------------------------------------
@@ -355,7 +352,7 @@ void LorisPartialTracking::reset() {
     if(_analyzer) {
         delete _analyzer;
     }
-    _analyzer = new SimplLorisPTAnalyzer();
+    _analyzer = new SimplLorisPTAnalyzer(_max_partials);
 }
 
 void LorisPartialTracking::max_partials(int new_max_partials) {
@@ -377,25 +374,18 @@ Peaks LorisPartialTracking::update_partials(Frame* frame) {
                                                  frame->peak(i)->amplitude,
                                                  frame->peak(i)->bandwidth,
                                                  frame->peak(i)->phase);
-        _analyzer->peaks.push_back(Loris::SpectralPeak(1, bp));
+        _analyzer->peaks.push_back(Loris::SpectralPeak(0, bp));
     }
 
     _analyzer->analyze();
-    _partials = _analyzer->partials();
-    int num_partials = _partials.size();
+    int num_partials = _analyzer->partials.size();
 
-    for(Loris::PartialListIterator i = _partials.begin(); i != _partials.end(); ++i) {
+    for(int i = 0; i < num_partials; i++) {
         Peak* p = new Peak();
-        p->amplitude =  i->amplitudeAt(1);
-        p->frequency =  i->frequencyAt(1);
-        p->phase =  i->phaseAt(1);
-        p->bandwidth =  i->bandwidthAt(1);
-        peaks.push_back(p);
-        frame->add_partial(p);
-    }
-
-    for(int i = num_partials; i < _max_partials; i++) {
-        Peak* p = new Peak();
+        p->amplitude =  _analyzer->partials[i].amplitude();
+        p->frequency =  _analyzer->partials[i].frequency();
+        p->phase =  _analyzer->partials[i].phase();
+        p->bandwidth =  _analyzer->partials[i].bandwidth();
         peaks.push_back(p);
         frame->add_partial(p);
     }

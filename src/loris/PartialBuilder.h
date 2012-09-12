@@ -94,6 +94,7 @@ public:
     //	be un-normalized by calling finishBuilding at the end of the building
     //  process.
 	void buildPartials( Peaks & peaks, double frameTime );
+	void buildPartials( Peaks & peaks );
 
     //  finishBuilding
     //
@@ -104,16 +105,38 @@ public:
     //  supplied PartialList.
 	void finishBuilding( PartialList & product );
 
+    // getPartials
+    //
+    // Return partials
+	void getPartials( PartialList & product );
+	Peaks & getPartials();
+
+    // maxPartials
+    //
+    // Change the maximum number of partials per frame
+    void maxPartials(int max);
+
+    // reset
+    //
+    // Reset the current partial list
+    void reset();
+
 private:
 
 // --- auxiliary member functions ---
 
     double freq_distance( const Partial & partial, const SpectralPeak & pk );
+    double freq_distance( const SpectralPeak & pk1, const SpectralPeak & pk2 );
 
     bool better_match( const Partial & part, const SpectralPeak & pk1,
 		   	           const SpectralPeak & pk2 );
     bool better_match( const Partial & part1, 
 	  		           const Partial & part2, const SpectralPeak & pk );                       
+    bool better_match( const SpectralPeak & pk1, const SpectralPeak & pk2,
+		   	           const SpectralPeak & pk3 );
+
+    int getNextActive(int start);
+    int getNextInactive(int start);
                        
                        
 // --- collected partials ---
@@ -122,8 +145,11 @@ private:
 
 // --- builder state variables ---
 		
+    std::vector<bool> mActivePartials;
+    std::vector<bool> mMatchedPartials;
 	PartialPtrs mEligiblePartials;
     PartialPtrs mNewlyEligible;                 // 	keep track of eligible partials here
+    Peaks mCurrentPartials;
 
 // --- parameters ---
     	

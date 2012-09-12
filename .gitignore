@@ -3,6 +3,8 @@ Icon?
 Thumbs.db
 *.swp
 *.wav
+*.aiff
+*.sdif
 
 # Distutils/pip files
 build

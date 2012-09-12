@@ -51,10 +51,7 @@ void Synthesis::synth_frame(Frame* frame) {
 
 Frames Synthesis::synth(Frames frames) {
     for(int i = 0; i < frames.size(); i++) {
-        sample* synth_audio = new sample[_frame_size];
-        memset(synth_audio, 0.0, sizeof(sample) * _frame_size);
-        frames[i]->synth(synth_audio);
-        frames[i]->synth_size(_frame_size);
+        frames[i]->synth_size(_hop_size);
         synth_frame(frames[i]);
     }
     return frames;

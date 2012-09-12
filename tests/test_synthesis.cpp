@@ -39,8 +39,12 @@ protected:
         frames = synth->synth(frames);
 
         for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-            CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+            // if Loris thinPeaks is used, final frame will have no peaks
+            // so don't check it
+            if(i < frames.size() - 1) {
+                CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
+                CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+            }
 
             double energy = 0.f;
             for(int j = 0; j < synth->hop_size(); j++) {

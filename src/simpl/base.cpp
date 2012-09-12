@@ -63,20 +63,27 @@ void Frame::init() {
 
 void Frame::create_arrays() {
     _audio = new sample[_size];
-    _synth = new sample[_synth_size];
     _residual = new sample[_size];
-    _synth_residual = new sample[_synth_size];
-
     memset(_audio, 0.0, sizeof(sample) * _size);
-    memset(_synth, 0.0, sizeof(sample) * _synth_size);
     memset(_residual, 0.0, sizeof(sample) * _size);
-    memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
+    create_synth_arrays();
 }
 
 void Frame::destroy_arrays() {
     delete [] _audio;
-    delete [] _synth;
     delete [] _residual;
+    destroy_synth_arrays();
+}
+
+void Frame::create_synth_arrays() {
+    _synth = new sample[_synth_size];
+    _synth_residual = new sample[_synth_size];
+    memset(_synth, 0.0, sizeof(sample) * _synth_size);
+    memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
+}
+
+void Frame::destroy_synth_arrays() {
+    delete [] _synth;
     delete [] _synth_residual;
 }
 
@@ -214,8 +221,8 @@ void Frame::synth_size(int new_size) {
     _synth_size = new_size;
 
     if(_alloc_memory) {
-        destroy_arrays();
-        create_arrays();
+        destroy_synth_arrays();
+        create_synth_arrays();
     }
 }
 

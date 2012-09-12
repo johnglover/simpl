@@ -60,6 +60,8 @@ class Frame {
         bool _alloc_memory;
         void create_arrays();
         void destroy_arrays();
+        void create_synth_arrays();
+        void destroy_synth_arrays();
 
     public:
         Frame();

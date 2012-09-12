@@ -44,6 +44,7 @@ cdef class Synthesis:
         cdef np.ndarray[dtype_t, ndim=1] output = np.zeros(len(frames) * size)
         for i in range(len(frames)):
             frames[i].synth = np.zeros(size)
+            frames[i].synth_size = size
             self.synth_frame(frames[i])
             output[i * size:(i + 1) * size] = frames[i].synth
         return output

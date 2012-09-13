@@ -65,12 +65,22 @@ Frames Residual::synth(Frames& frames) {
 
 Frames Residual::synth(int original_size, sample* original) {
     Frames frames;
+    unsigned int pos = 0;
 
-    for(int i = 0; i <= original_size - _hop_size; i += _hop_size) {
-        Frame* f = new Frame(_hop_size, true);
-        f->audio(&original[i]);
+    while(pos <= original_size - _hop_size) {
+        Frame* f = new Frame(_frame_size, true);
+
+        if((int)pos <= (original_size - _frame_size)) {
+            f->audio(&(original[pos]), _frame_size);
+        }
+        else {
+            f->audio(&(original[pos]), original_size - pos);
+        }
+
         synth_frame(f);
         frames.push_back(f);
+
+        pos += _hop_size;
     }
 
     return frames;
@@ -88,8 +98,6 @@ SMSResidual::SMSResidual() {
     _residual_params.hopSize = _hop_size;
     sms_initResidual(&_residual_params);
 
-    _temp_synth = new sample[_hop_size];
-
     _pd.hop_size(_hop_size);
     _pd.realtime(1);
     _synth.hop_size(_hop_size);
@@ -99,11 +107,11 @@ SMSResidual::SMSResidual() {
 SMSResidual::~SMSResidual() {
     sms_freeResidual(&_residual_params);
     sms_free();
+}
 
-    if(_temp_synth) {
-        delete[] _temp_synth;
-    }
-    _temp_synth = NULL;
+void SMSResidual::frame_size(int new_frame_size) {
+    _frame_size = new_frame_size;
+    _pd.frame_size(_frame_size);
 }
 
 void SMSResidual::hop_size(int new_hop_size) {
@@ -113,10 +121,7 @@ void SMSResidual::hop_size(int new_hop_size) {
     _residual_params.hopSize = _hop_size;
     sms_initResidual(&_residual_params);
 
-    if(_temp_synth) {
-        delete[] _temp_synth;
-    }
-    _temp_synth = new sample[_hop_size];
+    _pd.hop_size(_hop_size);
 }
 
 int SMSResidual::num_stochastic_coeffs() {
@@ -138,11 +143,11 @@ void SMSResidual::residual_frame(Frame* frame) {
     _pt.update_partials(frame);
     _synth.synth_frame(frame);
 
-    sms_findResidual(frame->size(), frame->synth(),
-                     frame->size(), frame->audio(),
+    sms_findResidual(_hop_size, frame->synth(),
+                     _hop_size, &(frame->audio()[frame->size() - _hop_size]),
                      &_residual_params);
 
-    for(int i = 0; i < frame->size(); i++) {
+    for(int i = 0; i < frame->synth_size(); i++) {
         frame->residual()[i] = _residual_params.residual[i];
     }
 }

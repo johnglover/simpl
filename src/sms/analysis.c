@@ -1,35 +1,35 @@
-/* 
+/*
  * Copyright (c) 2008 MUSIC TECHNOLOGY GROUP (MTG)
- *                         UNIVERSITAT POMPEU FABRA 
- * 
- * 
+ *                         UNIVERSITAT POMPEU FABRA
+ *
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 
 /*! \file analysis.c
  * \brief main sms analysis routines
- * 
+ *
  * the analysis routine here calls all necessary functions to perform the complete
- * SMS analysis, once the desired analysis parameters are set in SMS_AnalParams. 
+ * SMS analysis, once the desired analysis parameters are set in SMS_AnalParams.
  */
 
 #include "sms.h"
 
 /*! \brief  maximum size for magnitude spectrum */
-#define SMS_MAX_SPEC 8192  
+#define SMS_MAX_SPEC 8192
 
 /*! \brief compute spectrum, find peaks, and fundamental of one frame
  *
@@ -37,19 +37,34 @@
  *
  * \param iCurrentFrame          frame number to be computed
  * \param pAnalParams     structure of analysis parameters
- * \param fRefFundamental      reference fundamental 
+ * \param fRefFundamental      reference fundamental
  */
 void sms_analyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, sfloat fRefFundamental)
 {
-    int i, iFrame;
     SMS_AnalFrame *pCurrentFrame = pAnalParams->ppFrames[iCurrentFrame];
-    int iSoundLoc = pCurrentFrame->iFrameSample -((pCurrentFrame->iFrameSize + 1) >> 1) + 1;
-    sfloat *pFData = &(pAnalParams->soundBuffer.pFBuffer[iSoundLoc - pAnalParams->soundBuffer.iMarker]);
+    sfloat *pFData;
+    int i, iFrame, sizeMag;
+    int sizeWindow =  pCurrentFrame->iFrameSize;
+
+    if(pAnalParams->realtime == 0)
+    {
+        int iSoundLoc = pCurrentFrame->iFrameSample -
+            ((pCurrentFrame->iFrameSize + 1) >> 1) + 1;
+        pFData = &(pAnalParams->soundBuffer.pFBuffer[
+            iSoundLoc - pAnalParams->soundBuffer.iMarker
+        ]);
+    }
+    else
+    {
+        pFData = &(pAnalParams->soundBuffer.pFBuffer[
+            pAnalParams->soundBuffer.sizeBuffer - sizeWindow
+        ]);
+    }
 
     /* TODO: this doesn't have to be done every time */
-    int sizeWindow =  pCurrentFrame->iFrameSize;
-    int sizeMag = sms_power2(sizeWindow);
-    sms_getWindow(sizeWindow, pAnalParams->spectrumWindow, pAnalParams->iWindowType);
+    sizeMag = sms_power2(sizeWindow);
+    sms_getWindow(sizeWindow, pAnalParams->spectrumWindow,
+                  pAnalParams->iWindowType);
     sms_scaleWindow(sizeWindow, pAnalParams->spectrumWindow);
 
     /* compute the magnitude and (zero-windowed) phase spectra */
@@ -69,12 +84,17 @@ void sms_analyzeFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, sfloat fRe
 
     /* find a reference harmonic */
     if(pCurrentFrame->nPeaks > 0 &&
-       (pAnalParams->iFormat == SMS_FORMAT_H || pAnalParams->iFormat == SMS_FORMAT_HP))
-        pCurrentFrame->fFundamental = sms_harmDetection(pAnalParams->maxPeaks, pCurrentFrame->pSpectralPeaks,
-                                                        fRefFundamental, pAnalParams->iRefHarmonic,
-                                                        pAnalParams->fLowestFundamental, pAnalParams->fHighestFundamental,
-                                                        pAnalParams->iSoundType, pAnalParams->fMinRefHarmMag,
-                                                        pAnalParams->fRefHarmMagDiffFromMax);
+       (pAnalParams->iFormat == SMS_FORMAT_H ||
+        pAnalParams->iFormat == SMS_FORMAT_HP))
+    {
+        pCurrentFrame->fFundamental = sms_harmDetection(
+            pAnalParams->maxPeaks, pCurrentFrame->pSpectralPeaks,
+            fRefFundamental, pAnalParams->iRefHarmonic,
+            pAnalParams->fLowestFundamental, pAnalParams->fHighestFundamental,
+            pAnalParams->iSoundType, pAnalParams->fMinRefHarmMag,
+            pAnalParams->fRefHarmMagDiffFromMax
+        );
+    }
 }
 
 /*! \brief re-analyze the previous frames if necessary
@@ -139,7 +159,7 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
     sfloat fRefFundamental = 0;   /* reference fundamental for current frame */
     int i, iError, iExtraSamples; /* samples used for next analysis frame */
     SMS_AnalFrame *pTmpAnalFrame;
-    
+
     /* set initial analysis-window size */
     if(pAnalParams->windowSize == 0)
         pAnalParams->windowSize = pAnalParams->iDefaultSizeWindow;
@@ -159,6 +179,13 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
 
     if(pAnalParams->ppFrames[iCurrentFrame]->iStatus == SMS_FRAME_READY)
     {
+        if(pAnalParams->realtime == 1)
+        {
+            pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = sizeWaveform;
+            pAnalParams->windowSize = sizeWaveform;
+            pAnalParams->sizeNextRead = sizeWaveform;
+        }
+
         sfloat fAvgDev = sms_fundDeviation(pAnalParams, iCurrentFrame - 1);
 
         /* if single note use the default fundamental as reference */
@@ -173,18 +200,12 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
         /* compute spectrum, find peaks, and find fundamental of frame */
         sms_analyzeFrame(iCurrentFrame, pAnalParams, fRefFundamental);
 
-        /* set the size of the next analysis window */
-        /* if(pAnalParams->ppFrames[iCurrentFrame]->fFundamental > 0 && */
-        /*     pAnalParams->iSoundType != SMS_SOUND_TYPE_NOTE) */
-        /* { */
-        /*     pAnalParams->windowSize = sms_sizeNextWindow(iCurrentFrame, pAnalParams); */
-        /* } */
-
+        /* set the size of the next analysis window if not in real-time mode */
         if(pAnalParams->realtime == 0)
         {
             /* set the size of the next analysis window */
             if(pAnalParams->ppFrames[iCurrentFrame]->fFundamental > 0 &&
-                pAnalParams->iSoundType != SMS_SOUND_TYPE_NOTE) 
+                pAnalParams->iSoundType != SMS_SOUND_TYPE_NOTE)
             {
                 pAnalParams->windowSize = sms_sizeNextWindow(iCurrentFrame, pAnalParams);
             }
@@ -199,11 +220,6 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
             pAnalParams->sizeNextRead = MAX(0, (pAnalParams->windowSize+1)/2 - iExtraSamples);
             ReAnalyzeFrame(iCurrentFrame, pAnalParams);
         }
-        else
-        {
-            pAnalParams->windowSize = sizeWaveform;
-            pAnalParams->sizeNextRead = sizeWaveform;
-        }
 
         /* save peaks */
         pSpectralPeaks->nPeaksFound = pAnalParams->ppFrames[iCurrentFrame]->nPeaks;
@@ -213,11 +229,11 @@ int sms_findPeaks(int sizeWaveform, sfloat *pWaveform, SMS_AnalParams *pAnalPara
         {
             if(i < pSpectralPeaks->nPeaksFound)
             {
-                pSpectralPeaks->pSpectralPeaks[i].fMag = 
+                pSpectralPeaks->pSpectralPeaks[i].fMag =
                     sms_dBToMag(pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fMag);
-                pSpectralPeaks->pSpectralPeaks[i].fFreq = 
+                pSpectralPeaks->pSpectralPeaks[i].fFreq =
                     pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fFreq;
-                pSpectralPeaks->pSpectralPeaks[i].fPhase = 
+                pSpectralPeaks->pSpectralPeaks[i].fPhase =
                     pAnalParams->ppFrames[iCurrentFrame]->pSpectralPeaks[i].fPhase;
             }
             else
@@ -503,13 +519,13 @@ int sms_analyze(int sizeWaveform, sfloat *pWaveform, SMS_Data *pSmsData, SMS_Ana
                 sms_filterHighPass(sizeData, pAnalParams->residualParams.residual, pAnalParams->iSamplingRate);
 
                 /* approximate residual */
-                sms_stocAnalysis(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.fftWindow, 
+                sms_stocAnalysis(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.fftWindow,
                                  pSmsData, pAnalParams);
             }
             else if(pAnalParams->iStochasticType == SMS_STOC_IFFT)
             {
                 int sizeMag = sms_power2(sizeData >> 1);
-                sms_spectrum(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.fftWindow, 
+                sms_spectrum(sizeData, pAnalParams->residualParams.residual, pAnalParams->residualParams.fftWindow,
                              sizeMag, pSmsData->pFStocCoeff, pSmsData->pResPhase,
                              pAnalParams->fftBuffer);
             }

@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2008 MUSIC TECHNOLOGY GROUP (MTG)
- *                         UNIVERSITAT POMPEU FABRA 
- * 
- * 
+ *                         UNIVERSITAT POMPEU FABRA
+ *
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  */
 /*! \file sms.c
  * \brief initialization, free, and debug functions
@@ -32,7 +32,7 @@ static char error_message[256];
 static int error_status = 0;
 static sfloat mag_thresh = .00001; /*!< magnitude threshold for db conversion (-100db)*/
 static sfloat inv_mag_thresh = 100000.; /*!< inv(.00001) */
-static int initIsDone = 0; /* \todo is this variable necessary? */ 
+static int initIsDone = 0; /* \todo is this variable necessary? */
 
 #define SIZE_TABLES 4096
 #define HALF_MAX 1073741823.5  /*!< half the max of a 32-bit word */
@@ -49,7 +49,7 @@ static int initIsDone = 0; /* \todo is this variable necessary? */
  *
  * \return error code \see SMS_MALLOC or SMS_OK in SMS_ERRORS
  */
-int sms_init(void) 
+int sms_init(void)
 {
     if (!initIsDone)
     {
@@ -84,17 +84,17 @@ void sms_free()
     sms_clearSinc();
 }
 
-/*! \brief give default values to an SMS_AnalParams struct 
- * 
+/*! \brief give default values to an SMS_AnalParams struct
+ *
  * This will initialize an SMS_AnalParams with values that work
  * for common analyses.  It is useful to start with and then
  * adjust the parameters manually to fit a particular sound
  *
- * Certain things are hard coded in here that will have to 
+ * Certain things are hard coded in here that will have to
  * be updated later (i.e. samplerate), so it is best to call this
- * function first, then fill whatever parameters need to be 
+ * function first, then fill whatever parameters need to be
  * adjusted.
- * 
+ *
  * \param pAnalParams    pointer to analysis data structure
  */
 void sms_initAnalParams(SMS_AnalParams *pAnalParams)
@@ -177,7 +177,7 @@ void sms_initAnalParams(SMS_AnalParams *pAnalParams)
 }
 
 /*! \brief initialize analysis data structure's arrays
- * 
+ *
  *  based on the SMS_AnalParams current settings, this function will
  *  initialize the sound, synth, and fft arrays. It is necessary before analysis.
  *  there can be multple SMS_AnalParams at the same time
@@ -197,7 +197,7 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
                                  (sfloat) pAnalParams->iFrameRate);
 
     /* set the default size window to an odd length */
-    pAnalParams->iDefaultSizeWindow = 
+    pAnalParams->iDefaultSizeWindow =
         (int)((pAnalParams->iSamplingRate / pAnalParams->fDefaultFundamental) *
                pAnalParams->fSizeWindow / 2) * 2 + 1;
 
@@ -277,7 +277,7 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
         pAnalParams->pFrames[i].iFrameSample = 0;
         pAnalParams->pFrames[i].iFrameSize = 0;
         pAnalParams->pFrames[i].iFrameNum = 0;
-        pAnalParams->pFrames[i].pSpectralPeaks = 
+        pAnalParams->pFrames[i].pSpectralPeaks =
             (SMS_Peak *)malloc(pAnalParams->maxPeaks * sizeof(SMS_Peak));
         if((pAnalParams->pFrames[i]).pSpectralPeaks == NULL)
         {
@@ -286,7 +286,7 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
         }
         (pAnalParams->pFrames[i].deterministic).nTracks = pAnalParams->nGuides;
 
-        (pAnalParams->pFrames[i].deterministic).pFSinFreq = 
+        (pAnalParams->pFrames[i].deterministic).pFSinFreq =
             (sfloat *)calloc(pAnalParams->nGuides, sizeof(sfloat));
         if((pAnalParams->pFrames[i].deterministic).pFSinFreq == NULL)
         {
@@ -373,8 +373,8 @@ int sms_initAnalysis(SMS_AnalParams *pAnalParams)
     return 0;
 }
 
-/*! \brief give default values to an SMS_SynthParams struct 
- * 
+/*! \brief give default values to an SMS_SynthParams struct
+ *
  * This will initialize an SMS_SynthParams with values that work
  * for common analyses.  It is useful to start with and then
  * adjust the parameters manually to fit a particular sound
@@ -404,7 +404,7 @@ void sms_initSynthParams(SMS_SynthParams *synthParams)
 }
 
 /*! \brief initialize synthesis data structure's arrays
- * 
+ *
  *  Initialize the synthesis and fft arrays. It is necessary before synthesis.
  *  there can be multple SMS_SynthParams at the same time
  *  This function also sets some initial values that will create a sane synthesis
@@ -438,7 +438,7 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
     pSynthParams->pFDetWindow = (sfloat *)calloc(sizeFft, sizeof(sfloat));
     sms_getWindow(sizeFft, pSynthParams->pFDetWindow, SMS_WIN_IFFT);
 
-    /* allocate memory for analysis data - size of original hopsize 
+    /* allocate memory for analysis data - size of original hopsize
      * previous frame to interpolate from */
     /* \todo why is stoch coeff + 1? */
     sms_allocFrame(&pSynthParams->prevFrame, pSynthParams->nTracks,
@@ -461,8 +461,8 @@ int sms_initSynth(SMS_SynthParams *pSynthParams)
     return SMS_OK;
 }
 
-/*! \brief give default values to an SMS_ResidualParams struct 
- * 
+/*! \brief give default values to an SMS_ResidualParams struct
+ *
  * \param residualParams pointer to residual data structure
  */
 void sms_initResidualParams(SMS_ResidualParams *residualParams)
@@ -492,7 +492,7 @@ void sms_initResidualParams(SMS_ResidualParams *residualParams)
 }
 
 /*! \brief initialize residual data structure
- * 
+ *
  * \param residualParams pointer to synthesis paramaters
  * \return 0 on success, -1 on error
  */
@@ -581,7 +581,7 @@ int sms_initResidual(SMS_ResidualParams *residualParams)
 }
 
 /*! \brief free residual data
- * 
+ *
  * frees all the memory allocated to an SMS_ResidualParams by
  * sms_initResidual
  *
@@ -617,7 +617,7 @@ void sms_freeResidual(SMS_ResidualParams *residualParams)
 }
 
 /*! \brief free analysis data
- * 
+ *
  * frees all the memory allocated to an SMS_AnalParams by
  * sms_initAnalysis
  *
@@ -671,7 +671,7 @@ void sms_freeAnalysis(SMS_AnalParams *pAnalParams)
 }
 
 /*! \brief free analysis data
- * 
+ *
  * frees all the memory allocated to an SMS_SynthParams by
  * sms_initSynthesis
  *
@@ -682,7 +682,7 @@ void sms_freeAnalysis(SMS_AnalParams *pAnalParams)
 void sms_freeSynth(SMS_SynthParams *pSynthParams)
 {
     if(pSynthParams->pFStocWindow)
-        free(pSynthParams->pFStocWindow);        
+        free(pSynthParams->pFStocWindow);
     if(pSynthParams->pFDetWindow)
         free(pSynthParams->pFDetWindow);
     if(pSynthParams->pSynthBuff)
@@ -736,9 +736,9 @@ void sms_freeSpectralPeaks(SMS_SpectralPeaks* peaks)
     peaks->nPeaksFound = 0;
 }
 
-/*! \brief set window size for next frame 
+/*! \brief set window size for next frame
  *
- * adjusts the next window size to fit the currently detected fundamental 
+ * adjusts the next window size to fit the currently detected fundamental
  * frequency, or resets to a default window size if unstable.
  *
  * \param iCurrentFrame         number of current frame
@@ -761,7 +761,7 @@ int sms_sizeNextWindow(int iCurrentFrame, SMS_AnalParams *pAnalParams)
 
     if(sizeWindow > SMS_MAX_WINDOW)
     {
-        fprintf(stderr, "sms_sizeNextWindow error: sizeWindow (%d) too big, set to %d\n", sizeWindow, 
+        fprintf(stderr, "sms_sizeNextWindow error: sizeWindow (%d) too big, set to %d\n", sizeWindow,
                 SMS_MAX_WINDOW);
         sizeWindow = SMS_MAX_WINDOW;
     }
@@ -813,17 +813,17 @@ int sms_clearAnalysisFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams)
  *
  * \param iCurrentFrame            frame number of current frame in buffer
  * \param pAnalParams             analysis parameters
- * \param sizeWindow               size of analysis window 
+ * \param sizeWindow               size of analysis window
  * \return -1 on error \todo make this return void
  */
 int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow)
 {
     /* clear deterministic data */
-    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinFreq, 0, 
+    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinFreq, 0,
            sizeof(sfloat) * pAnalParams->nGuides);
-    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp, 0, 
+    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinAmp, 0,
            sizeof(sfloat) * pAnalParams->nGuides);
-    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinPha, 0, 
+    memset((sfloat *)pAnalParams->ppFrames[iCurrentFrame]->deterministic.pFSinPha, 0,
            sizeof(sfloat) * pAnalParams->nGuides);
 
     /* clear peaks */
@@ -838,19 +838,22 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
     pAnalParams->ppFrames[iCurrentFrame]->nPeaks = 0;
     pAnalParams->ppFrames[iCurrentFrame]->fFundamental = 0;
 
-    pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =  
-        pAnalParams->ppFrames[iCurrentFrame - 1]->iFrameNum + 1;
-
-    /* if first frame set center of data around 0 */
-    if(pAnalParams->ppFrames[iCurrentFrame]->iFrameNum == 1)
-        pAnalParams->ppFrames[iCurrentFrame]->iFrameSample = 0;
-    /* if not, increment center of data by sizeHop */
-    else
-        pAnalParams->ppFrames[iCurrentFrame]->iFrameSample = 
-            pAnalParams->ppFrames[iCurrentFrame-1]->iFrameSample + pAnalParams->sizeHop;
-
     if(pAnalParams->realtime == 0)
     {
+        pAnalParams->ppFrames[iCurrentFrame]->iFrameNum =
+            pAnalParams->ppFrames[iCurrentFrame - 1]->iFrameNum + 1;
+
+        /* if first frame set center of data around 0 */
+        if(pAnalParams->ppFrames[iCurrentFrame]->iFrameNum == 1)
+        {
+            pAnalParams->ppFrames[iCurrentFrame]->iFrameSample = 0;
+        }
+        else /* if not, increment center of data by sizeHop */
+        {
+            pAnalParams->ppFrames[iCurrentFrame]->iFrameSample =
+                pAnalParams->ppFrames[iCurrentFrame-1]->iFrameSample + pAnalParams->sizeHop;
+        }
+
         pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = sizeWindow;
 
         /* check for end of sound */
@@ -869,6 +872,8 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
     }
     else
     {
+        pAnalParams->ppFrames[iCurrentFrame]->iFrameNum = 1;
+        pAnalParams->ppFrames[iCurrentFrame]->iFrameSample = 0;
         pAnalParams->ppFrames[iCurrentFrame]->iFrameSize = pAnalParams->iSamplingRate / pAnalParams->iFrameRate;
         pAnalParams->ppFrames[iCurrentFrame]->iStatus = SMS_FRAME_READY;
     }
@@ -879,7 +884,7 @@ int sms_initFrame(int iCurrentFrame, SMS_AnalParams *pAnalParams, int sizeWindow
 /*! \brief get deviation from average fundamental
  *\
  * \param pAnalParams             pointer to analysis params
- * \param iCurrentFrame        number of current frame 
+ * \param iCurrentFrame        number of current frame
  * \return deviation value or -1 if really off
  */
 sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
@@ -912,14 +917,14 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
 }
 
 
-/*! \brief function to create the debug file 
+/*! \brief function to create the debug file
  *
  * \param pAnalParams             pointer to analysis params
- * \return error value \see SMS_ERRORS 
+ * \return error value \see SMS_ERRORS
  */
 int sms_createDebugFile(SMS_AnalParams *pAnalParams)
 {
-    if((pDebug = fopen(pChDebugFile, "w+")) == NULL) 
+    if((pDebug = fopen(pChDebugFile, "w+")) == NULL)
     {
         fprintf(stderr, "Cannot open debugfile: %s\n", pChDebugFile);
         return SMS_WRERR;
@@ -930,15 +935,15 @@ int sms_createDebugFile(SMS_AnalParams *pAnalParams)
 /*! \brief  function to write to the debug file
  *
  * writes three arrays of equal size to a debug text
- * file ("./debug.txt"). There are three arrays for the 
- * frequency, magnitude, phase sets. 
- * 
+ * file ("./debug.txt"). There are three arrays for the
+ * frequency, magnitude, phase sets.
+ *
  * \param pFBuffer1 pointer to array 1
  * \param pFBuffer2 pointer to array 2
  * \param pFBuffer3 pointer to array 3
  * \param sizeBuffer the size of the buffers
  */
-void sms_writeDebugData(sfloat *pFBuffer1, sfloat *pFBuffer2, 
+void sms_writeDebugData(sfloat *pFBuffer1, sfloat *pFBuffer2,
                         sfloat *pFBuffer3, int sizeBuffer)
 {
     int i;
@@ -987,7 +992,7 @@ sfloat sms_dBToMag(sfloat x)
         /*return pow(10.0, x*0.05);*/
 }
 
-/*! \brief convert an array from magnitude to decibel 
+/*! \brief convert an array from magnitude to decibel
  *
  * Depends on a  linear threshold that indicates the bottom end
  * of the dB scale (magnutdes at this value will convert to zero).
@@ -1027,18 +1032,18 @@ void sms_arrayDBToMag(int sizeArray, sfloat *pArray)
 void sms_setMagThresh(sfloat x)
 {
     /* limit threshold to -100db */
-    if(x < 0.00001) 
+    if(x < 0.00001)
         mag_thresh = 0.00001;
     else
         mag_thresh = x;
     inv_mag_thresh = 1. / mag_thresh;
 }
 
-/*! \brief get a string containing information about the error code 
+/*! \brief get a string containing information about the error code
  *
  * \param pErrorMessage pointer to error message string
  */
-void sms_error(char *pErrorMessage) 
+void sms_error(char *pErrorMessage)
 {
     strncpy(error_message, pErrorMessage, 256);
     error_status = -1;
@@ -1048,16 +1053,16 @@ void sms_error(char *pErrorMessage)
  *
  * \return  -1 if there is an error, 0 if ok
  */
-int sms_errorCheck() 
+int sms_errorCheck()
 {
     return error_status;
 }
 
-/*! \brief get a string containing information about the last error 
+/*! \brief get a string containing information about the last error
  *
  * \return  pointer to a char string, or NULL if no error
  */
-char* sms_errorString() 
+char* sms_errorString()
 {
     if (error_status)
     {
@@ -1074,7 +1079,7 @@ char* sms_errorString()
 sfloat sms_random()
 {
 #ifdef MERSENNE_TWISTER
-    return genrand_real1(); 
+    return genrand_real1();
 #else
     return (sfloat)(random() * 2 * INV_HALF_MAX);
 #endif
@@ -1110,7 +1115,7 @@ int sms_power2(int n)
 
     if(1<<p == N) /* n was a power of 2 */
     {
-        return N; 
+        return N;
     }
     else  /* make the new value larger than n */
     {

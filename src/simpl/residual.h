@@ -31,7 +31,7 @@ class Residual {
     public:
         Residual();
         int frame_size();
-        void frame_size(int new_frame_size);
+        virtual void frame_size(int new_frame_size);
         int hop_size();
         virtual void hop_size(int new_hop_size);
         int sampling_rate();
@@ -53,7 +53,6 @@ class Residual {
 // ---------------------------------------------------------------------------
 class SMSResidual : public Residual {
     private:
-        sample* _temp_synth;
         SMSResidualParams _residual_params;
 
         SMSPeakDetection _pd;
@@ -63,6 +62,7 @@ class SMSResidual : public Residual {
     public:
         SMSResidual();
         ~SMSResidual();
+        void frame_size(int new_frame_size);
         void hop_size(int new_hop_size);
         int num_stochastic_coeffs();
         void num_stochastic_coeffs(int new_num_stochastic_coeffs);

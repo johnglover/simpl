@@ -187,7 +187,7 @@ SMSPeakDetection::SMSPeakDetection() {
     _analysis_params.preEmphasis = 0;
     _analysis_params.realtime = 0;
     sms_initAnalysis(&_analysis_params);
-    _analysis_params.iSizeSound = _hop_size;
+    _analysis_params.iSizeSound = _frame_size;
 
     sms_initSpectralPeaks(&_peaks, _max_peaks);
 
@@ -209,12 +209,16 @@ int SMSPeakDetection::next_frame_size() {
     return _analysis_params.sizeNextRead;
 }
 
+void SMSPeakDetection::frame_size(int new_frame_size) {
+    _frame_size = new_frame_size;
+    _analysis_params.iSizeSound = _hop_size;
+}
+
 void SMSPeakDetection::hop_size(int new_hop_size) {
     _hop_size = new_hop_size;
     sms_freeAnalysis(&_analysis_params);
     _analysis_params.iFrameRate = _sampling_rate / _hop_size;
     sms_initAnalysis(&_analysis_params);
-    _analysis_params.iSizeSound = _hop_size;
 }
 
 void SMSPeakDetection::max_peaks(int new_max_peaks) {

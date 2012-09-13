@@ -94,6 +94,7 @@ class SMSPeakDetection : public PeakDetection {
         SMSPeakDetection();
         ~SMSPeakDetection();
         int next_frame_size();
+        void frame_size(int new_frame_size);
         void hop_size(int new_hop_size);
         void max_peaks(int new_max_peaks);
         int realtime();

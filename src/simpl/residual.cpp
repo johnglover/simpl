@@ -122,6 +122,7 @@ void SMSResidual::hop_size(int new_hop_size) {
     sms_initResidual(&_residual_params);
 
     _pd.hop_size(_hop_size);
+    _synth.hop_size(_hop_size);
 }
 
 int SMSResidual::num_stochastic_coeffs() {

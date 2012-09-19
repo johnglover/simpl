@@ -29,7 +29,11 @@
 #ifndef _TABLE_H 
 #define _TABLE_H
 #include <math.h>
+
+#ifndef TWOPI
 const double TWOPI = 8.*atan(1.);
+#endif
+
 class Table {
   
  protected:

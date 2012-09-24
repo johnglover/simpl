@@ -27,7 +27,7 @@ def _pysms_analysis_params(sampling_rate):
     analysis_params.iFrameRate = sampling_rate / hop_size
     analysis_params.iWindowType = pysms.SMS_WIN_HAMMING
     analysis_params.fHighestFreq = 20000
-    analysis_params.iFormat = pysms.SMS_FORMAT_HP
+    analysis_params.iFormat = pysms.SMS_FORMAT_IHP
     analysis_params.nTracks = max_peaks
     analysis_params.peakParams.iMaxPeaks = max_peaks
     analysis_params.nGuides = max_peaks

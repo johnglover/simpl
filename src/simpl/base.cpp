@@ -98,12 +98,12 @@ void Frame::clear() {
 }
 
 void Frame::clear_peaks() {
-    _peaks.clear();
+    _peaks.assign(_max_peaks, NULL);
     _num_peaks = 0;
 }
 
 void Frame::clear_partials() {
-    _partials.clear();
+    _partials.assign(_max_peaks, NULL);
     _num_partials = 0;
 }
 
@@ -144,6 +144,13 @@ void Frame::max_peaks(int new_max_peaks) {
 }
 
 void Frame::add_peak(Peak* peak) {
+    if(_num_peaks >= _max_peaks) {
+        printf("Warning: attempted to add more than the specified"
+               " maximum number of peaks (%d) to a frame, ignoring.\n",
+               _max_peaks);
+        return;
+    }
+
     _peaks[_num_peaks] = peak;
     _num_peaks++;
 }
@@ -184,6 +191,13 @@ void Frame::max_partials(int new_max_partials) {
 }
 
 void Frame::add_partial(Peak* peak) {
+    if(_num_partials >= _max_partials) {
+        printf("Warning: attempted to add more than the specified"
+               " maximum number of partials (%d) to a frame, ignoring.\n",
+               _max_partials);
+        return;
+    }
+
     _partials[_num_partials] = peak;
     _num_partials++;
 }

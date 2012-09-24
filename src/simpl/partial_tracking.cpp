@@ -92,11 +92,12 @@ SMSPartialTracking::SMSPartialTracking() {
     _analysis_params.analDelay = 0;
     _analysis_params.minGoodFrames = 1;
     _analysis_params.iCleanTracks = 0;
-    _analysis_params.iFormat = SMS_FORMAT_HP;
+    _analysis_params.iFormat = SMS_FORMAT_IHP;
     _analysis_params.nTracks = _max_partials;
     _analysis_params.maxPeaks = _max_partials;
     _analysis_params.nGuides = _max_partials;
     _analysis_params.preEmphasis = 0;
+    _analysis_params.realtime = 0;
     sms_initAnalysis(&_analysis_params);
 
     sms_fillHeader(&_header, &_analysis_params);
@@ -159,11 +160,48 @@ void SMSPartialTracking::max_partials(int new_max_partials) {
     init_peaks();
 }
 
+bool SMSPartialTracking::realtime() {
+    return _analysis_params.realtime == 1;
+}
+
+void SMSPartialTracking::realtime(bool is_realtime) {
+    if(is_realtime) {
+        _analysis_params.realtime = 1;
+    }
+    else {
+        _analysis_params.realtime = 0;
+    }
+}
+
+bool SMSPartialTracking::harmonic() {
+    return _analysis_params.iFormat == SMS_FORMAT_HP;
+}
+
+void SMSPartialTracking::harmonic(bool is_harmonic) {
+    sms_freeAnalysis(&_analysis_params);
+    sms_freeFrame(&_data);
+
+    if(is_harmonic) {
+        _analysis_params.iFormat = SMS_FORMAT_HP;
+    }
+    else {
+        _analysis_params.iFormat = SMS_FORMAT_IHP;
+    }
+
+    sms_initAnalysis(&_analysis_params);
+    sms_fillHeader(&_header, &_analysis_params);
+    sms_allocFrameH(&_header, &_data);
+}
+
+void SMSPartialTracking::reset() {
+}
+
 Peaks SMSPartialTracking::update_partials(Frame* frame) {
     int num_peaks = _max_partials;
     if(num_peaks > frame->num_peaks()) {
         num_peaks = frame->num_peaks();
     }
+    frame->clear_partials();
 
     // set peaks in SMSAnalysisParams object
     for(int i = 0; i < num_peaks; i++) {

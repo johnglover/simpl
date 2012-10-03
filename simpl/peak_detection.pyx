@@ -79,7 +79,7 @@ cdef class PeakDetection:
         self.frames = []
 
         cdef int pos = 0
-        while pos < len(audio):
+        while pos <= len(audio) - self.hop_size:
             if not self.static_frame_size:
                 self.frame_size = self.next_frame_size()
 

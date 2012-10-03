@@ -40,13 +40,13 @@ cdef class Synthesis:
         return frame.synth
 
     def synth(self, frames):
-        cdef int size = self.thisptr.hop_size()
-        cdef np.ndarray[dtype_t, ndim=1] output = np.zeros(len(frames) * size)
+        cdef int hop = self.thisptr.hop_size()
+        cdef np.ndarray[dtype_t, ndim=1] output = np.zeros(len(frames) * hop)
         for i in range(len(frames)):
-            frames[i].synth = np.zeros(size)
-            frames[i].synth_size = size
+            frames[i].synth = np.zeros(hop)
+            frames[i].synth_size = hop
             self.synth_frame(frames[i])
-            output[i * size:(i + 1) * size] = frames[i].synth
+            output[i * hop:(i + 1) * hop] = frames[i].synth
         return output
 
 

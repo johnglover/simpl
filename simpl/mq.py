@@ -13,8 +13,8 @@ def best_match(f, candidates):
     return pos
 
 
-def TWM(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
-    # TWM parameters
+def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
+    # twm parameters
     p = 0.5
     q = 1.4
     r = 0.5
@@ -115,7 +115,7 @@ class MQPeakDetection(simpl.PeakDetection):
         # TODO: average should not include frames corresponding to unvoiced
         # speech, ie noisy frames
         self._freq_estimates.append(
-            TWM(self._current_peaks, f_min=self._fundamental,
+            twm(self._current_peaks, f_min=self._fundamental,
                 f_step=self._fundamental)
         )
         if len(self._freq_estimates) > self._avg_freq_frames:

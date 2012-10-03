@@ -98,12 +98,10 @@ void Frame::clear() {
 }
 
 void Frame::clear_peaks() {
-    _peaks.assign(_max_peaks, NULL);
     _num_peaks = 0;
 }
 
 void Frame::clear_partials() {
-    _partials.assign(_max_peaks, NULL);
     _num_partials = 0;
 }
 

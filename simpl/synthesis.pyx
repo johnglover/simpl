@@ -37,7 +37,7 @@ cdef class Synthesis:
 
     def synth_frame(self, Frame frame not None):
         self.thisptr.synth_frame(frame.thisptr)
-        return frame.audio
+        return frame.synth
 
     def synth(self, frames):
         cdef int size = self.thisptr.hop_size()

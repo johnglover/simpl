@@ -10,7 +10,7 @@ if len(sys.argv) != 4:
     print usage
     sys.exit(1)
 
-audio = simpl.read_wav(sys.argv[1])[0]
+audio, sampling_rate = simpl.read_wav(sys.argv[1])
 time_scale_factor = float(sys.argv[2])
 output_file = sys.argv[3]
 
@@ -31,4 +31,4 @@ while current_frame < len(partials):
     current_frame += step_size
 
 audio_out = np.asarray(audio_out * 32768, np.int16)
-wav.write(output_file, 44100, audio_out)
+wav.write(output_file, sampling_rate, audio_out)

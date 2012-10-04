@@ -11,9 +11,9 @@ audio = simpl.read_wav(sys.argv[1])[0]
 
 pd = simpl.LorisPeakDetection()
 pd.max_peaks = 30
-peaks = pd.find_peaks(audio)
+frames = pd.find_peaks(audio)
 pt = simpl.MQPartialTracking()
 pt.max_partials = 30
-partials = pt.find_partials(peaks)
-simpl.plot_partials(partials, show_peaks=False)
+frames = pt.find_partials(frames)
+simpl.plot_partials(frames, show_peaks=False)
 plt.show()

@@ -200,13 +200,14 @@ class MQPartialTracking(simpl.PartialTracking):
         Returns the closest unmatched peak in frame_peaks with a frequency
         less than peak.frequency.
         """
+        freqs = [p.frequency for p in matched_peaks if p]
         for peak_number, p in enumerate(frame_peaks):
-            if p == peak:
+            if p.frequency == peak.frequency:
                 # go back through lower peaks (in order) and
                 # return the first unmatched
                 current_peak = peak_number - 1
                 while current_peak >= 0:
-                    if not frame_peaks[current_peak] in matched_peaks:
+                    if not frame_peaks[current_peak].frequency in freqs:
                         return frame_peaks[current_peak]
                     current_peak -= 1
                 return None
@@ -218,12 +219,13 @@ class MQPartialTracking(simpl.PartialTracking):
         with 0 amplitude.
         """
         for peak_number, peak in enumerate(self._current_frame.partials):
-            if peak == prev_peak:
+            if peak.frequency == prev_peak.frequency:
                 if peak.amplitude == 0:
                     partials[peak_number] = None
                 else:
-                    partials[peak_number] = simpl.Peak()
-                    partials[peak_number].frequency = prev_peak.frequency
+                    p = simpl.Peak()
+                    p.frequency = peak.frequency
+                    partials[peak_number] = p
 
     def _extend_partial(self, partials, prev_peak, next_peak):
         """
@@ -231,7 +233,7 @@ class MQPartialTracking(simpl.PartialTracking):
         that currently ends with prev_peak.
         """
         for peak_number, peak in enumerate(self._current_frame.partials):
-            if peak == prev_peak:
+            if peak.frequency == prev_peak.frequency:
                 partials[peak_number] = next_peak
 
     def update_partials(self, frame):
@@ -276,6 +278,7 @@ class MQPartialTracking(simpl.PartialTracking):
                 partials = frame.peaks
                 for i in range(len(frame.peaks), self.max_partials):
                     partials.append(simpl.Peak())
+            frame.partials = partials
             return partials
 
         for peak in self._current_frame.partials:

@@ -77,13 +77,27 @@ cdef class Frame:
 
     def peak(self, int i):
         cdef c_Peak* c_p = self.thisptr.peak(i)
-        p = Peak()
-        p.copy(c_p)
-        return p
+        # return the same Python peak object if it exists so
+        # memory is not deallocated
+        if i < len(self._peaks) and self._peaks[i] and \
+           self._peaks[i].amplitude == c_p.amplitude and \
+           self._peaks[i].frequency == c_p.frequency and \
+           self._peaks[i].phase == c_p.phase and \
+           self._peaks[i].bandwidth == c_p.bandwidth:
+            return self._peaks[i]
+        # if not, make a new Python peak and copy the values
+        else:
+            p = Peak()
+            p.copy(c_p)
+            return p
 
     property peaks:
         def __get__(self):
-            self._peaks = [self.peak(i) for i in range(self.thisptr.num_peaks())]
+            # assign updated peak list to new local variable first so that
+            # a reference to the old peak peaks is kept while updating, and
+            # memory is not deallocated
+            new_peaks = [self.peak(i) for i in range(self.thisptr.num_peaks())]
+            self._peaks = new_peaks
             return self._peaks
         def __set__(self, peaks):
             self.thisptr.clear_peaks()
@@ -111,15 +125,29 @@ cdef class Frame:
         cdef c_Peak* c_p
         if not p:
             c_p = self.thisptr.partial(i)
-            peak = Peak()
-            peak.copy(c_p)
-            return peak
+            # return the same Python peak object if it exists so
+            # memory is not deallocated
+            if i < len(self._partials) and self._partials[i] and \
+               self._partials[i].amplitude == c_p.amplitude and \
+               self._partials[i].frequency == c_p.frequency and \
+               self._partials[i].phase == c_p.phase and \
+               self._partials[i].bandwidth == c_p.bandwidth:
+                return self._partials[i]
+            # if not, make a new Python peak and copy the values
+            else:
+                peak = Peak()
+                peak.copy(c_p)
+                return peak
         else:
             self.thisptr.partial(i, p.thisptr)
 
     property partials:
         def __get__(self):
-            self._partials = [self.partial(i) for i in range(self.thisptr.num_partials())]
+            # assign updated partial list to new local variable first so that
+            # a reference to the old partial peaks is kept while updating, and
+            # memory is not deallocated
+            new_partials = [self.partial(i) for i in range(self.thisptr.num_partials())]
+            self._partials = new_partials
             return self._partials
         def __set__(self, peaks):
             self.thisptr.clear_partials()

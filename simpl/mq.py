@@ -143,21 +143,18 @@ class MQPeakDetection(simpl.PeakDetection):
         spectrum = abs(f)
 
         # find all peaks in the spectrum
-        prev_mag = np.abs(spectrum[0])
-        current_mag = np.abs(spectrum[1])
-        next_mag = 0.0
-
         for bin in range(2, len(spectrum) - 1):
-            next_mag = np.abs(spectrum[bin])
+            current_mag = spectrum[bin]
+            prev_mag = spectrum[bin - 1]
+            next_mag = spectrum[bin + 1]
+
             if (current_mag > prev_mag and
                 current_mag > next_mag):
                 p = simpl.Peak()
                 p.amplitude = current_mag
-                p.frequency = (bin - 1) * self._fundamental
-                p.phase = np.angle(f[bin - 1])
+                p.frequency = bin * self._fundamental
+                p.phase = np.angle(f[bin])
                 self._current_peaks.append(p)
-            prev_mag = current_mag
-            current_mag = next_mag
 
         # sort peaks, largest amplitude first, and up to a max
         # of self.num_peaks peaks

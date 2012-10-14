@@ -24,6 +24,7 @@
 //           short-time fast fourier transform
 //           Victor Lazzarini, 2003
 /////////////////////////////////////////////////
+#include "stdlib.h"
 #include "FFT.h"
 
 FFT::FFT(){

@@ -1,6 +1,9 @@
 #ifndef BASE_H
 #define BASE_H
 
+#include "string.h"
+#include "stdio.h"
+
 #include <vector>
 #include <string>
 

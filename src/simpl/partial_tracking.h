@@ -77,12 +77,20 @@ class SMSPartialTracking : public PartialTracking {
     public:
         SMSPartialTracking();
         ~SMSPartialTracking();
+        void reset();
         void max_partials(int new_max_partials);
         bool realtime();
         void realtime(bool is_realtime);
         bool harmonic();
         void harmonic(bool is_harmonic);
-        void reset();
+        int max_frame_delay();
+        void max_frame_delay(int new_max_frame_delay);
+        int analysis_delay();
+        void analysis_delay(int new_analysis_delay);
+        int min_good_frames();
+        void min_good_frames(int new_min_good_frames);
+        bool clean_tracks();
+        void clean_tracks(bool new_clean_tracks);
         Peaks update_partials(Frame* frame);
 };
 

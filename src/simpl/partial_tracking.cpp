@@ -143,6 +143,9 @@ void SMSPartialTracking::init_peaks() {
     memset(_peak_phase, 0.0, sizeof(sample) * _max_partials);
 }
 
+void SMSPartialTracking::reset() {
+}
+
 void SMSPartialTracking::max_partials(int new_max_partials) {
     _max_partials = new_max_partials;
 
@@ -193,7 +196,62 @@ void SMSPartialTracking::harmonic(bool is_harmonic) {
     sms_allocFrameH(&_header, &_data);
 }
 
-void SMSPartialTracking::reset() {
+int SMSPartialTracking::max_frame_delay() {
+    return _analysis_params.iMaxDelayFrames;
+}
+
+void SMSPartialTracking::max_frame_delay(int new_max_frame_delay) {
+    sms_freeAnalysis(&_analysis_params);
+    sms_freeFrame(&_data);
+
+    _analysis_params.iMaxDelayFrames = new_max_frame_delay;
+
+    sms_initAnalysis(&_analysis_params);
+    sms_fillHeader(&_header, &_analysis_params);
+    sms_allocFrameH(&_header, &_data);
+}
+
+int SMSPartialTracking::analysis_delay() {
+    return _analysis_params.analDelay;
+}
+
+void SMSPartialTracking::analysis_delay(int new_analysis_delay) {
+    sms_freeAnalysis(&_analysis_params);
+    sms_freeFrame(&_data);
+
+    _analysis_params.analDelay = new_analysis_delay;
+
+    sms_initAnalysis(&_analysis_params);
+    sms_fillHeader(&_header, &_analysis_params);
+    sms_allocFrameH(&_header, &_data);
+}
+
+int SMSPartialTracking::min_good_frames() {
+    return _analysis_params.minGoodFrames;
+}
+
+void SMSPartialTracking::min_good_frames(int new_min_good_frames) {
+    sms_freeAnalysis(&_analysis_params);
+    sms_freeFrame(&_data);
+
+    _analysis_params.minGoodFrames = new_min_good_frames;
+
+    sms_initAnalysis(&_analysis_params);
+    sms_fillHeader(&_header, &_analysis_params);
+    sms_allocFrameH(&_header, &_data);
+}
+
+bool SMSPartialTracking::clean_tracks() {
+    return _analysis_params.iCleanTracks == 1;
+}
+
+void SMSPartialTracking::clean_tracks(bool new_clean_tracks) {
+    if(new_clean_tracks) {
+        _analysis_params.iCleanTracks = 1;
+    }
+    else {
+        _analysis_params.iCleanTracks = 0;
+    }
 }
 
 Peaks SMSPartialTracking::update_partials(Frame* frame) {

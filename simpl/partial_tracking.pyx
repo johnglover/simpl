@@ -2,6 +2,7 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 from libcpp.vector cimport vector
+from libcpp cimport bool
 
 from base cimport Peak
 from base cimport Frame
@@ -68,6 +69,30 @@ cdef class SMSPartialTracking(PartialTracking):
         if self.thisptr:
             del self.thisptr
             self.thisptr = <c_PartialTracking*>0
+
+    property realtime:
+        def __get__(self): return (<c_SMSPartialTracking*>self.thisptr).realtime()
+        def __set__(self, bool b): (<c_SMSPartialTracking*>self.thisptr).realtime(b)
+
+    property harmonic:
+        def __get__(self): return (<c_SMSPartialTracking*>self.thisptr).harmonic()
+        def __set__(self, bool b): (<c_SMSPartialTracking*>self.thisptr).harmonic(b)
+
+    property max_frame_delay:
+        def __get__(self): return (<c_SMSPartialTracking*>self.thisptr).max_frame_delay()
+        def __set__(self, int i): (<c_SMSPartialTracking*>self.thisptr).max_frame_delay(i)
+
+    property analysis_delay:
+        def __get__(self): return (<c_SMSPartialTracking*>self.thisptr).analysis_delay()
+        def __set__(self, int i): (<c_SMSPartialTracking*>self.thisptr).analysis_delay(i)
+
+    property min_good_frames:
+        def __get__(self): return (<c_SMSPartialTracking*>self.thisptr).min_good_frames()
+        def __set__(self, int i): (<c_SMSPartialTracking*>self.thisptr).min_good_frames(i)
+
+    property clean_tracks:
+        def __get__(self): return (<c_SMSPartialTracking*>self.thisptr).clean_tracks()
+        def __set__(self, bool b): (<c_SMSPartialTracking*>self.thisptr).clean_tracks(b)
 
 
 cdef class SndObjPartialTracking(PartialTracking):

@@ -14,7 +14,6 @@ def best_match(f, candidates):
 
 
 def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
-    # twm parameters
     p = 0.5
     q = 1.4
     r = 0.5
@@ -47,7 +46,8 @@ def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
             k = best_match(f_current, [x.frequency for x in peaks])
             f = peaks[k].frequency
             a = peaks[k].amplitude
-            Err_pm += abs(h - f) * (h ** -p) + (a / max_amp) * ((q * (abs(h - f)) * (h ** -p) - r))
+            Err_pm += abs(h - f) * (h ** -p) + (a / max_amp) * \
+                      ((q * (abs(h - f)) * (h ** -p) - r))
 
         # calculate the mismatch between actual and predicted peaks
         for x in peaks:
@@ -55,10 +55,12 @@ def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
             f = harmonics[k]
             xf = x.frequency
             a = x.amplitude
-            Err_mp += abs(xf - f) * (xf ** -p) + (a / max_amp) * ((q * (abs(xf - f)) * (xf ** -p) - r))
+            Err_mp += abs(xf - f) * (xf ** -p) + (a / max_amp) * \
+                      ((q * (abs(xf - f)) * (xf ** -p) - r))
 
         # calculate the total error for f_current as a fundamental frequency
-        Err[f_current] = (Err_pm / len(harmonics)) + (rho * Err_mp / len(peaks))
+        Err[f_current] = (Err_pm / len(harmonics)) + \
+                         (rho * Err_mp / len(peaks))
         f_current += f_step
 
     # return the value with the minimum total error
@@ -66,7 +68,7 @@ def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
 
 
 class MQPeakDetection(simpl.PeakDetection):
-    """
+    '''
     Peak detection, based on the McAulay and Quatieri (MQ) algorithm.
 
     A peak is defined as the point in the spectrum where the slope changes from
@@ -76,7 +78,7 @@ class MQPeakDetection(simpl.PeakDetection):
     During unvoiced sections, the window size is fixed at the value of the
     last voiced frame. Once the width is specified, the Hamming window is
     computed and normalised and the STFT is calculated.
-    """
+    '''
     def __init__(self):
         simpl.PeakDetection.__init__(self)
         self._frame_size = super(MQPeakDetection, self).frame_size
@@ -85,6 +87,7 @@ class MQPeakDetection(simpl.PeakDetection):
         self.static_frame_size = False
         self._current_peaks = []
         self._freq_estimates = []
+
         # no. frames to use to estimate the average pitch (1/4 second window)
         self._avg_freq_frames = int(
             0.25 * self.sampling_rate / self._frame_size
@@ -101,7 +104,7 @@ class MQPeakDetection(simpl.PeakDetection):
         self._create_analysis_window()
 
     def _create_analysis_window(self):
-        "Creates the analysis window, a normalised hamming window"
+        'Creates the analysis window, a normalised hamming window'
         self._window = np.hamming(self._frame_size)
         self._window /= np.sum(self._window)
 
@@ -110,10 +113,7 @@ class MQPeakDetection(simpl.PeakDetection):
             return self._frame_size
 
         # frame size must be at least 2.5 times the average pitch period,
-        # where the average is taken over 1/4 second.
-        #
-        # TODO: average should not include frames corresponding to unvoiced
-        # speech, ie noisy frames
+        # where the average is taken over 1/4 second
         self._freq_estimates.append(
             twm(self._current_peaks, f_min=self._fundamental,
                 f_step=self._fundamental)
@@ -130,10 +130,10 @@ class MQPeakDetection(simpl.PeakDetection):
             return self._frame_size
 
     def find_peaks_in_frame(self, frame):
-        """
+        '''
         Selects the highest peaks from the given spectral frame, up to a
         maximum of self._max_peaks peaks.
-        """
+        '''
         self._current_peaks = []
 
         if frame.max_peaks != self.max_peaks:
@@ -170,18 +170,18 @@ class MQPeakDetection(simpl.PeakDetection):
 
 
 class MQPartialTracking(simpl.PartialTracking):
-    "Partial tracking using the McAulay and Quatieri (MQ) algorithm"
+    'Partial tracking using the McAulay and Quatieri (MQ) algorithm'
     def __init__(self):
         simpl.PartialTracking.__init__(self)
         self._matching_interval = 100  # peak matching interval, in Hz
         self._current_frame = None  # current frame in peak tracking
 
     def _find_closest_match(self, peak, frame_peaks, matched_peaks):
-        """
+        '''
         Find a candidate match for peak in frame if one exists.
         This is the closest (in frequency) match that is within
         self._matching_interval.
-        """
+        '''
         free_peaks = [p for p in frame_peaks if not p in matched_peaks]
         free_peaks = [p for p in free_peaks if p.amplitude > 0]
         distances = [abs(peak.frequency - p.frequency) for p in free_peaks]
@@ -193,10 +193,10 @@ class MQPartialTracking(simpl.PartialTracking):
         return None
 
     def _get_free_peak_below(self, peak, frame_peaks, matched_peaks):
-        """
+        '''
         Returns the closest unmatched peak in frame_peaks with a frequency
         less than peak.frequency.
-        """
+        '''
         freqs = [p.frequency for p in matched_peaks if p]
         for peak_number, p in enumerate(frame_peaks):
             if p.frequency == peak.frequency:
@@ -211,10 +211,10 @@ class MQPartialTracking(simpl.PartialTracking):
         return None
 
     def _kill_partial(self, partials, prev_peak):
-        """
+        '''
         When a partial dies it is matched to itself in the next frame,
         with 0 amplitude.
-        """
+        '''
         for peak_number, peak in enumerate(self._current_frame.partials):
             if peak.frequency == prev_peak.frequency:
                 if peak.amplitude == 0:
@@ -225,16 +225,16 @@ class MQPartialTracking(simpl.PartialTracking):
                     partials[peak_number] = p
 
     def _extend_partial(self, partials, prev_peak, next_peak):
-        """
+        '''
         Sets next_peak to be the next sinusoidal peak in the partial
         that currently ends with prev_peak.
-        """
+        '''
         for peak_number, peak in enumerate(self._current_frame.partials):
             if peak.frequency == prev_peak.frequency:
                 partials[peak_number] = next_peak
 
     def update_partials(self, frame):
-        """
+        '''
         Streamable (real-time) MQ partial-tracking.
 
         1. If there is no peak within the matching interval, the track dies.
@@ -253,7 +253,7 @@ class MQPartialTracking(simpl.PartialTracking):
         still be peaks remaining in the next frame. A new peak is created in
         the current frame at the same frequency and with 0 amplitude, and a
         match is made.
-        """
+        '''
         if not frame.max_partials == self.max_partials:
             frame.max_partials = self.max_partials
 
@@ -310,7 +310,6 @@ class MQPartialTracking(simpl.PartialTracking):
         # now that all peaks in the current frame have been matched,
         # look for any unmatched peaks in the next frame
         for p in frame.peaks:
-            # if not p.previous_peak:
             if not p in partials:
                 # look for the first free partial spot in partials
                 free_partial = -1

@@ -35,7 +35,7 @@ except ImportError:
 macros = []
 link_args = []
 include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
-                'src/loris', numpy_include, '/usr/local/include']
+                'src/loris', 'src/mq', numpy_include, '/usr/local/include']
 libs = ['m', 'fftw3', 'gsl', 'gslcblas']
 sources = []
 
@@ -67,6 +67,12 @@ sources.extend(sms_sources)
 # -----------------------------------------------------------------------------
 loris_sources = glob.glob(os.path.join('src', 'loris', '*.C'))
 sources.extend(loris_sources)
+
+# -----------------------------------------------------------------------------
+# MQ
+# -----------------------------------------------------------------------------
+mq_sources = glob.glob(os.path.join('src', 'mq', '*.cpp'))
+sources.extend(mq_sources)
 
 # -----------------------------------------------------------------------------
 # Base

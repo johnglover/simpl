@@ -37,6 +37,12 @@ cdef extern from "../src/simpl/peak_detection.h" namespace "simpl":
         vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
         vector[c_Frame*] find_peaks(int audio_size, double* audio)
 
+    cdef cppclass c_MQPeakDetection "simpl::MQPeakDetection"(c_PeakDetection):
+        c_MQPeakDetection()
+        void hop_size(int new_hop_size)
+        void max_peaks(int new_max_peaks)
+        vector[c_Peak*] find_peaks_in_frame(c_Frame* frame)
+
     cdef cppclass c_SMSPeakDetection "simpl::SMSPeakDetection"(c_PeakDetection):
         c_SMSPeakDetection()
         void hop_size(int new_hop_size)

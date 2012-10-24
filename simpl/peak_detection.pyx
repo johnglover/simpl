@@ -101,6 +101,18 @@ cdef class PeakDetection:
         return self.frames
 
 
+cdef class MQPeakDetection(PeakDetection):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_MQPeakDetection()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_PeakDetection*>0
+
+
 cdef class SMSPeakDetection(PeakDetection):
     def __cinit__(self):
         if self.thisptr:

@@ -166,6 +166,68 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
 
 
 // ---------------------------------------------------------------------------
+// MQPeakDetection
+// ---------------------------------------------------------------------------
+MQPeakDetection::MQPeakDetection() {
+    _mq_params.max_peaks = _max_peaks;
+    _mq_params.frame_size = _frame_size;
+    _mq_params.num_bins = (_frame_size / 2) + 1;
+    _mq_params.peak_threshold = 0.0;
+    _mq_params.matching_interval = 100.0;
+    _mq_params.fundamental = 44100.0 / _frame_size;
+    init_mq(&_mq_params);
+}
+
+MQPeakDetection::~MQPeakDetection() {
+    destroy_mq(&_mq_params);
+}
+
+void MQPeakDetection::reset() {
+    reset_mq(&_mq_params);
+    destroy_mq(&_mq_params);
+    _mq_params.max_peaks = _max_peaks;
+    _mq_params.frame_size = _frame_size;
+    _mq_params.num_bins = (_frame_size / 2) + 1;
+    _mq_params.fundamental = 44100.0 / _frame_size;
+    init_mq(&_mq_params);
+}
+
+void MQPeakDetection::frame_size(int new_frame_size) {
+    _frame_size = new_frame_size;
+    reset();
+}
+
+void MQPeakDetection::hop_size(int new_hop_size) {
+    _hop_size = new_hop_size;
+}
+
+void MQPeakDetection::max_peaks(int new_max_peaks) {
+    _max_peaks = new_max_peaks;
+    reset();
+}
+
+Peaks MQPeakDetection::find_peaks_in_frame(Frame* frame) {
+    Peaks peaks;
+
+    MQPeakList* pl = mq_find_peaks(_frame_size, frame->audio(), &_mq_params);
+
+    int num_peaks = 0;
+    while(pl && pl->peak && num_peaks < _max_peaks) {
+        Peak* p = new Peak();
+        p->amplitude = pl->peak->amplitude;
+        p->frequency = pl->peak->frequency;
+        p->phase = pl->peak->phase;
+        peaks.push_back(p);
+        frame->add_peak(p);
+
+        pl = pl->next;
+        num_peaks++;
+    }
+
+    return peaks;
+}
+
+// ---------------------------------------------------------------------------
 // SMSPeakDetection
 // ---------------------------------------------------------------------------
 SMSPeakDetection::SMSPeakDetection() {

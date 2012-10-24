@@ -3,6 +3,8 @@
 
 #include "base.h"
 
+#include "mq.h"
+
 extern "C" {
     #include "sms.h"
 }
@@ -76,9 +78,28 @@ class PeakDetection {
         virtual Peaks find_peaks_in_frame(Frame* frame);
 
         // Find and return all spectral peaks in a given audio signal.
-        // If the signal contains more than 1 frame worth of audio, it will be broken
-        // up into separate frames, with an array of peaks returned for each frame.
+        // If the signal contains more than 1 frame worth of audio, it will be
+        // broken up into separate frames, with an array of peaks returned for
+        // each frame
         virtual Frames find_peaks(int audio_size, sample* audio);
+};
+
+
+// ---------------------------------------------------------------------------
+// MQPeakDetection
+// ---------------------------------------------------------------------------
+class MQPeakDetection : public PeakDetection {
+    private:
+        MQParameters _mq_params;
+        void reset();
+
+    public:
+        MQPeakDetection();
+        ~MQPeakDetection();
+        void frame_size(int new_frame_size);
+        void hop_size(int new_hop_size);
+        void max_peaks(int new_max_peaks);
+        Peaks find_peaks_in_frame(Frame* frame);
 };
 
 

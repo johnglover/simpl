@@ -1,50 +1,58 @@
-#ifndef _MQ_H
-#define _MQ_H
+#ifndef _SIMPL_MQ_H
+#define _SIMPL_MQ_H
+
+#include <cstdlib>
 
 #include <fftw3.h>
 #include <math.h>
+#include <string.h>
+
+namespace simpl
+{
+
 
 typedef double sample;
 
-typedef struct Peak
-{
+typedef struct MQPeak {
     float amplitude;
     float frequency;
     float phase;
     int bin;
-    struct Peak* next;
-    struct Peak* prev;
-} Peak;
+    struct MQPeak* next;
+    struct MQPeak* prev;
+} MQPeak;
 
-typedef struct PeakList
-{
-    struct PeakList* next;
-    struct PeakList* prev;
-    struct Peak* peak;
-} PeakList;
+typedef struct MQPeakList {
+    struct MQPeakList* next;
+    struct MQPeakList* prev;
+    struct MQPeak* peak;
+} MQPeakList;
 
-typedef struct MQParameters
-{
+typedef struct MQParameters {
     int frame_size;
     int max_peaks;
     int num_bins;
     sample peak_threshold;
     sample fundamental;
     sample matching_interval;
+    sample* window;
     sample* fft_in;
 	fftw_complex* fft_out;
 	fftw_plan fft_plan;
-    PeakList* prev_peaks;
+    MQPeakList* prev_peaks;
 } MQParameters;
 
 int init_mq(MQParameters* params);
 void reset_mq(MQParameters* params);
 int destroy_mq(MQParameters* params);
-void delete_peak_list(PeakList* peak_list);
+void delete_peak_list(MQPeakList* peak_list);
 
-PeakList* sort_peaks_by_frequency(PeakList* peak_list, int num_peaks);
+MQPeakList* mq_sort_peaks_by_frequency(MQPeakList* peak_list, int num_peaks);
+MQPeakList* mq_find_peaks(int signal_size, sample* signal,
+                          MQParameters* params);
+MQPeakList* mq_track_peaks(MQPeakList* peak_list, MQParameters* params);
 
-PeakList* find_peaks(int signal_size, sample* signal, MQParameters* params);
-PeakList* track_peaks(PeakList* peak_list, MQParameters* params);
-                    
+} // end of namespace simpl
+
+
 #endif

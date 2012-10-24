@@ -7,44 +7,91 @@
 #include <math.h>
 #include <string.h>
 
+#include "base.h"
+
 namespace simpl
 {
 
 
-typedef double sample;
+// ---------------------------------------------------------------------------
+// MQPeak
+// ---------------------------------------------------------------------------
+class MQPeak {
+    public:
+        float amplitude;
+        float frequency;
+        float phase;
+        int bin;
+        MQPeak* next;
+        MQPeak* prev;
 
-typedef struct MQPeak {
-    float amplitude;
-    float frequency;
-    float phase;
-    int bin;
-    struct MQPeak* next;
-    struct MQPeak* prev;
-} MQPeak;
+        MQPeak() {
+            amplitude = 0.f;
+            frequency = 0.f;
+            phase = 0.f;
+            bin = 0;
+            next = NULL;
+            prev = NULL;
+        }
+};
 
-typedef struct MQPeakList {
-    struct MQPeakList* next;
-    struct MQPeakList* prev;
-    struct MQPeak* peak;
-} MQPeakList;
 
-typedef struct MQParameters {
-    int frame_size;
-    int max_peaks;
-    int num_bins;
-    sample peak_threshold;
-    sample fundamental;
-    sample matching_interval;
-    sample* window;
-    sample* fft_in;
-	fftw_complex* fft_out;
-	fftw_plan fft_plan;
-    MQPeakList* prev_peaks;
-} MQParameters;
+// ---------------------------------------------------------------------------
+// MQPeakList
+// ---------------------------------------------------------------------------
+class MQPeakList {
+    public:
+        MQPeakList* next;
+        MQPeakList* prev;
+        MQPeak* peak;
 
+        MQPeakList() {
+            next = NULL;
+            prev = NULL;
+            peak = NULL;
+        }
+};
+
+
+// ---------------------------------------------------------------------------
+// MQParameters
+// ---------------------------------------------------------------------------
+class MQParameters {
+    public:
+        int frame_size;
+        int max_peaks;
+        int num_bins;
+        sample peak_threshold;
+        sample fundamental;
+        sample matching_interval;
+        sample* window;
+        sample* fft_in;
+        fftw_complex* fft_out;
+        fftw_plan fft_plan;
+        MQPeakList* prev_peaks;
+
+        MQParameters() {
+            frame_size = 0;
+            max_peaks = 0;
+            num_bins = 0;
+            peak_threshold = 0.f;
+            fundamental = 0.f;
+            matching_interval = 0.f;
+            window = NULL;
+            fft_in = NULL;
+            fft_out = NULL;
+            prev_peaks = NULL;
+        }
+};
+
+
+// ---------------------------------------------------------------------------
+// MQ functions
+// ---------------------------------------------------------------------------
 int init_mq(MQParameters* params);
 void reset_mq(MQParameters* params);
 int destroy_mq(MQParameters* params);
+void mq_add_peak(MQPeak* new_peak, MQPeakList* peak_list);
 void delete_peak_list(MQPeakList* peak_list);
 
 MQPeakList* mq_sort_peaks_by_frequency(MQPeakList* peak_list, int num_peaks);

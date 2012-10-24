@@ -23,11 +23,7 @@ void hamming_window(int window_size, sample* window) {
 
 int simpl::init_mq(MQParameters* params) {
     // allocate memory for window
-    params->window = (sample*) malloc(sizeof(sample) * params->frame_size);
-    int i;
-    for(i = 0; i < params->frame_size; i++) {
-        params->window[i] = 1.0;
-    }
+    params->window = new sample[params->frame_size];
     hamming_window(params->frame_size, params->window);
 
 	// allocate memory for FFT
@@ -48,9 +44,9 @@ void simpl::reset_mq(MQParameters* params) {
 
 int simpl::destroy_mq(MQParameters* params) {
     if(params) {
-        if(params->window) free(params->window);
-        if(params->fft_in) free(params->fft_in);
-        if(params->fft_out) free(params->fft_out);
+        if(params->window) delete [] params->window;
+        if(params->fft_in) fftw_free(params->fft_in);
+        if(params->fft_out) fftw_free(params->fft_out);
         fftw_destroy_plan(params->fft_plan);
 
         params->window = NULL;
@@ -65,7 +61,7 @@ int simpl::destroy_mq(MQParameters* params) {
 
 // Add new_peak to the doubly linked list of peaks, keeping peaks sorted
 // with the largest amplitude peaks at the start of the list
-void add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
+void simpl::mq_add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
     do {
         if(peak_list->peak) {
             if(peak_list->peak->amplitude > new_peak->amplitude) {
@@ -73,8 +69,7 @@ void add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
                     peak_list = peak_list->next;
                 }
                 else {
-                    MQPeakList* new_node =
-                        (MQPeakList*)malloc(sizeof(MQPeakList));
+                    MQPeakList* new_node = new MQPeakList();
                     new_node->peak = new_peak;
                     new_node->prev = peak_list;
                     new_node->next = NULL;
@@ -83,7 +78,7 @@ void add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
                 }
             }
             else {
-                MQPeakList* new_node = (MQPeakList*)malloc(sizeof(MQPeakList));
+                MQPeakList* new_node = new MQPeakList();
                 new_node->peak = peak_list->peak;
                 new_node->prev = peak_list;
                 new_node->next = peak_list->next;
@@ -101,18 +96,22 @@ void add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
     while(1);
 }
 
-// delete the given PeakList
 void simpl::delete_peak_list(MQPeakList* peak_list) {
-    // destroy list of peaks
     while(peak_list && peak_list->next) {
         if(peak_list->peak) {
-            free(peak_list->peak);
+            delete peak_list->peak;
+            peak_list->peak = NULL;
         }
         MQPeakList* temp = peak_list->next;
-        free(peak_list);
+        delete peak_list;
         peak_list = temp;
     }
-    free(peak_list);
+    if(peak_list) {
+        peak_list->next = NULL;
+        peak_list->prev = NULL;
+        delete peak_list;
+    }
+    peak_list = NULL;
 }
 
 sample get_magnitude(sample x, sample y) {
@@ -125,17 +124,16 @@ sample get_phase(sample x, sample y) {
 
 MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
                                  MQParameters* params) {
-    int i;
     int num_peaks = 0;
     sample prev_amp, current_amp, next_amp;
-    MQPeakList* peak_list = (MQPeakList*)malloc(sizeof(MQPeakList));
+    MQPeakList* peak_list = new MQPeakList();
     peak_list->next = NULL;
     peak_list->prev = NULL;
     peak_list->peak = NULL;
 
     // take fft of the signal
     memcpy(params->fft_in, signal, sizeof(sample)*params->frame_size);
-    for(i = 0; i < params->frame_size; i++) {
+    for(int i = 0; i < params->frame_size; i++) {
         params->fft_in[i] *= params->window[i];
     }
     fftw_execute(params->fft_plan);
@@ -145,15 +143,14 @@ MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
     current_amp = get_magnitude(params->fft_out[1][0], params->fft_out[1][1]);
 
     // find all peaks in the amplitude spectrum
-    for(i = 1; i < params->num_bins - 1; i++) {
+    for(int i = 1; i < params->num_bins - 1; i++) {
         next_amp = get_magnitude(params->fft_out[i+1][0],
                                  params->fft_out[i+1][1]);
 
         if((current_amp > prev_amp) &&
            (current_amp > next_amp) &&
            (current_amp > params->peak_threshold)) {
-            // create a new MQPeak
-            MQPeak* p = (MQPeak*)malloc(sizeof(MQPeak));
+            MQPeak* p = new MQPeak();
             p->amplitude = current_amp;
             p->frequency = i * params->fundamental;
             p->phase = get_phase(params->fft_out[i][0], params->fft_out[i][1]);
@@ -162,7 +159,7 @@ MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
             p->prev = NULL;
 
             // add it to the appropriate position in the list of Peaks
-            add_peak(p, peak_list);
+            mq_add_peak(p, peak_list);
             num_peaks++;
         }
         prev_amp = current_amp;
@@ -172,7 +169,7 @@ MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
     // limit peaks to a maximum of max_peaks
     if(num_peaks > params->max_peaks) {
         MQPeakList* current = peak_list;
-        for(i = 0; i < params->max_peaks-1; i++) {
+        for(int i = 0; i < params->max_peaks-1; i++) {
             current = current->next;
         }
 
@@ -303,7 +300,7 @@ MQPeakList* simpl::mq_sort_peaks_by_frequency(MQPeakList* peak_list,
 // Find a candidate match for peak in frame if one exists. This is the closest
 // (in frequency) match that is within the matching interval.
 MQPeak* find_closest_match(MQPeak* p, MQPeakList* peak_list,
-                         MQParameters* params, int backwards) {
+                           MQParameters* params, int backwards) {
     MQPeakList* current = peak_list;
     MQPeak* match = NULL;
     sample best_distance = 44100.0;

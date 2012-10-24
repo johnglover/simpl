@@ -26,6 +26,9 @@ cdef extern from "../src/simpl/partial_tracking.h" namespace "simpl":
         vector[c_Peak*] update_partials(c_Frame* frame)
         vector[c_Frame*] find_partials(vector[c_Frame*] frames)
 
+    cdef cppclass c_MQPartialTracking "simpl::MQPartialTracking"(c_PartialTracking):
+        c_MQPartialTracking()
+
     cdef cppclass c_SMSPartialTracking "simpl::SMSPartialTracking"(c_PartialTracking):
         c_SMSPartialTracking()
         bool realtime()

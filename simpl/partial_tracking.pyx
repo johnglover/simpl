@@ -59,6 +59,18 @@ cdef class PartialTracking:
         return partial_frames
 
 
+cdef class MQPartialTracking(PartialTracking):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_MQPartialTracking()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_PartialTracking*>0
+
+
 cdef class SMSPartialTracking(PartialTracking):
     def __cinit__(self):
         if self.thisptr:

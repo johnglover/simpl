@@ -3,6 +3,8 @@
 
 #include "base.h"
 
+#include "mq.h"
+
 extern "C" {
     #include "sms.h"
 }
@@ -60,6 +62,22 @@ class PartialTracking {
         virtual Frames find_partials(Frames frames);
 };
 
+// ---------------------------------------------------------------------------
+// MQPartialTracking
+// ---------------------------------------------------------------------------
+class MQPartialTracking : public PartialTracking {
+    private:
+        MQParameters _mq_params;
+        MQPeakList* _peak_list;
+        MQPeakList* _prev_peak_list;
+
+    public:
+        MQPartialTracking();
+        ~MQPartialTracking();
+        void reset();
+        void max_partials(int new_max_partials);
+        Peaks update_partials(Frame* frame);
+};
 
 // ---------------------------------------------------------------------------
 // SMSPartialTracking

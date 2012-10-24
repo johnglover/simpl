@@ -79,6 +79,87 @@ Frames PartialTracking::find_partials(Frames frames) {
 
 
 // ---------------------------------------------------------------------------
+// MQPartialTracking
+// ---------------------------------------------------------------------------
+
+MQPartialTracking::MQPartialTracking() {
+    _mq_params.max_peaks = _max_partials;
+    _mq_params.frame_size = 0;
+    _mq_params.num_bins = 0;
+    _mq_params.peak_threshold = 0.0;
+    _mq_params.matching_interval = 100.0;
+    _mq_params.fundamental = 0;
+    init_mq(&_mq_params);
+    _peak_list = NULL;
+    _prev_peak_list = NULL;
+}
+
+MQPartialTracking::~MQPartialTracking() {
+    destroy_mq(&_mq_params);
+    delete_peak_list(_peak_list);
+    _prev_peak_list = NULL;
+}
+
+void MQPartialTracking::reset() {
+    reset_mq(&_mq_params);
+    delete_peak_list(_peak_list);
+    _prev_peak_list = NULL;
+}
+
+void MQPartialTracking::max_partials(int new_max_partials) {
+    _max_partials = new_max_partials;
+    _mq_params.max_peaks = _max_partials;
+}
+
+Peaks MQPartialTracking::update_partials(Frame* frame) {
+    Peaks peaks;
+    int num_peaks = _max_partials;
+    if(num_peaks > frame->num_peaks()) {
+        num_peaks = frame->num_peaks();
+    }
+    frame->clear_partials();
+
+    _peak_list = new MQPeakList();
+    for(int i = 0; i < num_peaks; i++) {
+        MQPeak* p = new MQPeak();
+        p->amplitude = frame->peak(i)->amplitude;
+        p->frequency = frame->peak(i)->frequency;
+        p->phase = frame->peak(i)->phase;
+        p->bin = i;
+        p->next = NULL;
+        p->prev = NULL;
+        mq_add_peak(p, _peak_list);
+    }
+
+    MQPeakList* partials = mq_track_peaks(_peak_list, &_mq_params);
+    partials = mq_sort_peaks_by_frequency(partials, num_peaks);
+
+    int num_partials = 0;
+    while(partials && partials->peak && (num_partials < _max_partials)) {
+        Peak* p = new Peak();
+        p->amplitude = partials->peak->amplitude;
+        p->frequency = partials->peak->frequency;
+        p->phase = partials->peak->phase;
+        peaks.push_back(p);
+        frame->add_partial(p);
+
+        partials = partials->next;
+        num_partials++;
+    }
+
+    for(int i = num_partials; i < _max_partials; i++) {
+        Peak* p = new Peak();
+        peaks.push_back(p);
+        frame->add_partial(p);
+    }
+
+    delete_peak_list(_prev_peak_list);
+    _prev_peak_list = _peak_list;
+    return peaks;
+}
+
+
+// ---------------------------------------------------------------------------
 // SMSPartialTracking
 // ---------------------------------------------------------------------------
 
@@ -368,6 +449,7 @@ Peaks SndObjPartialTracking::update_partials(Frame* frame) {
     if(num_peaks > frame->num_peaks()) {
         num_peaks = frame->num_peaks();
     }
+    frame->clear_partials();
 
     for(int i = 0; i < num_peaks; i++) {
         _peak_amplitude[i] = frame->peak(i)->amplitude;

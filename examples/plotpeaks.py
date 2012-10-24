@@ -15,8 +15,8 @@ audio = audio[len(audio) / 2:(len(audio) / 2) + 4096]
 # peak detection using the SndObj library
 pd = simpl.SndObjPeakDetection()
 pd.max_peaks = 20
-peaks = pd.find_peaks(audio)
+frames = pd.find_peaks(audio)
 
 # plot peaks using matplotlib
-simpl.plot.plot_peaks(peaks)
+simpl.plot.plot_peaks(frames)
 plt.show()

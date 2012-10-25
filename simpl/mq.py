@@ -360,7 +360,12 @@ class MQSynthesis(simpl.Synthesis):
         output = np.zeros(self.hop_size, dtype=simpl.dtype)
         size = self.hop_size
 
-        for n, p in enumerate(frame.partials):
+        num_partials = min(len(frame.partials), self._max_partials)
+
+        for n in range(num_partials):
+            partials = frame.partials
+            p = partials[n]
+
             # get values for last amplitude, frequency and phase
             # these are the initial values of the instantaneous
             # amplitude/frequency/phase

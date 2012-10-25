@@ -50,6 +50,18 @@ cdef class Synthesis:
         return output
 
 
+cdef class MQSynthesis(Synthesis):
+    def __cinit__(self):
+        if self.thisptr:
+            del self.thisptr
+        self.thisptr = new c_MQSynthesis()
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+            self.thisptr = <c_Synthesis*>0
+
+
 cdef class SMSSynthesis(Synthesis):
     SMS_DET_IFFT = 0
     SMS_DET_SIN = 1

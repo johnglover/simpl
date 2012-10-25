@@ -25,6 +25,9 @@ cdef extern from "../src/simpl/synthesis.h" namespace "simpl":
         void synth_frame(c_Frame* frame)
         vector[c_Frame*] synth(vector[c_Frame*] frames)
 
+    cdef cppclass c_MQSynthesis "simpl::MQSynthesis"(c_Synthesis):
+        c_MQSynthesis()
+
     cdef cppclass c_SMSSynthesis "simpl::SMSSynthesis"(c_Synthesis):
         c_SMSSynthesis()
         int num_stochastic_coeffs()

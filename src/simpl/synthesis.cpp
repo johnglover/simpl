@@ -59,6 +59,115 @@ Frames Synthesis::synth(Frames frames) {
 
 
 // ---------------------------------------------------------------------------
+// MQSynthesis
+// ---------------------------------------------------------------------------
+MQSynthesis::MQSynthesis() {
+    _prev_amps = NULL;
+    _prev_freqs = NULL;
+    _prev_phases = NULL;
+    reset();
+}
+
+MQSynthesis::~MQSynthesis() {
+    if(_prev_amps) delete [] _prev_amps;
+    if(_prev_freqs) delete [] _prev_freqs;
+    if(_prev_phases) delete [] _prev_phases;
+
+    _prev_amps = NULL;
+    _prev_freqs = NULL;
+    _prev_phases = NULL;
+}
+
+void MQSynthesis::reset() {
+    if(_prev_amps) delete [] _prev_amps;
+    if(_prev_freqs) delete [] _prev_freqs;
+    if(_prev_phases) delete [] _prev_phases;
+
+    _prev_amps = new sample[_max_partials];
+    _prev_freqs = new sample[_max_partials];
+    _prev_phases = new sample[_max_partials];
+
+    memset(_prev_amps, 0.0, sizeof(sample) * _max_partials);
+    memset(_prev_freqs, 0.0, sizeof(sample) * _max_partials);
+    memset(_prev_phases, 0.0, sizeof(sample) * _max_partials);
+}
+
+sample MQSynthesis::hz_to_radians(sample f) {
+    return (f * 2 * M_PI) / _sampling_rate;
+}
+
+void MQSynthesis::max_partials(int new_max_partials) {
+    _max_partials = new_max_partials;
+    reset();
+}
+
+void MQSynthesis::synth_frame(Frame* frame) {
+    int num_partials = frame->num_partials();
+    if(num_partials > _max_partials) {
+        num_partials = _max_partials;
+    }
+
+    for(int n = 0; n < _hop_size; n++) {
+        frame->synth()[n] = 0.f;
+    }
+
+    for(int i = 0; i < num_partials; i++) {
+        sample amp = frame->partial(i)->amplitude;
+        sample freq = hz_to_radians(frame->partial(i)->frequency);
+        sample phase = frame->partial(i)->phase;
+
+        // get values for last amplitude, frequency and phase
+        // these are the initial values of the instantaneous
+        // amplitude/frequency/phase
+        sample prev_amp = _prev_amps[i];
+        sample prev_freq = _prev_freqs[i];
+        sample prev_phase = _prev_phases[i];
+
+        if(prev_amp == 0) {
+            prev_freq = freq;
+            prev_phase = frame->partial(i)->phase - (freq * _hop_size);
+            while(prev_phase >= M_PI) {
+                prev_phase -= (2.0 * M_PI);
+            }
+            while(prev_phase < -M_PI) {
+                prev_phase += (2.0 * M_PI);
+            }
+        }
+
+        // amplitudes are linearly interpolated between frames
+        sample inst_amp = prev_amp;
+        sample amp_inc = (frame->partial(i)->amplitude - prev_amp) / _hop_size;
+
+        // freqs/phases are calculated by cubic interpolation
+        sample freq_diff = freq - prev_freq;
+        sample x = (prev_phase + (prev_freq * _hop_size) - phase) +
+                   (freq_diff * (_hop_size / 2.0));
+        x /= (2.0 * M_PI);
+        int m = floor(x + 0.5);
+        sample phase_diff = phase - prev_phase - (prev_freq * _hop_size) +
+                            (2.0 * M_PI * m);
+        sample alpha = ((3.0 / pow(_hop_size, 2.0)) * phase_diff) -
+                       (freq_diff / _hop_size);
+        sample beta = ((-2.0 / pow(_hop_size, 3.0)) * phase_diff) +
+                      (freq_diff / pow(_hop_size, 2.0));
+
+        // calculate output samples
+        sample inst_phase = 0.f;
+        for(int n = 0; n < _hop_size; n++) {
+            inst_amp += amp_inc;
+            inst_phase = prev_phase + (prev_freq * n) +
+                         (alpha * pow((sample)n, 2.0)) +
+                         (beta * pow((sample)n, 3.0));
+            frame->synth()[n] += (2.f * inst_amp) * cos(inst_phase);
+        }
+
+        _prev_amps[i] = amp;
+        _prev_freqs[i] = freq;
+        _prev_phases[i] = phase;
+    }
+}
+
+// ---------------------------------------------------------------------------
 // SMSSynthesis
 // ---------------------------------------------------------------------------
 

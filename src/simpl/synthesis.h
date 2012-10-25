@@ -1,6 +1,8 @@
 #ifndef SYNTHESIS_H
 #define SYNTHESIS_H
 
+#include <math.h>
+
 #include "base.h"
 
 extern "C" {
@@ -47,6 +49,25 @@ class Synthesis {
 
         virtual void synth_frame(Frame* frame);
         virtual Frames synth(Frames frames);
+};
+
+
+// ---------------------------------------------------------------------------
+// MQSynthesis
+// ---------------------------------------------------------------------------
+class MQSynthesis : public Synthesis {
+    private:
+        sample* _prev_amps;
+        sample* _prev_freqs;
+        sample* _prev_phases;
+        void reset();
+        sample hz_to_radians(sample f);
+
+    public:
+        MQSynthesis();
+        ~MQSynthesis();
+        void max_partials(int new_max_partials);
+        void synth_frame(Frame* frame);
 };
 
 

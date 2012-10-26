@@ -47,7 +47,8 @@ class PartialTracking {
         PartialTracking();
         ~PartialTracking();
 
-        void clear();
+        virtual void reset() {};
+        virtual void clear();
 
         int sampling_rate();
         virtual void sampling_rate(int new_sampling_rate);
@@ -125,11 +126,11 @@ class SndObjPartialTracking : public PartialTracking {
         sample* _peak_amplitude;
         sample* _peak_frequency;
         sample* _peak_phase;
-        void reset();
 
     public:
         SndObjPartialTracking();
         ~SndObjPartialTracking();
+        void reset();
         void max_partials(int new_max_partials);
         Peaks update_partials(Frame* frame);
 };

@@ -37,6 +37,7 @@ link_args = []
 include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
                 'src/loris', 'src/mq', numpy_include, '/usr/local/include']
 libs = ['m', 'fftw3', 'gsl', 'gslcblas']
+compile_args = ['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H']
 sources = []
 
 # -----------------------------------------------------------------------------
@@ -97,7 +98,7 @@ peak_detection = Extension(
                        'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,
     libraries=libs,
-    extra_compile_args=['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H'],
+    extra_compile_args=compile_args,
     language='c++'
 )
 
@@ -106,10 +107,12 @@ peak_detection = Extension(
 # -----------------------------------------------------------------------------
 partial_tracking = Extension(
     'simpl.partial_tracking',
-    sources=['simpl/partial_tracking.pyx',
+    sources=sources + ['simpl/partial_tracking.pyx',
              'src/simpl/partial_tracking.cpp',
              'src/simpl/base.cpp',
              'src/simpl/exceptions.cpp'],
+    libraries=libs,
+    extra_compile_args=compile_args,
     include_dirs=include_dirs,
     language='c++'
 )
@@ -119,10 +122,12 @@ partial_tracking = Extension(
 # -----------------------------------------------------------------------------
 synthesis = Extension(
     'simpl.synthesis',
-    sources=['simpl/synthesis.pyx',
+    sources=sources + ['simpl/synthesis.pyx',
              'src/simpl/synthesis.cpp',
              'src/simpl/base.cpp',
              'src/simpl/exceptions.cpp'],
+    libraries=libs,
+    extra_compile_args=compile_args,
     include_dirs=include_dirs,
     language='c++'
 )
@@ -132,10 +137,15 @@ synthesis = Extension(
 # -----------------------------------------------------------------------------
 residual = Extension(
     'simpl.residual',
-    sources=['simpl/residual.pyx',
+    sources=sources + ['simpl/residual.pyx',
+             'src/simpl/peak_detection.cpp',
+             'src/simpl/partial_tracking.cpp',
+             'src/simpl/synthesis.cpp',
              'src/simpl/residual.cpp',
              'src/simpl/base.cpp',
              'src/simpl/exceptions.cpp'],
+    libraries=libs,
+    extra_compile_args=compile_args,
     include_dirs=include_dirs,
     language='c++'
 )

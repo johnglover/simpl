@@ -126,7 +126,8 @@ cdef class SMSPeakDetection(PeakDetection):
 
     def find_peaks(self, np.ndarray[dtype_t, ndim=1] audio):
         self.frames = []
-        cdef vector[c_Frame*] output_frames = self.thisptr.find_peaks(len(audio), <double*> audio.data)
+        cdef vector[c_Frame*] output_frames = \
+            self.thisptr.find_peaks(len(audio), <double*> audio.data)
         for i in range(output_frames.size()):
             f = Frame(output_frames[i].size(), False)
             f.set_frame(output_frames[i])

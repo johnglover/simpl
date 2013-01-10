@@ -1,23 +1,23 @@
 cmake_minimum_required(VERSION 2.6)
 project(simpl)
 
-FILE(GLOB simpl_src src/simpl/*.cpp)
-FILE(GLOB sms_src src/sms/*.c)
-FILE(GLOB sndobj_src src/sndobj/*.cpp)
-FILE(GLOB loris_src src/loris/*.C)
-FILE(GLOB mq_src src/mq/*.cpp)
-LIST(APPEND source_files ${simpl_src}
+file(GLOB simpl_src src/simpl/*.cpp)
+file(GLOB sms_src src/sms/*.c)
+file(GLOB sndobj_src src/sndobj/*.cpp)
+file(GLOB loris_src src/loris/*.C)
+file(GLOB mq_src src/mq/*.cpp)
+list(APPEND source_files ${simpl_src}
                          ${sndobj_src}
                          ${sms_src}
                          ${loris_src}
                          ${mq_src})
 
-FILE(GLOB simpl_include src/simpl/*.h)
+file(GLOB simpl_include src/simpl/*.h)
 set(sms_include src/sms/sms.h)
-FILE(GLOB sndobj_include src/sndobj/*.h)
-FILE(GLOB loris_include src/loris/*.h)
-FILE(GLOB mq_include src/mq/*.h)
-LIST(APPEND include_files ${simpl_include}
+file(GLOB sndobj_include src/sndobj/*.h)
+file(GLOB loris_include src/loris/*.h)
+file(GLOB mq_include src/mq/*.h)
+list(APPEND include_files ${simpl_include}
                           ${sms_include}
                           ${sndobj_include}
                           ${loris_include}

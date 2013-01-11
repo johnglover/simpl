@@ -1,308 +1,262 @@
-#include <iostream>
-#include <cppunit/ui/text/TextTestRunner.h>
-#include <cppunit/TestResult.h>
-#include <cppunit/TestResultCollector.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/BriefTestProgressListener.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <sndfile.hh>
+#include "test_partial_tracking.h"
 
-#include "../src/simpl/base.h"
-#include "../src/simpl/peak_detection.h"
-#include "../src/simpl/partial_tracking.h"
-
-namespace simpl
-{
+using namespace simpl;
 
 // ---------------------------------------------------------------------------
 //	TestMQPartialTracking
 // ---------------------------------------------------------------------------
-class TestMQPartialTracking : public CPPUNIT_NS::TestCase {
-    CPPUNIT_TEST_SUITE(TestMQPartialTracking);
-    CPPUNIT_TEST(test_basic);
-    CPPUNIT_TEST(test_peaks);
-    CPPUNIT_TEST_SUITE_END();
+void TestMQPartialTracking::setUp() {
+    _sf = SndfileHandle(TEST_AUDIO_FILE);
 
-protected:
-    static const double PRECISION = 0.001;
-    MQPeakDetection* pd;
-    MQPartialTracking* pt;
-    SndfileHandle sf;
-    int num_samples;
+    if(_sf.error() > 0) {
+        throw Exception(std::string("Could not open audio file: ") +
+                        std::string(TEST_AUDIO_FILE));
+    }
+}
 
-    void test_basic() {
-        pt->reset();
-        pd->hop_size(256);
-        pd->frame_size(2048);
+void TestMQPartialTracking::test_basic() {
+    int hop_size = 256;
+    int frame_size = 2048;
+    int num_samples = 4096;
 
-        sample* audio = new sample[(int)sf.frames()];
-        sf.read(audio, (int)sf.frames());
+    _pd.clear();
+    _pt.reset();
 
-        Frames frames = pd->find_peaks(
-            num_samples, &(audio[(int)sf.frames() / 2])
-        );
-        frames = pt->find_partials(frames);
+    _pd.hop_size(hop_size);
+    _pd.frame_size(frame_size);
 
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-            CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-        }
+    std::vector<sample> audio(_sf.frames(), 0.0);
+    _sf.read(&audio[0], (int)_sf.frames());
+
+    Frames frames = _pd.find_peaks(num_samples,
+                                   &(audio[(int)_sf.frames() / 2]));
+    frames = _pt.find_partials(frames);
+
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
+        CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+    }
+}
+
+void TestMQPartialTracking::test_peaks() {
+    int num_frames = 8;
+    Frames frames;
+    Peaks peaks;
+
+    _pd.clear();
+    _pt.reset();
+
+    for(int i = 0; i < num_frames; i++) {
+        Peak* p = new Peak();
+        p->amplitude = 0.2;
+        p->frequency = 220;
+
+        Peak* p2 = new Peak();
+        p2->amplitude = 0.2;
+        p2->frequency = 440;
+
+        Frame* f = new Frame();
+        f->add_peak(p);
+        f->add_peak(p2);
+
+        frames.push_back(f);
+        peaks.push_back(p);
+        peaks.push_back(p2);
     }
 
-    void test_peaks() {
-        pt->reset();
-
-        Frames frames;
-        Peaks peaks;
-        int num_frames = 8;
-
-        for(int i = 0; i < num_frames; i++) {
-            Peak* p = new Peak();
-            p->amplitude = 0.2;
-            p->frequency = 220;
-
-            Peak* p2 = new Peak();
-            p2->amplitude = 0.2;
-            p2->frequency = 440;
-
-            Frame* f = new Frame();
-            f->add_peak(p);
-            f->add_peak(p2);
-
-            frames.push_back(f);
-            peaks.push_back(p);
-            peaks.push_back(p2);
-        }
-
-        pt->find_partials(frames);
-        for(int i = 0; i < num_frames; i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-            CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-            CPPUNIT_ASSERT(frames[i]->partial(0)->amplitude == 0.2);
-            CPPUNIT_ASSERT(frames[i]->partial(0)->frequency == 220);
-            CPPUNIT_ASSERT(frames[i]->partial(1)->amplitude == 0.2);
-            CPPUNIT_ASSERT(frames[i]->partial(1)->frequency == 440);
-        }
-
-        for(int i = 0; i < num_frames * 2; i++) {
-            delete peaks[i];
-        }
-
-        for(int i = 0; i < num_frames; i++) {
-            delete frames[i];
-        }
+    _pt.find_partials(frames);
+    for(int i = 0; i < num_frames; i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
+        CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(0)->amplitude,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(220, frames[i]->partial(0)->frequency,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(1)->amplitude,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(440, frames[i]->partial(1)->frequency,
+                                     PRECISION);
     }
 
-public:
-    void setUp() {
-        pd = new MQPeakDetection();
-        pt = new MQPartialTracking();
-        sf = SndfileHandle("../tests/audio/flute.wav");
-        num_samples = 4096;
+    for(int i = 0; i < num_frames * 2; i++) {
+        delete peaks[i];
     }
 
-    void tearDown() {
-        delete pd;
-        delete pt;
+    for(int i = 0; i < num_frames; i++) {
+        delete frames[i];
     }
-};
+}
 
 
 // ---------------------------------------------------------------------------
 //	TestSMSPartialTracking
 // ---------------------------------------------------------------------------
-class TestSMSPartialTracking : public CPPUNIT_NS::TestCase {
-    CPPUNIT_TEST_SUITE(TestSMSPartialTracking);
-    CPPUNIT_TEST(test_basic);
-    CPPUNIT_TEST(test_peaks);
-    CPPUNIT_TEST_SUITE_END();
+void TestSMSPartialTracking::setUp() {
+    _sf = SndfileHandle(TEST_AUDIO_FILE);
 
-protected:
-    static const double PRECISION = 0.001;
-    SMSPeakDetection* pd;
-    SMSPartialTracking* pt;
-    SndfileHandle sf;
-    int num_samples;
-
-    void test_basic() {
-        pt->reset();
-        pd->hop_size(256);
-        pd->frame_size(2048);
-
-        sample* audio = new sample[(int)sf.frames()];
-        sf.read(audio, (int)sf.frames());
-
-        Frames frames = pd->find_peaks(
-            num_samples, &(audio[(int)sf.frames() / 2])
-        );
-        frames = pt->find_partials(frames);
-
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-            CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-        }
+    if(_sf.error() > 0) {
+        throw Exception(std::string("Could not open audio file: ") +
+                        std::string(TEST_AUDIO_FILE));
     }
 
-    void test_peaks() {
-        pt->reset();
+    _pt.realtime(1);
+}
 
-        Frames frames;
-        Peaks peaks;
-        int num_frames = 8;
+void TestSMSPartialTracking::test_basic() {
+    int hop_size = 256;
+    int frame_size = 2048;
+    int num_samples = 4096;
 
-        for(int i = 0; i < num_frames; i++) {
-            Peak* p = new Peak();
-            p->amplitude = 0.2;
-            p->frequency = 220;
+    _pd.clear();
+    _pt.reset();
 
-            Peak* p2 = new Peak();
-            p2->amplitude = 0.2;
-            p2->frequency = 440;
+    _pd.hop_size(hop_size);
+    _pd.frame_size(frame_size);
 
-            Frame* f = new Frame();
-            f->add_peak(p);
-            f->add_peak(p2);
+    std::vector<sample> audio(_sf.frames(), 0.0);
+    _sf.read(&audio[0], (int)_sf.frames());
 
-            frames.push_back(f);
-            peaks.push_back(p);
-            peaks.push_back(p2);
-        }
+    Frames frames = _pd.find_peaks(num_samples,
+                                   &(audio[(int)_sf.frames() / 2]));
+    frames = _pt.find_partials(frames);
 
-        pt->find_partials(frames);
-        for(int i = 0; i < num_frames; i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-            CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-            CPPUNIT_ASSERT(frames[i]->partial(0)->amplitude == 0.2);
-            CPPUNIT_ASSERT(frames[i]->partial(0)->frequency == 220);
-            CPPUNIT_ASSERT(frames[i]->partial(1)->amplitude == 0.2);
-            CPPUNIT_ASSERT(frames[i]->partial(1)->frequency == 440);
-        }
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
+        CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+    }
+}
 
-        for(int i = 0; i < num_frames * 2; i++) {
-            delete peaks[i];
-        }
+void TestSMSPartialTracking::test_peaks() {
+    int num_frames = 8;
+    Frames frames;
+    Peaks peaks;
 
-        for(int i = 0; i < num_frames; i++) {
-            delete frames[i];
-        }
+    _pd.clear();
+    _pt.reset();
+
+    for(int i = 0; i < num_frames; i++) {
+        Peak* p = new Peak();
+        p->amplitude = 0.2;
+        p->frequency = 220;
+
+        Peak* p2 = new Peak();
+        p2->amplitude = 0.2;
+        p2->frequency = 440;
+
+        Frame* f = new Frame();
+        f->add_peak(p);
+        f->add_peak(p2);
+
+        frames.push_back(f);
+        peaks.push_back(p);
+        peaks.push_back(p2);
     }
 
-public:
-    void setUp() {
-        pd = new SMSPeakDetection();
-        pt = new SMSPartialTracking();
-        pt->realtime(1);
-        sf = SndfileHandle("../tests/audio/flute.wav");
-        num_samples = 4096;
+    _pt.find_partials(frames);
+    for(int i = 0; i < num_frames; i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
+        CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(0)->amplitude,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(220, frames[i]->partial(0)->frequency,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(1)->amplitude,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(440, frames[i]->partial(1)->frequency,
+                                     PRECISION);
     }
 
-    void tearDown() {
-        delete pd;
-        delete pt;
+    for(int i = 0; i < num_frames * 2; i++) {
+        delete peaks[i];
     }
-};
+
+    for(int i = 0; i < num_frames; i++) {
+        delete frames[i];
+    }
+}
+
 
 // ---------------------------------------------------------------------------
 //	TestLorisPartialTracking
 // ---------------------------------------------------------------------------
-class TestLorisPartialTracking : public CPPUNIT_NS::TestCase {
-    CPPUNIT_TEST_SUITE(TestLorisPartialTracking);
-    CPPUNIT_TEST(test_basic);
-    CPPUNIT_TEST(test_peaks);
-    CPPUNIT_TEST_SUITE_END();
+void TestLorisPartialTracking::setUp() {
+    _sf = SndfileHandle(TEST_AUDIO_FILE);
 
-protected:
-    static const double PRECISION = 0.001;
-    LorisPeakDetection* pd;
-    LorisPartialTracking* pt;
-    SndfileHandle sf;
-    int num_samples;
+    if(_sf.error() > 0) {
+        throw Exception(std::string("Could not open audio file: ") +
+                        std::string(TEST_AUDIO_FILE));
+    }
+}
 
-    void test_basic() {
-        pt->reset();
-        pd->hop_size(256);
-        pd->frame_size(2048);
+void TestLorisPartialTracking::test_basic() {
+    int hop_size = 256;
+    int frame_size = 2048;
+    int num_samples = 4096;
 
-        sample* audio = new sample[(int)sf.frames()];
-        sf.read(audio, (int)sf.frames());
+    _pd.clear();
+    _pt.reset();
 
-        Frames frames = pd->find_peaks(
-            num_samples, &(audio[(int)sf.frames() / 2])
-        );
-        frames = pt->find_partials(frames);
+    _pd.hop_size(hop_size);
+    _pd.frame_size(frame_size);
 
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-            CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-        }
+    std::vector<sample> audio(_sf.frames(), 0.0);
+    _sf.read(&audio[0], (int)_sf.frames());
+
+    Frames frames = _pd.find_peaks(num_samples,
+                                   &(audio[(int)_sf.frames() / 2]));
+    frames = _pt.find_partials(frames);
+
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
+        CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+    }
+}
+
+void TestLorisPartialTracking::test_peaks() {
+    int num_frames = 8;
+    Frames frames;
+    Peaks peaks;
+
+    _pd.clear();
+    _pt.reset();
+
+    for(int i = 0; i < num_frames; i++) {
+        Peak* p = new Peak();
+        p->amplitude = 0.2;
+        p->frequency = 220;
+
+        Peak* p2 = new Peak();
+        p2->amplitude = 0.2;
+        p2->frequency = 440;
+
+        Frame* f = new Frame();
+        f->add_peak(p);
+        f->add_peak(p2);
+
+        frames.push_back(f);
+        peaks.push_back(p);
+        peaks.push_back(p2);
     }
 
-    void test_peaks() {
-        pt->reset();
-
-        Frames frames;
-        Peaks peaks;
-        int num_frames = 8;
-
-        for(int i = 0; i < num_frames; i++) {
-            Peak* p = new Peak();
-            p->amplitude = 0.2;
-            p->frequency = 220;
-
-            Peak* p2 = new Peak();
-            p2->amplitude = 0.2;
-            p2->frequency = 440;
-
-            Frame* f = new Frame();
-            f->add_peak(p);
-            f->add_peak(p2);
-
-            frames.push_back(f);
-            peaks.push_back(p);
-            peaks.push_back(p2);
-        }
-
-        pt->find_partials(frames);
-        for(int i = 0; i < num_frames; i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-            CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-            CPPUNIT_ASSERT(frames[i]->partial(0)->amplitude == 0.2);
-            CPPUNIT_ASSERT(frames[i]->partial(0)->frequency == 220);
-            CPPUNIT_ASSERT(frames[i]->partial(1)->amplitude == 0.2);
-            CPPUNIT_ASSERT(frames[i]->partial(1)->frequency == 440);
-        }
-
-        for(int i = 0; i < num_frames * 2; i++) {
-            delete peaks[i];
-        }
-
-        for(int i = 0; i < num_frames; i++) {
-            delete frames[i];
-        }
+    _pt.find_partials(frames);
+    for(int i = 0; i < num_frames; i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
+        CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(0)->amplitude,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(220, frames[i]->partial(0)->frequency,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(1)->amplitude,
+                                     PRECISION);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(440, frames[i]->partial(1)->frequency,
+                                     PRECISION);
     }
 
-public:
-    void setUp() {
-        pd = new LorisPeakDetection();
-        pt = new LorisPartialTracking();
-        sf = SndfileHandle("../tests/audio/flute.wav");
-        num_samples = 4096;
+    for(int i = 0; i < num_frames * 2; i++) {
+        delete peaks[i];
     }
 
-    void tearDown() {
-        delete pd;
-        delete pt;
+    for(int i = 0; i < num_frames; i++) {
+        delete frames[i];
     }
-};
-
-} // end of namespace simpl
-
-CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestMQPartialTracking);
-CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestSMSPartialTracking);
-CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestLorisPartialTracking);
-
-int main(int arg, char **argv) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-    return runner.run("", false);
 }

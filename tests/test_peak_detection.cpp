@@ -1,185 +1,142 @@
-#include <iostream>
-#include <cppunit/ui/text/TextTestRunner.h>
-#include <cppunit/TestResult.h>
-#include <cppunit/TestResultCollector.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/BriefTestProgressListener.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <sndfile.hh>
+#include "test_peak_detection.h"
 
-#include "../src/simpl/base.h"
-#include "../src/simpl/peak_detection.h"
-
-namespace simpl
-{
+using namespace simpl;
 
 // ---------------------------------------------------------------------------
 //	TestMQPeakDetection
 // ---------------------------------------------------------------------------
-class TestMQPeakDetection : public CPPUNIT_NS::TestCase {
-    CPPUNIT_TEST_SUITE(TestMQPeakDetection);
-    CPPUNIT_TEST(test_find_peaks_in_frame_basic);
-    CPPUNIT_TEST(test_find_peaks_basic);
-    CPPUNIT_TEST(test_find_peaks_change_hop_frame_size);
-    CPPUNIT_TEST(test_find_peaks_audio);
-    CPPUNIT_TEST_SUITE_END();
+void TestMQPeakDetection::setUp() {
+    _sf = SndfileHandle(TEST_AUDIO_FILE);
 
-protected:
-    static const double PRECISION = 0.001;
-    MQPeakDetection* pd;
-    SndfileHandle sf;
-    int num_samples;
-
-    void test_find_peaks_in_frame_basic() {
-        pd->clear();
-        pd->frame_size(2048);
-
-        Frame* f = new Frame(2048, true);
-        Peaks p = pd->find_peaks_in_frame(f);
-        CPPUNIT_ASSERT(p.size() == 0);
-
-        delete f;
-        pd->clear();
+    if(_sf.error() > 0) {
+        throw Exception(std::string("Could not open audio file: ") +
+                        std::string(TEST_AUDIO_FILE));
     }
+}
 
-    void test_find_peaks_basic() {
-        sample* audio = new sample[1024];
-        pd->frame_size(512);
+void TestMQPeakDetection::test_find_peaks_in_frame_basic() {
+    int frame_size = 2048;
 
-        Frames frames = pd->find_peaks(1024, audio);
-        CPPUNIT_ASSERT(frames.size() == 2);
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
-        }
+    _pd.clear();
+    _pd.frame_size(frame_size);
 
-        delete [] audio;
+    Frame f = Frame(frame_size, true);
+    Peaks p = _pd.find_peaks_in_frame(&f);
+    CPPUNIT_ASSERT(p.size() == 0);
+}
+
+void TestMQPeakDetection::test_find_peaks_basic() {
+    int frame_size = 512;
+    std::vector<sample> audio(frame_size * 2, 0.0);
+
+    _pd.clear();
+    _pd.frame_size(frame_size);
+
+    Frames frames = _pd.find_peaks(audio.size(), &audio[0]);
+
+    CPPUNIT_ASSERT(frames.size() == 2);
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
     }
+}
 
-    void test_find_peaks_change_hop_frame_size() {
-        sample* audio = new sample[1024];
-        pd->frame_size(256);
-        pd->hop_size(256);
+void TestMQPeakDetection::test_find_peaks_audio() {
+    int num_frames = 5;
+    int num_samples = _pd.frame_size() + (_pd.hop_size() * num_frames);
 
-        Frames frames = pd->find_peaks(1024, audio);
-        CPPUNIT_ASSERT(frames.size() == 4);
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
-        }
+    std::vector<sample> audio(_sf.frames(), 0.0);
+    _sf.read(&audio[0], (int)_sf.frames());
 
-        delete [] audio;
+    _pd.clear();
+    Frames frames = _pd.find_peaks(num_samples,
+                                   &(audio[(int)_sf.frames() / 2]));
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
     }
+}
 
-    void test_find_peaks_audio() {
-        sample* audio = new sample[(int)sf.frames()];
-        sf.read(audio, (int)sf.frames());
+void TestMQPeakDetection::test_find_peaks_change_hop_frame_size() {
+    int num_samples = 1024;
+    std::vector<sample> audio(num_samples, 0.0);
 
-        Frames frames = pd->find_peaks(num_samples, &(audio[(int)sf.frames() / 2]));
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-        }
+    _pd.clear();
+    _pd.frame_size(256);
+    _pd.hop_size(256);
 
-        delete [] audio;
+    Frames frames = _pd.find_peaks(num_samples,
+                                   &(audio[(int)_sf.frames() / 2]));
+    CPPUNIT_ASSERT(frames.size() == 4);
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
     }
+}
 
-public:
-    void setUp() {
-        pd = new MQPeakDetection();
-        sf = SndfileHandle("../tests/audio/flute.wav");
-        num_samples = 4096;
-    }
-
-    void tearDown() {
-        delete pd;
-    }
-};
 
 // ---------------------------------------------------------------------------
 //	TestLorisPeakDetection
 // ---------------------------------------------------------------------------
-class TestLorisPeakDetection : public CPPUNIT_NS::TestCase {
-    CPPUNIT_TEST_SUITE(TestLorisPeakDetection);
-    CPPUNIT_TEST(test_find_peaks_in_frame_basic);
-    CPPUNIT_TEST(test_find_peaks_basic);
-    CPPUNIT_TEST(test_find_peaks_change_hop_frame_size);
-    CPPUNIT_TEST(test_find_peaks_audio);
-    CPPUNIT_TEST_SUITE_END();
+void TestLorisPeakDetection::setUp() {
+    _sf = SndfileHandle(TEST_AUDIO_FILE);
 
-protected:
-    static const double PRECISION = 0.001;
-    LorisPeakDetection* pd;
-    SndfileHandle sf;
-    int num_samples;
-
-    void test_find_peaks_in_frame_basic() {
-        pd->clear();
-        pd->frame_size(2048);
-
-        Frame* f = new Frame(2048, true);
-        Peaks p = pd->find_peaks_in_frame(f);
-        CPPUNIT_ASSERT(p.size() == 0);
-
-        delete f;
-        pd->clear();
+    if(_sf.error() > 0) {
+        throw Exception(std::string("Could not open audio file: ") +
+                        std::string(TEST_AUDIO_FILE));
     }
+}
 
-    void test_find_peaks_basic() {
-        sample* audio = new sample[1024];
-        pd->frame_size(512);
+void TestLorisPeakDetection::test_find_peaks_in_frame_basic() {
+    int frame_size = 2048;
 
-        Frames frames = pd->find_peaks(1024, audio);
-        CPPUNIT_ASSERT(frames.size() == 2);
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
-        }
+    _pd.clear();
+    _pd.frame_size(frame_size);
 
-        delete [] audio;
+    Frame f = Frame(frame_size, true);
+    Peaks p = _pd.find_peaks_in_frame(&f);
+    CPPUNIT_ASSERT(p.size() == 0);
+}
+
+void TestLorisPeakDetection::test_find_peaks_basic() {
+    int frame_size = 512;
+    std::vector<sample> audio(frame_size * 2, 0.0);
+
+    _pd.clear();
+    _pd.frame_size(frame_size);
+
+    Frames frames = _pd.find_peaks(audio.size(), &audio[0]);
+
+    CPPUNIT_ASSERT(frames.size() == 2);
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
     }
+}
 
-    void test_find_peaks_change_hop_frame_size() {
-        sample* audio = new sample[1024];
-        pd->frame_size(256);
-        pd->hop_size(256);
+void TestLorisPeakDetection::test_find_peaks_audio() {
+    int num_frames = 5;
+    int num_samples = _pd.frame_size() + (_pd.hop_size() * num_frames);
 
-        Frames frames = pd->find_peaks(1024, audio);
-        CPPUNIT_ASSERT(frames.size() == 4);
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
-        }
+    std::vector<sample> audio(_sf.frames(), 0.0);
+    _sf.read(&audio[0], (int)_sf.frames());
 
-        delete [] audio;
+    _pd.clear();
+    Frames frames = _pd.find_peaks(num_samples,
+                                   &(audio[(int)_sf.frames() / 2]));
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
     }
+}
 
-    void test_find_peaks_audio() {
-        sample* audio = new sample[(int)sf.frames()];
-        sf.read(audio, (int)sf.frames());
+void TestLorisPeakDetection::test_find_peaks_change_hop_frame_size() {
+    int num_samples = 1024;
+    std::vector<sample> audio(num_samples, 0.0);
 
-        Frames frames = pd->find_peaks(num_samples, &(audio[(int)sf.frames() / 2]));
-        for(int i = 0; i < frames.size(); i++) {
-            CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
-        }
+    _pd.clear();
+    _pd.frame_size(256);
+    _pd.hop_size(256);
 
-        delete [] audio;
+    Frames frames = _pd.find_peaks(num_samples,
+                                   &(audio[(int)_sf.frames() / 2]));
+    CPPUNIT_ASSERT(frames.size() == 4);
+    for(int i = 0; i < frames.size(); i++) {
+        CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
     }
-
-public:
-    void setUp() {
-        pd = new LorisPeakDetection();
-        sf = SndfileHandle("../tests/audio/flute.wav");
-        num_samples = 4096;
-    }
-
-    void tearDown() {
-        delete pd;
-    }
-};
-
-} // end of namespace simpl
-
-CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestMQPeakDetection);
-CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestLorisPeakDetection);
-
-int main(int arg, char **argv) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-    return runner.run("", false);
 }

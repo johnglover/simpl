@@ -39,24 +39,19 @@ install(FILES ${include_files} DESTINATION include/simpl)
 # Tests
 # ----------------------------------------------------------------------------
 if(BUILD_TESTS)
-    set(test_base_src ${source_files} tests/test_base.cpp)
-    set(test_peak_detection_src ${source_files}
-        tests/test_peak_detection.cpp)
-    set(test_partial_tracking_src ${source_files}
-        tests/test_partial_tracking.cpp)
-    set(test_synthesis_src ${source_files} tests/test_synthesis.cpp)
+    add_library(simpl_static STATIC ${source_files})
+    list(APPEND libs simpl_static cppunit sndfile)
 
-    LIST(APPEND libs cppunit sndfile)
+    include_directories(tests)
 
-    add_executable(test_base ${test_base_src})
-    add_executable(test_peak_detection ${test_peak_detection_src})
-    add_executable(test_partial_tracking ${test_partial_tracking_src})
-    add_executable(test_synthesis ${test_synthesis_src})
+    set(test_src tests/tests.cpp
+                 tests/test_base.cpp
+                 tests/test_peak_detection.cpp
+                 tests/test_partial_tracking.cpp
+                 tests/test_synthesis.cpp)
 
-    target_link_libraries(test_base ${libs})
-    target_link_libraries(test_peak_detection ${libs})
-    target_link_libraries(test_partial_tracking ${libs})
-    target_link_libraries(test_synthesis ${libs})
+    add_executable(tests ${test_src})
+    target_link_libraries(tests ${libs})
 else()
     message("Not building tests. To change run CMake with -D BUILD_TESTS=yes")
 endif()

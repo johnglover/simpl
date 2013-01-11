@@ -76,6 +76,7 @@ class MQPartialTracking : public PartialTracking {
         MQPartialTracking();
         ~MQPartialTracking();
         void reset();
+        using PartialTracking::max_partials;
         void max_partials(int new_max_partials);
         Peaks update_partials(Frame* frame);
 };
@@ -97,6 +98,7 @@ class SMSPartialTracking : public PartialTracking {
         SMSPartialTracking();
         ~SMSPartialTracking();
         void reset();
+        using PartialTracking::max_partials;
         void max_partials(int new_max_partials);
         bool realtime();
         void realtime(bool is_realtime);
@@ -131,6 +133,7 @@ class SndObjPartialTracking : public PartialTracking {
         SndObjPartialTracking();
         ~SndObjPartialTracking();
         void reset();
+        using PartialTracking::max_partials;
         void max_partials(int new_max_partials);
         Peaks update_partials(Frame* frame);
 };
@@ -160,6 +163,7 @@ class LorisPartialTracking : public PartialTracking {
         LorisPartialTracking();
         ~LorisPartialTracking();
         void reset();
+        using PartialTracking::max_partials;
         void max_partials(int new_max_partials);
         Peaks update_partials(Frame* frame);
 };

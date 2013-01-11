@@ -38,6 +38,7 @@ class Synthesis {
 
     public:
         Synthesis();
+        virtual void reset();
         int frame_size();
         virtual void frame_size(int new_frame_size);
         int hop_size();
@@ -60,12 +61,13 @@ class MQSynthesis : public Synthesis {
         sample* _prev_amps;
         sample* _prev_freqs;
         sample* _prev_phases;
-        void reset();
         sample hz_to_radians(sample f);
 
     public:
         MQSynthesis();
         ~MQSynthesis();
+        void reset();
+        using Synthesis::max_partials;
         void max_partials(int new_max_partials);
         void synth_frame(Frame* frame);
 };
@@ -82,7 +84,9 @@ class SMSSynthesis : public Synthesis {
     public:
         SMSSynthesis();
         ~SMSSynthesis();
+        using Synthesis::hop_size;
         void hop_size(int new_hop_size);
+        using Synthesis::max_partials;
         void max_partials(int new_max_partials);
         int num_stochastic_coeffs();
         int stochastic_type();
@@ -111,13 +115,16 @@ class SndObjSynthesis : public Synthesis {
         SimplSndObjAnalysisWrapper* _analysis;
         HarmTable* _table;
         SimplAdSyn* _synth;
-        void reset();
 
     public:
         SndObjSynthesis();
         ~SndObjSynthesis();
+        void reset();
+        using Synthesis::frame_size;
         void frame_size(int new_frame_size);
+        using Synthesis::hop_size;
         void hop_size(int new_hop_size);
+        using Synthesis::max_partials;
         void max_partials(int new_max_partials);
         void synth_frame(Frame* frame);
 };
@@ -130,11 +137,12 @@ class LorisSynthesis : public Synthesis {
     private:
         std::vector<Loris::Oscillator> _oscs;
         sample _bandwidth;
-        void reset();
 
     public:
         LorisSynthesis();
         ~LorisSynthesis();
+        void reset();
+        using Synthesis::max_partials;
         void max_partials(int new_max_partials);
         sample bandwidth();
         void bandwidth(sample new_bandwidth);

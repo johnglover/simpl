@@ -96,8 +96,11 @@ class MQPeakDetection : public PeakDetection {
     public:
         MQPeakDetection();
         ~MQPeakDetection();
+        using PeakDetection::frame_size;
         void frame_size(int new_frame_size);
+        using PeakDetection::hop_size;
         void hop_size(int new_hop_size);
+        using PeakDetection::max_peaks;
         void max_peaks(int new_max_peaks);
         Peaks find_peaks_in_frame(Frame* frame);
 };
@@ -115,8 +118,11 @@ class SMSPeakDetection : public PeakDetection {
         SMSPeakDetection();
         ~SMSPeakDetection();
         int next_frame_size();
+        using PeakDetection::frame_size;
         void frame_size(int new_frame_size);
+        using PeakDetection::hop_size;
         void hop_size(int new_hop_size);
+        using PeakDetection::max_peaks;
         void max_peaks(int new_max_peaks);
         int realtime();
         void realtime(int new_realtime);
@@ -140,8 +146,11 @@ class SndObjPeakDetection : public PeakDetection {
     public:
         SndObjPeakDetection();
         ~SndObjPeakDetection();
+        using PeakDetection::frame_size;
         void frame_size(int new_frame_size);
+        using PeakDetection::hop_size;
         void hop_size(int new_hop_size);
+        using PeakDetection::max_peaks;
         void max_peaks(int new_max_peaks);
         Peaks find_peaks_in_frame(Frame* frame);
 };
@@ -177,8 +186,11 @@ class LorisPeakDetection : public PeakDetection {
     public:
         LorisPeakDetection();
         ~LorisPeakDetection();
+        using PeakDetection::frame_size;
         void frame_size(int new_frame_size);
+        using PeakDetection::hop_size;
         void hop_size(int new_hop_size);
+        using PeakDetection::max_peaks;
         void max_peaks(int new_max_peaks);
         Peaks find_peaks_in_frame(Frame* frame);
 };

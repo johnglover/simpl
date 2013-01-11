@@ -14,6 +14,9 @@ Synthesis::Synthesis() {
     _sampling_rate = 44100;
 }
 
+void Synthesis::reset() {
+}
+
 int Synthesis::frame_size() {
     return _frame_size;
 }

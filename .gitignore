@@ -2,7 +2,6 @@
 Icon?
 Thumbs.db
 *.swp
-*.wav
 *.aiff
 *.sdif
 
@@ -25,8 +24,6 @@ simpl/synthesis.cpp
 simpl/residual.cpp
 
 # Test files
-tests/audio
 tests/testbase
 tests/testbase.dSYM
 tests/*.json
-tests/*.wav

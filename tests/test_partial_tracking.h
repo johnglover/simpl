@@ -39,7 +39,7 @@ protected:
 class TestSMSPartialTracking : public CPPUNIT_NS::TestCase {
     CPPUNIT_TEST_SUITE(TestSMSPartialTracking);
     CPPUNIT_TEST(test_basic);
-    // CPPUNIT_TEST(test_peaks);
+    CPPUNIT_TEST(test_peaks);
     CPPUNIT_TEST_SUITE_END();
 
 public:

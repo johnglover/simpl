@@ -48,7 +48,7 @@ void TestMQPartialTracking::test_peaks() {
 
     for(int i = 0; i < num_frames; i++) {
         Peak* p = new Peak();
-        p->amplitude = 0.2;
+        p->amplitude = 0.4;
         p->frequency = 220;
 
         Peak* p2 = new Peak();
@@ -68,7 +68,7 @@ void TestMQPartialTracking::test_peaks() {
     for(int i = 0; i < num_frames; i++) {
         CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
         CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(0)->amplitude,
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.4, frames[i]->partial(0)->amplitude,
                                      PRECISION);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(220, frames[i]->partial(0)->frequency,
                                      PRECISION);
@@ -99,7 +99,9 @@ void TestSMSPartialTracking::setUp() {
                         std::string(TEST_AUDIO_FILE));
     }
 
-    _pt.realtime(1);
+    _pt.realtime(true);
+    _pt.max_frame_delay(2);
+    _pt.max_partials(5);
 }
 
 void TestSMSPartialTracking::test_basic() {
@@ -136,7 +138,7 @@ void TestSMSPartialTracking::test_peaks() {
 
     for(int i = 0; i < num_frames; i++) {
         Peak* p = new Peak();
-        p->amplitude = 0.2;
+        p->amplitude = 0.4;
         p->frequency = 220;
 
         Peak* p2 = new Peak();
@@ -153,10 +155,10 @@ void TestSMSPartialTracking::test_peaks() {
     }
 
     _pt.find_partials(frames);
-    for(int i = 0; i < num_frames; i++) {
+    for(int i = 1; i < num_frames; i++) {
         CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
         CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(0)->amplitude,
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.4, frames[i]->partial(0)->amplitude,
                                      PRECISION);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(220, frames[i]->partial(0)->frequency,
                                      PRECISION);
@@ -222,7 +224,7 @@ void TestLorisPartialTracking::test_peaks() {
 
     for(int i = 0; i < num_frames; i++) {
         Peak* p = new Peak();
-        p->amplitude = 0.2;
+        p->amplitude = 0.4;
         p->frequency = 220;
 
         Peak* p2 = new Peak();
@@ -242,7 +244,7 @@ void TestLorisPartialTracking::test_peaks() {
     for(int i = 0; i < num_frames; i++) {
         CPPUNIT_ASSERT(frames[i]->num_peaks() > 0);
         CPPUNIT_ASSERT(frames[i]->num_partials() > 0);
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.2, frames[i]->partial(0)->amplitude,
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.4, frames[i]->partial(0)->amplitude,
                                      PRECISION);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(220, frames[i]->partial(0)->frequency,
                                      PRECISION);

@@ -171,7 +171,7 @@ SMSPartialTracking::SMSPartialTracking() {
     _analysis_params.fHighestFreq = 20000;
     _analysis_params.iMaxDelayFrames = 4;
     _analysis_params.analDelay = 0;
-    _analysis_params.minGoodFrames = 1;
+    _analysis_params.minGoodFrames = 0;
     _analysis_params.iCleanTracks = 0;
     _analysis_params.iFormat = SMS_FORMAT_IHP;
     _analysis_params.nTracks = _max_partials;

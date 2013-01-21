@@ -893,16 +893,22 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
     int i;
 
     if(pAnalParams->minGoodFrames < 1)
+    {
         return -1;
+    }
 
     /* get the sum of the past few fundamentals */
     for(i = 0; (i < pAnalParams->minGoodFrames) && (iCurrentFrame-i >= 0); i++)
     {
         fFund = pAnalParams->ppFrames[iCurrentFrame-i]->fFundamental;
         if(fFund <= 0)
+        {
             return -1;
+        }
         else
+        {
             fSum += fFund;
+        }
     }
 
     /* find the average */
@@ -910,7 +916,9 @@ sfloat sms_fundDeviation(SMS_AnalParams *pAnalParams, int iCurrentFrame)
 
     /* get the deviation from the average */
     for(i = 0; (i < pAnalParams->minGoodFrames) && (iCurrentFrame-i >= 0); i++)
+    {
         fDeviation += fabs(pAnalParams->ppFrames[iCurrentFrame-i]->fFundamental - fAverage);
+    }
 
     /* return the deviation from the average */
     return fDeviation / (pAnalParams->minGoodFrames * fAverage);

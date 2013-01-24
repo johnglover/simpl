@@ -70,8 +70,15 @@ void Frame::create_arrays() {
 }
 
 void Frame::destroy_arrays() {
-    delete [] _audio;
-    delete [] _residual;
+    if(_audio) {
+        delete [] _audio;
+        _audio = NULL;
+    }
+    if(_residual) {
+        delete [] _residual;
+        _residual = NULL;
+    }
+
     destroy_synth_arrays();
 }
 
@@ -83,8 +90,14 @@ void Frame::create_synth_arrays() {
 }
 
 void Frame::destroy_synth_arrays() {
-    delete [] _synth;
-    delete [] _synth_residual;
+    if(_synth) {
+        delete [] _synth;
+        _synth = NULL;
+    }
+    if(_synth_residual) {
+        delete [] _synth_residual;
+        _synth_residual = NULL;
+    }
 }
 
 void Frame::clear() {

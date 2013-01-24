@@ -135,15 +135,15 @@ Peaks PeakDetection::find_peaks_in_frame(Frame* frame) {
 Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
     clear();
     unsigned int pos = 0;
+    bool alloc_memory_in_frame = true;
 
     while(pos <= audio_size - _hop_size) {
-        // get the next frame size
         if(!_static_frame_size) {
             _frame_size = next_frame_size();
         }
 
-        // get the next frame
-        Frame* f = new Frame(_frame_size, true);
+        Frame* f = new Frame(_frame_size, alloc_memory_in_frame);
+        f->max_peaks(_max_peaks);
 
         if((int)pos <= (audio_size - _frame_size)) {
             f->audio(&(audio[pos]), _frame_size);
@@ -152,11 +152,7 @@ Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
             f->audio(&(audio[pos]), audio_size - pos);
         }
 
-        f->max_peaks(_max_peaks);
-
-        // find peaks
         find_peaks_in_frame(f);
-
         _frames.push_back(f);
         pos += _hop_size;
     }

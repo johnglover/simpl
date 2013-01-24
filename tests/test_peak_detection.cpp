@@ -63,8 +63,7 @@ void TestMQPeakDetection::test_find_peaks_change_hop_frame_size() {
     _pd.frame_size(256);
     _pd.hop_size(256);
 
-    Frames frames = _pd.find_peaks(num_samples,
-                                   &(audio[(int)_sf.frames() / 2]));
+    Frames frames = _pd.find_peaks(num_samples, &audio[0]);
     CPPUNIT_ASSERT(frames.size() == 4);
     for(int i = 0; i < frames.size(); i++) {
         CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);
@@ -133,8 +132,7 @@ void TestLorisPeakDetection::test_find_peaks_change_hop_frame_size() {
     _pd.frame_size(256);
     _pd.hop_size(256);
 
-    Frames frames = _pd.find_peaks(num_samples,
-                                   &(audio[(int)_sf.frames() / 2]));
+    Frames frames = _pd.find_peaks(num_samples, &audio[0]);
     CPPUNIT_ASSERT(frames.size() == 4);
     for(int i = 0; i < frames.size(); i++) {
         CPPUNIT_ASSERT(frames[i]->num_peaks() == 0);

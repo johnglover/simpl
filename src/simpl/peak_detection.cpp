@@ -329,24 +329,27 @@ Peaks SMSPeakDetection::find_peaks_in_frame(Frame* frame) {
 // peaks returned for each frame.
 Frames SMSPeakDetection::find_peaks(int audio_size, sample* audio) {
     clear();
+    unsigned int pos = 0;
+    bool alloc_memory_in_frame = true;
 
     _analysis_params.iSizeSound = audio_size;
-    unsigned int pos = 0;
 
     while(pos <= audio_size - _hop_size) {
-        // get the next frame size
         if(!_static_frame_size) {
             _frame_size = next_frame_size();
         }
 
-        // get the next frame
-        Frame* f = new Frame(_frame_size);
-        f->audio(&audio[pos]);
+        Frame* f = new Frame(_frame_size, alloc_memory_in_frame);
         f->max_peaks(_max_peaks);
 
-        // find peaks
-        find_peaks_in_frame(f);
+        if((int)pos <= (audio_size - _frame_size)) {
+            f->audio(&(audio[pos]), _frame_size);
+        }
+        else {
+            f->audio(&(audio[pos]), audio_size - pos);
+        }
 
+        find_peaks_in_frame(f);
         _frames.push_back(f);
 
         if(!_static_frame_size) {

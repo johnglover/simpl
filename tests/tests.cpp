@@ -16,6 +16,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestSMSPartialTracking);
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestLorisPartialTracking);
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestMQSynthesis);
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestLorisSynthesis);
+CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestSMSSynthesis);
 
 int main(int arg, char **argv) {
     CppUnit::TextTestRunner runner;

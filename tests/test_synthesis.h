@@ -56,6 +56,31 @@ protected:
     void test_changing_frame_size();
 };
 
+// ---------------------------------------------------------------------------
+//	TestSMSSynthesis
+// ---------------------------------------------------------------------------
+class TestSMSSynthesis : public CPPUNIT_NS::TestCase {
+    CPPUNIT_TEST_SUITE(TestSMSSynthesis);
+    CPPUNIT_TEST(test_basic);
+    CPPUNIT_TEST(test_changing_frame_size);
+    CPPUNIT_TEST_SUITE_END();
+
+public:
+    void setUp();
+    void tearDown();
+
+protected:
+    SMSPeakDetection _pd;
+    SMSPartialTracking _pt;
+    SMSSynthesis _synth;
+    SndfileHandle _sf;
+    Peaks _peaks;
+    Frames _frames;
+
+    void test_basic();
+    void test_changing_frame_size();
+};
+
 } // end of namespace simpl
 
 #endif

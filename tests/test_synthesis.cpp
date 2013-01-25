@@ -8,6 +8,8 @@ using namespace simpl;
 static void test_basic(PeakDetection *pd, PartialTracking* pt,
                        Synthesis* synth, SndfileHandle *sf) {
     int num_samples = 4096;
+    int hop_size = 256;
+    int frame_size = 512;
 
     std::vector<sample> audio(sf->frames(), 0.0);
     sf->read(&audio[0], (int)sf->frames());
@@ -15,6 +17,10 @@ static void test_basic(PeakDetection *pd, PartialTracking* pt,
     pd->clear();
     pt->reset();
     synth->reset();
+
+    pd->frame_size(frame_size);
+    pd->hop_size(hop_size);
+    synth->hop_size(hop_size);
 
     Frames frames = pd->find_peaks(num_samples,
                                    &(audio[(int)sf->frames() / 2]));
@@ -135,5 +141,51 @@ void TestLorisSynthesis::test_basic() {
 }
 
 void TestLorisSynthesis::test_changing_frame_size() {
+    ::test_changing_frame_size(&_pd, &_pt, &_synth, &_sf);
+}
+
+// ---------------------------------------------------------------------------
+//	TestSMSSynthesis
+// ---------------------------------------------------------------------------
+void TestSMSSynthesis::setUp() {
+    _sf = SndfileHandle(TEST_AUDIO_FILE);
+
+    if(_sf.error() > 0) {
+        throw Exception(std::string("Could not open audio file: ") +
+                        std::string(TEST_AUDIO_FILE));
+    }
+
+    _pd.clear();
+    _pt.reset();
+    _synth.reset();
+
+    // SMSPartialTracking has a delay of _pt.max_frame_delay(),
+    // so pass peak data to find_partials before calling the
+    // main test function
+    for(int i = 0; i < _pt.max_frame_delay(); i++) {
+        Peak* p = new Peak();
+        p->amplitude = 0.4;
+        p->frequency = 220;
+        _peaks.push_back(p);
+
+        Frame* f = new Frame();
+        f->add_peak(p);
+        _frames.push_back(f);
+    }
+    _pt.find_partials(_frames);
+}
+
+void TestSMSSynthesis::tearDown() {
+    for(int i = 0; i < _pt.max_frame_delay(); i++) {
+        delete _peaks[i];
+        delete _frames[i];
+    }
+}
+
+void TestSMSSynthesis::test_basic() {
+    ::test_basic(&_pd, &_pt, &_synth, &_sf);
+}
+
+void TestSMSSynthesis::test_changing_frame_size() {
     ::test_changing_frame_size(&_pd, &_pt, &_synth, &_sf);
 }

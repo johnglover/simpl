@@ -18,6 +18,7 @@ namespace simpl
 class TestMQSynthesis : public CPPUNIT_NS::TestCase {
     CPPUNIT_TEST_SUITE(TestMQSynthesis);
     CPPUNIT_TEST(test_basic);
+    CPPUNIT_TEST(test_changing_frame_size);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -30,6 +31,7 @@ protected:
     SndfileHandle _sf;
 
     void test_basic();
+    void test_changing_frame_size();
 };
 
 // ---------------------------------------------------------------------------

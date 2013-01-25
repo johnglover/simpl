@@ -133,3 +133,7 @@ void TestLorisSynthesis::setUp() {
 void TestLorisSynthesis::test_basic() {
     ::test_basic(&_pd, &_pt, &_synth, &_sf);
 }
+
+void TestLorisSynthesis::test_changing_frame_size() {
+    ::test_changing_frame_size(&_pd, &_pt, &_synth, &_sf);
+}

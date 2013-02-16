@@ -18,7 +18,7 @@ def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
     q = 1.4
     r = 0.5
     rho = 0.33
-    N = 8
+    N = 20
     Err = {}
 
     max_amp = max([x.amplitude for x in peaks])
@@ -43,7 +43,7 @@ def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
 
         # calculate mismatch between predicted and actual peaks
         for h in harmonics:
-            k = best_match(f_current, [x.frequency for x in peaks])
+            k = best_match(h, [x.frequency for x in peaks])
             f = peaks[k].frequency
             a = peaks[k].amplitude
             Err_pm += abs(h - f) * (h ** -p) + (a / max_amp) * \

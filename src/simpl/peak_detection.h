@@ -4,6 +4,7 @@
 #include "base.h"
 
 #include "mq.h"
+#include "twm.h"
 
 extern "C" {
     #include "sms.h"

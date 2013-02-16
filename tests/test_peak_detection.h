@@ -37,6 +37,19 @@ protected:
 
 
 // ---------------------------------------------------------------------------
+//	TestTWM
+// ---------------------------------------------------------------------------
+class TestTWM : public CPPUNIT_NS::TestCase {
+    CPPUNIT_TEST_SUITE(TestTWM);
+    CPPUNIT_TEST(test_basic);
+    CPPUNIT_TEST_SUITE_END();
+
+protected:
+    void test_basic();
+};
+
+
+// ---------------------------------------------------------------------------
 //	TestLorisPeakDetection
 // ---------------------------------------------------------------------------
 class TestLorisPeakDetection : public CPPUNIT_NS::TestCase {

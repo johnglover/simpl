@@ -72,6 +72,28 @@ void TestMQPeakDetection::test_find_peaks_change_hop_frame_size() {
 
 
 // ---------------------------------------------------------------------------
+//	TestTWM
+// ---------------------------------------------------------------------------
+void TestTWM::test_basic() {
+    int num_peaks = 100;
+    int base_freq = 110;
+    Peaks peaks;
+
+    for(int i = 0; i < num_peaks; i++) {
+        Peak* p = new Peak();
+        p->amplitude = 0.4;
+        p->frequency = base_freq * (i + 1);
+        peaks.push_back(p);
+    }
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(base_freq, twm(peaks), PRECISION);
+
+    for(int i = 0; i < num_peaks; i++) {
+        delete peaks[i];
+    }
+}
+
+// ---------------------------------------------------------------------------
 //	TestLorisPeakDetection
 // ---------------------------------------------------------------------------
 void TestLorisPeakDetection::setUp() {

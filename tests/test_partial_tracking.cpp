@@ -41,27 +41,15 @@ void TestMQPartialTracking::test_basic() {
 void TestMQPartialTracking::test_peaks() {
     int num_frames = 8;
     Frames frames;
-    Peaks peaks;
 
     _pd.clear();
     _pt.reset();
 
     for(int i = 0; i < num_frames; i++) {
-        Peak* p = new Peak();
-        p->amplitude = 0.4;
-        p->frequency = 220;
-
-        Peak* p2 = new Peak();
-        p2->amplitude = 0.2;
-        p2->frequency = 440;
-
         Frame* f = new Frame();
-        f->add_peak(p);
-        f->add_peak(p2);
-
+        f->add_peak(0.4, 220, 0, 0);
+        f->add_peak(0.2, 440, 0, 0);
         frames.push_back(f);
-        peaks.push_back(p);
-        peaks.push_back(p2);
     }
 
     _pt.find_partials(frames);
@@ -76,10 +64,6 @@ void TestMQPartialTracking::test_peaks() {
                                      PRECISION);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(440, frames[i]->partial(1)->frequency,
                                      PRECISION);
-    }
-
-    for(int i = 0; i < num_frames * 2; i++) {
-        delete peaks[i];
     }
 
     for(int i = 0; i < num_frames; i++) {
@@ -131,27 +115,15 @@ void TestSMSPartialTracking::test_basic() {
 void TestSMSPartialTracking::test_peaks() {
     int num_frames = 8;
     Frames frames;
-    Peaks peaks;
 
     _pd.clear();
     _pt.reset();
 
     for(int i = 0; i < num_frames; i++) {
-        Peak* p = new Peak();
-        p->amplitude = 0.4;
-        p->frequency = 220;
-
-        Peak* p2 = new Peak();
-        p2->amplitude = 0.2;
-        p2->frequency = 440;
-
         Frame* f = new Frame();
-        f->add_peak(p);
-        f->add_peak(p2);
-
+        f->add_peak(0.4, 220, 0, 0);
+        f->add_peak(0.2, 440, 0, 0);
         frames.push_back(f);
-        peaks.push_back(p);
-        peaks.push_back(p2);
     }
 
     _pt.find_partials(frames);
@@ -166,10 +138,6 @@ void TestSMSPartialTracking::test_peaks() {
                                      PRECISION);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(440, frames[i]->partial(1)->frequency,
                                      PRECISION);
-    }
-
-    for(int i = 0; i < num_frames * 2; i++) {
-        delete peaks[i];
     }
 
     for(int i = 0; i < num_frames; i++) {
@@ -217,27 +185,15 @@ void TestLorisPartialTracking::test_basic() {
 void TestLorisPartialTracking::test_peaks() {
     int num_frames = 8;
     Frames frames;
-    Peaks peaks;
 
     _pd.clear();
     _pt.reset();
 
     for(int i = 0; i < num_frames; i++) {
-        Peak* p = new Peak();
-        p->amplitude = 0.4;
-        p->frequency = 220;
-
-        Peak* p2 = new Peak();
-        p2->amplitude = 0.2;
-        p2->frequency = 440;
-
         Frame* f = new Frame();
-        f->add_peak(p);
-        f->add_peak(p2);
-
+        f->add_peak(0.4, 220, 0, 0);
+        f->add_peak(0.2, 440, 0, 0);
         frames.push_back(f);
-        peaks.push_back(p);
-        peaks.push_back(p2);
     }
 
     _pt.find_partials(frames);
@@ -252,10 +208,6 @@ void TestLorisPartialTracking::test_peaks() {
                                      PRECISION);
         CPPUNIT_ASSERT_DOUBLES_EQUAL(440, frames[i]->partial(1)->frequency,
                                      PRECISION);
-    }
-
-    for(int i = 0; i < num_frames * 2; i++) {
-        delete peaks[i];
     }
 
     for(int i = 0; i < num_frames; i++) {

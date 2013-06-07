@@ -96,13 +96,15 @@ MQPartialTracking::MQPartialTracking() {
 
 MQPartialTracking::~MQPartialTracking() {
     destroy_mq(&_mq_params);
-    delete_peak_list(_peak_list);
+    delete_peak_list(_prev_peak_list);
+    _peak_list = NULL;
     _prev_peak_list = NULL;
 }
 
 void MQPartialTracking::reset() {
     reset_mq(&_mq_params);
-    delete_peak_list(_peak_list);
+    delete_peak_list(_prev_peak_list);
+    _peak_list = NULL;
     _prev_peak_list = NULL;
 }
 

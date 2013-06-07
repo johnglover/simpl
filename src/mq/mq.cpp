@@ -62,7 +62,7 @@ int simpl::destroy_mq(MQParameters* params) {
 // Add new_peak to the doubly linked list of peaks, keeping peaks sorted
 // with the largest amplitude peaks at the start of the list
 void simpl::mq_add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
-    do {
+    while(true) {
         if(peak_list->peak) {
             if(peak_list->peak->amplitude > new_peak->amplitude) {
                 if(peak_list->next) {
@@ -73,7 +73,7 @@ void simpl::mq_add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
                     new_node->peak = new_peak;
                     new_node->prev = peak_list;
                     new_node->next = NULL;
-                    new_node->prev->next = new_node;
+                    peak_list->next = new_node;
                     return;
                 }
             }
@@ -93,7 +93,6 @@ void simpl::mq_add_peak(MQPeak* new_peak, MQPeakList* peak_list) {
             return;
         }
     }
-    while(1);
 }
 
 void simpl::delete_peak_list(MQPeakList* peak_list) {
@@ -107,11 +106,15 @@ void simpl::delete_peak_list(MQPeakList* peak_list) {
         peak_list = temp;
     }
     if(peak_list) {
+        if(peak_list->peak) {
+            delete peak_list->peak;
+            peak_list->peak = NULL;
+        }
         peak_list->next = NULL;
         peak_list->prev = NULL;
         delete peak_list;
+        peak_list = NULL;
     }
-    peak_list = NULL;
 }
 
 sample get_magnitude(sample x, sample y) {
@@ -127,9 +130,6 @@ MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
     int num_peaks = 0;
     sample prev_amp, current_amp, next_amp;
     MQPeakList* peak_list = new MQPeakList();
-    peak_list->next = NULL;
-    peak_list->prev = NULL;
-    peak_list->peak = NULL;
 
     // take fft of the signal
     memcpy(params->fft_in, signal, sizeof(sample)*params->frame_size);
@@ -178,7 +178,8 @@ MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
         num_peaks = params->max_peaks;
     }
 
-    return simpl::mq_sort_peaks_by_frequency(peak_list, num_peaks);
+    // return simpl::mq_sort_peaks_by_frequency(peak_list, num_peaks);
+    return peak_list;
 }
 
 // ----------------------------------------------------------------------------
@@ -258,16 +259,16 @@ MQPeakList* merge_sort(MQPeakList* peak_list, int num_peaks) {
     // give the extra peak to the left
     int middle;
     if(num_peaks % 2 == 0) {
-        middle = num_peaks/2;
+        middle = num_peaks / 2;
     }
     else {
-        middle = (num_peaks/2) + 1;
+        middle = (num_peaks / 2) + 1;
     }
 
     // split the peak list into left and right at the middle value
     left = peak_list;
     while(current) {
-        if(n == middle-1) {
+        if(n == middle - 1) {
             right = current->next;
             current->next = NULL;
             break;
@@ -279,15 +280,18 @@ MQPeakList* merge_sort(MQPeakList* peak_list, int num_peaks) {
 
     // recursively sort and merge
     left = merge_sort(left, middle);
-    right = merge_sort(right, num_peaks-middle);
+    right = merge_sort(right, num_peaks - middle);
     return merge(left, right);
 }
 
 // Sort peak_list into a list order from smaller to largest frequency.
 MQPeakList* simpl::mq_sort_peaks_by_frequency(MQPeakList* peak_list,
                                               int num_peaks) {
-    if(!peak_list || num_peaks == 0) {
+    if(!peak_list) {
         return NULL;
+    }
+    else if(num_peaks == 0) {
+        return peak_list;
     }
     else {
         return merge_sort(peak_list, num_peaks);
@@ -363,7 +367,7 @@ MQPeakList* simpl::mq_track_peaks(MQPeakList* peak_list,
                                   MQParameters* params) {
     MQPeakList* current = peak_list;
 
-    // MQ algorithm needs 2 frames of data, so return if this is the
+    // MQ algorithm needs 2 frames of data, so do nothing if this is the
     // first frame
     if(params->prev_peaks) {
         // find all matches for previous peaks in the current frame

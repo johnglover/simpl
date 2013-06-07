@@ -74,7 +74,6 @@ protected:
     SMSPartialTracking _pt;
     SMSSynthesis _synth;
     SndfileHandle _sf;
-    Peaks _peaks;
     Frames _frames;
 
     void test_basic();

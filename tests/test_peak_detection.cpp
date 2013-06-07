@@ -21,8 +21,8 @@ void TestMQPeakDetection::test_find_peaks_in_frame_basic() {
     _pd.frame_size(frame_size);
 
     Frame f = Frame(frame_size, true);
-    Peaks p = _pd.find_peaks_in_frame(&f);
-    CPPUNIT_ASSERT(p.size() == 0);
+    _pd.find_peaks_in_frame(&f);
+    CPPUNIT_ASSERT(f.num_peaks() == 0);
 }
 
 void TestMQPeakDetection::test_find_peaks_basic() {
@@ -112,8 +112,8 @@ void TestLorisPeakDetection::test_find_peaks_in_frame_basic() {
     _pd.frame_size(frame_size);
 
     Frame f = Frame(frame_size, true);
-    Peaks p = _pd.find_peaks_in_frame(&f);
-    CPPUNIT_ASSERT(p.size() == 0);
+    _pd.find_peaks_in_frame(&f);
+    CPPUNIT_ASSERT(f.num_peaks() == 0);
 }
 
 void TestLorisPeakDetection::test_find_peaks_basic() {

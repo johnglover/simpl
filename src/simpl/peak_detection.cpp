@@ -118,14 +118,7 @@ void PeakDetection::frames(Frames new_frames) {
 }
 
 // Find and return all spectral peaks in a given frame of audio
-Peaks PeakDetection::find_peaks_in_frame(Frame* frame) {
-    Peaks peaks;
-
-    for(int i = 0; i < peaks.size(); i++) {
-        frame->add_peak(peaks[i]);
-    }
-
-    return peaks;
+void PeakDetection::find_peaks_in_frame(Frame* frame) {
 }
 
 // Find and return all spectral peaks in a given audio signal.
@@ -202,25 +195,21 @@ void MQPeakDetection::max_peaks(int new_max_peaks) {
     reset();
 }
 
-Peaks MQPeakDetection::find_peaks_in_frame(Frame* frame) {
-    Peaks peaks;
-
+void MQPeakDetection::find_peaks_in_frame(Frame* frame) {
     MQPeakList* pl = mq_find_peaks(_frame_size, frame->audio(), &_mq_params);
+    MQPeakList* pl_start = pl;
 
     int num_peaks = 0;
     while(pl && pl->peak && num_peaks < _max_peaks) {
-        Peak* p = new Peak();
-        p->amplitude = pl->peak->amplitude;
-        p->frequency = pl->peak->frequency;
-        p->phase = pl->peak->phase;
-        peaks.push_back(p);
-        frame->add_peak(p);
-
+        frame->add_peak(pl->peak->amplitude,
+                        pl->peak->frequency,
+                        pl->peak->phase,
+                        0.0);
         pl = pl->next;
         num_peaks++;
     }
 
-    return peaks;
+    delete_peak_list(pl_start);
 }
 
 // ---------------------------------------------------------------------------
@@ -305,22 +294,16 @@ void SMSPeakDetection::realtime(int new_realtime) {
 }
 
 // Find and return all spectral peaks in a given frame of audio
-Peaks SMSPeakDetection::find_peaks_in_frame(Frame* frame) {
-    Peaks peaks;
-
+void SMSPeakDetection::find_peaks_in_frame(Frame* frame) {
     int num_peaks = sms_findPeaks(frame->size(), frame->audio(),
                                   &_analysis_params, &_peaks);
 
     for(int i = 0; i < num_peaks; i++) {
-        Peak* p = new Peak();
-        p->amplitude = _peaks.pSpectralPeaks[i].fMag;
-        p->frequency = _peaks.pSpectralPeaks[i].fFreq;
-        p->phase = _peaks.pSpectralPeaks[i].fPhase;
-        peaks.push_back(p);
-
-        frame->add_peak(p);
+        frame->add_peak(_peaks.pSpectralPeaks[i].fMag,
+                        _peaks.pSpectralPeaks[i].fFreq,
+                        _peaks.pSpectralPeaks[i].fPhase,
+                        0.0);
     }
-    return peaks;
 }
 
 // Find and return all spectral peaks in a given audio signal.
@@ -427,23 +410,17 @@ void SndObjPeakDetection::max_peaks(int new_max_peaks) {
     reset();
 }
 
-Peaks SndObjPeakDetection::find_peaks_in_frame(Frame* frame) {
-    Peaks peaks;
-
+void SndObjPeakDetection::find_peaks_in_frame(Frame* frame) {
     _input->PushIn(frame->audio(), frame->size());
     _ifgram->DoProcess();
     int num_peaks = _analysis->FindPeaks();
 
     for(int i = 0; i < num_peaks; i++) {
-        Peak* p = new Peak();
-        p->amplitude = _analysis->Output(i * 3);
-        p->frequency = _analysis->Output((i * 3) + 1);
-        p->phase = _analysis->Output((i * 3) + 2);
-        peaks.push_back(p);
-        frame->add_peak(p);
+        frame->add_peak(_analysis->Output(i * 3),
+                        _analysis->Output((i * 3) + 1),
+                        _analysis->Output((i * 3) + 2),
+                        0.0);
     }
-
-    return peaks;
 }
 
 
@@ -530,9 +507,7 @@ void LorisPeakDetection::max_peaks(int new_max_peaks) {
     reset();
 }
 
-Peaks LorisPeakDetection::find_peaks_in_frame(Frame* frame) {
-    Peaks peaks;
-
+void LorisPeakDetection::find_peaks_in_frame(Frame* frame) {
     _analyzer->analyze(frame->size(), frame->audio());
 
     int num_peaks = _analyzer->peaks.size();
@@ -541,13 +516,9 @@ Peaks LorisPeakDetection::find_peaks_in_frame(Frame* frame) {
     }
 
     for(int i = 0; i < num_peaks; i++) {
-        Peak* p = new Peak();
-        p->amplitude = _analyzer->peaks[i].amplitude();
-        p->frequency = _analyzer->peaks[i].frequency();
-        p->bandwidth = _analyzer->peaks[i].bandwidth();
-        peaks.push_back(p);
-        frame->add_peak(p);
+        frame->add_peak(_analyzer->peaks[i].amplitude(),
+                        _analyzer->peaks[i].frequency(),
+                        0.0,
+                        _analyzer->peaks[i].bandwidth());
     }
-
-    return peaks;
 }

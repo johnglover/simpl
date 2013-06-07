@@ -28,7 +28,10 @@ class Peak {
         sample bandwidth;
 
         Peak();
+        Peak(sample new_amplitude, sample new_frequency,
+             sample new_phase, sample new_bandwidth);
         ~Peak();
+        void reset();
 };
 
 typedef std::vector<Peak*> Peaks;
@@ -65,6 +68,7 @@ class Frame {
         void destroy_arrays();
         void create_synth_arrays();
         void destroy_synth_arrays();
+        void resize_peaks(int new_num_peaks);
 
     public:
         Frame();
@@ -81,6 +85,8 @@ class Frame {
         int max_peaks();
         void max_peaks(int new_max_peaks);
         void add_peak(Peak* peak);
+        void add_peak(sample amplitude, sample frequency,
+                      sample phase, sample bandwidth);
         Peak* peak(int peak_number);
         void peak(int peak_number, Peak* peak);
 

@@ -8,15 +8,26 @@ using namespace simpl;
 // Peak
 // ---------------------------------------------------------------------------
 Peak::Peak() {
-    amplitude = 0.0;
-    frequency = 0.0;
-    phase = 0.0;
-    bandwidth = 0.0;
+    reset();
+}
+
+Peak::Peak(sample new_amplitude, sample new_frequency,
+           sample new_phase, sample new_bandwidth) {
+    amplitude = new_amplitude;
+    frequency = new_frequency;
+    phase = new_phase;
+    bandwidth = new_bandwidth;
 }
 
 Peak::~Peak() {
 }
 
+void Peak::reset() {
+    amplitude = 0.0;
+    frequency = 0.0;
+    phase = 0.0;
+    bandwidth = 0.0;
+}
 
 // ---------------------------------------------------------------------------
 // Frame
@@ -40,8 +51,15 @@ Frame::Frame(int frame_size, bool alloc_memory) {
 }
 
 Frame::~Frame() {
-    _peaks.clear();
+    clear_peaks();
     _partials.clear();
+
+    for(int i = 0; i < _peaks.size(); i++) {
+        if(_peaks[i]) {
+            delete _peaks[i];
+            _peaks[i] = NULL;
+        }
+    }
 
     if(_alloc_memory) {
         destroy_arrays();
@@ -53,12 +71,12 @@ void Frame::init() {
     _max_peaks = 100;
     _num_partials = 0;
     _max_partials = 100;
-    _peaks.resize(_max_peaks);
     _partials.resize(_max_partials);
     _audio = NULL;
     _synth = NULL;
     _residual = NULL;
     _synth_residual = NULL;
+    resize_peaks(_max_peaks);
 }
 
 void Frame::create_arrays() {
@@ -100,6 +118,23 @@ void Frame::destroy_synth_arrays() {
     }
 }
 
+void Frame::resize_peaks(int new_num_peaks) {
+    clear_peaks();
+
+    for(int i = 0; i < _peaks.size(); i++) {
+        if(_peaks[i]) {
+            delete _peaks[i];
+            _peaks[i] = NULL;
+        }
+    }
+
+    _peaks.resize(new_num_peaks);
+
+    for(int i = 0; i < _peaks.size(); i++) {
+        _peaks[i] = new Peak();
+    }
+}
+
 void Frame::clear() {
     clear_peaks();
     clear_partials();
@@ -112,6 +147,11 @@ void Frame::clear() {
 
 void Frame::clear_peaks() {
     _num_peaks = 0;
+    for(int i = 0; i < _peaks.size(); i++) {
+        if(_peaks[i]) {
+            _peaks[i]->reset();
+        }
+    }
 }
 
 void Frame::clear_partials() {
@@ -151,7 +191,7 @@ void Frame::max_peaks(int new_max_peaks) {
                "of peaks, some existing data was lost.\n");
     }
 
-    _peaks.resize(_max_peaks);
+    resize_peaks(_max_peaks);
 }
 
 void Frame::add_peak(Peak* peak) {
@@ -162,7 +202,19 @@ void Frame::add_peak(Peak* peak) {
         return;
     }
 
+    if(_peaks[_num_peaks]) {
+        delete _peaks[_num_peaks];
+    }
     _peaks[_num_peaks] = peak;
+    _num_peaks++;
+}
+
+void Frame::add_peak(sample amplitude, sample frequency,
+                     sample phase, sample bandwidth) {
+    _peaks[_num_peaks]->amplitude = amplitude;
+    _peaks[_num_peaks]->frequency = frequency;
+    _peaks[_num_peaks]->phase = phase;
+    _peaks[_num_peaks]->bandwidth = bandwidth;
     _num_peaks++;
 }
 

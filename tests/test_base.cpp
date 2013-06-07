@@ -47,16 +47,12 @@ void TestFrame::test_max_partials() {
 }
 
 void TestFrame::test_add_peak() {
-    Peak p = Peak();
-    p.amplitude = 1.5;
-    frame->add_peak(&p);
+    frame->add_peak(1.5, 220, 0, 0);
     CPPUNIT_ASSERT(frame->max_peaks() == 100);
     CPPUNIT_ASSERT(frame->num_peaks() == 1);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(1.5, frame->peak(0)->amplitude, PRECISION);
 
-    Peak p2 = Peak();
-    p2.amplitude = 2.0;
-    frame->add_peak(&p2);
+    frame->add_peak(2.0, 440, 0, 0);
     CPPUNIT_ASSERT(frame->max_peaks() == 100);
     CPPUNIT_ASSERT(frame->num_peaks() == 2);
     CPPUNIT_ASSERT_DOUBLES_EQUAL(2.0, frame->peak(1)->amplitude, PRECISION);
@@ -65,9 +61,7 @@ void TestFrame::test_add_peak() {
 }
 
 void TestFrame::test_clear() {
-    Peak p = Peak();
-    p.amplitude = 1.5;
-    frame->add_peak(&p);
+    frame->add_peak(1.5, 220, 0, 0);
     CPPUNIT_ASSERT(frame->num_peaks() == 1);
     frame->clear();
     CPPUNIT_ASSERT(frame->num_peaks() == 0);

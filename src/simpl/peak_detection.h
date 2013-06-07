@@ -76,7 +76,7 @@ class PeakDetection {
         void frames(Frames new_frames);
 
         // Find and return all spectral peaks in a given frame of audio
-        virtual Peaks find_peaks_in_frame(Frame* frame);
+        virtual void find_peaks_in_frame(Frame* frame);
 
         // Find and return all spectral peaks in a given audio signal.
         // If the signal contains more than 1 frame worth of audio, it will be
@@ -103,7 +103,7 @@ class MQPeakDetection : public PeakDetection {
         void hop_size(int new_hop_size);
         using PeakDetection::max_peaks;
         void max_peaks(int new_max_peaks);
-        Peaks find_peaks_in_frame(Frame* frame);
+        void find_peaks_in_frame(Frame* frame);
 };
 
 
@@ -127,7 +127,7 @@ class SMSPeakDetection : public PeakDetection {
         void max_peaks(int new_max_peaks);
         int realtime();
         void realtime(int new_realtime);
-        Peaks find_peaks_in_frame(Frame* frame);
+        void find_peaks_in_frame(Frame* frame);
         Frames find_peaks(int audio_size, sample* audio);
 };
 
@@ -153,7 +153,7 @@ class SndObjPeakDetection : public PeakDetection {
         void hop_size(int new_hop_size);
         using PeakDetection::max_peaks;
         void max_peaks(int new_max_peaks);
-        Peaks find_peaks_in_frame(Frame* frame);
+        void find_peaks_in_frame(Frame* frame);
 };
 
 
@@ -193,7 +193,7 @@ class LorisPeakDetection : public PeakDetection {
         void hop_size(int new_hop_size);
         using PeakDetection::max_peaks;
         void max_peaks(int new_max_peaks);
-        Peaks find_peaks_in_frame(Frame* frame);
+        void find_peaks_in_frame(Frame* frame);
 };
 
 

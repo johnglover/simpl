@@ -163,13 +163,8 @@ void TestSMSSynthesis::setUp() {
     // so pass peak data to find_partials before calling the
     // main test function
     for(int i = 0; i < _pt.max_frame_delay(); i++) {
-        Peak* p = new Peak();
-        p->amplitude = 0.4;
-        p->frequency = 220;
-        _peaks.push_back(p);
-
         Frame* f = new Frame();
-        f->add_peak(p);
+        f->add_peak(0.4, 220.0, 0.0, 0.0);
         _frames.push_back(f);
     }
     _pt.find_partials(_frames);
@@ -177,7 +172,6 @@ void TestSMSSynthesis::setUp() {
 
 void TestSMSSynthesis::tearDown() {
     for(int i = 0; i < _pt.max_frame_delay(); i++) {
-        delete _peaks[i];
         delete _frames[i];
     }
 }

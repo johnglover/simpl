@@ -69,6 +69,7 @@ class Frame {
         void create_synth_arrays();
         void destroy_synth_arrays();
         void resize_peaks(int new_num_peaks);
+        void resize_partials(int new_num_partials);
 
     public:
         Frame();
@@ -96,6 +97,8 @@ class Frame {
         int max_partials();
         void max_partials(int new_max_partials);
         void add_partial(Peak* peak);
+        void add_partial(sample amplitude, sample frequency,
+                         sample phase, sample bandwidth);
         Peak* partial(int partial_number);
         void partial(int partial_number, Peak* peak);
 

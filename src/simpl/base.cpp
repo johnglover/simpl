@@ -52,12 +52,19 @@ Frame::Frame(int frame_size, bool alloc_memory) {
 
 Frame::~Frame() {
     clear_peaks();
-    _partials.clear();
+    clear_partials();
 
     for(int i = 0; i < _peaks.size(); i++) {
         if(_peaks[i]) {
             delete _peaks[i];
             _peaks[i] = NULL;
+        }
+    }
+
+    for(int i = 0; i < _partials.size(); i++) {
+        if(_partials[i]) {
+            delete _partials[i];
+            _partials[i] = NULL;
         }
     }
 
@@ -71,12 +78,12 @@ void Frame::init() {
     _max_peaks = 100;
     _num_partials = 0;
     _max_partials = 100;
-    _partials.resize(_max_partials);
     _audio = NULL;
     _synth = NULL;
     _residual = NULL;
     _synth_residual = NULL;
     resize_peaks(_max_peaks);
+    resize_partials(_max_partials);
 }
 
 void Frame::create_arrays() {
@@ -135,6 +142,23 @@ void Frame::resize_peaks(int new_num_peaks) {
     }
 }
 
+void Frame::resize_partials(int new_num_partials) {
+    clear_partials();
+
+    for(int i = 0; i < _partials.size(); i++) {
+        if(_partials[i]) {
+            delete _partials[i];
+            _partials[i] = NULL;
+        }
+    }
+
+    _partials.resize(new_num_partials);
+
+    for(int i = 0; i < _partials.size(); i++) {
+        _partials[i] = new Peak();
+    }
+}
+
 void Frame::clear() {
     clear_peaks();
     clear_partials();
@@ -156,6 +180,11 @@ void Frame::clear_peaks() {
 
 void Frame::clear_partials() {
     _num_partials = 0;
+    for(int i = 0; i < _partials.size(); i++) {
+        if(_partials[i]) {
+            _partials[i]->reset();
+        }
+    }
 }
 
 void Frame::clear_synth() {
@@ -250,7 +279,7 @@ void Frame::max_partials(int new_max_partials) {
                " of partials, some existing data was lost.\n");
     }
 
-    _partials.resize(_max_partials);
+    resize_partials(_max_partials);
 }
 
 void Frame::add_partial(Peak* peak) {
@@ -262,6 +291,15 @@ void Frame::add_partial(Peak* peak) {
     }
 
     _partials[_num_partials] = peak;
+    _num_partials++;
+}
+
+void Frame::add_partial(sample amplitude, sample frequency,
+                        sample phase, sample bandwidth) {
+    _partials[_num_partials]->amplitude = amplitude;
+    _partials[_num_partials]->frequency = frequency;
+    _partials[_num_partials]->phase = phase;
+    _partials[_num_partials]->bandwidth = bandwidth;
     _num_partials++;
 }
 

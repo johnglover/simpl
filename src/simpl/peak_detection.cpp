@@ -27,6 +27,7 @@ void PeakDetection::clear() {
     for(int i = 0; i < _frames.size(); i++) {
         if(_frames[i]) {
             delete _frames[i];
+            _frames[i] = NULL;
         }
     }
 

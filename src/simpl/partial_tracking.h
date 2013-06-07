@@ -59,7 +59,7 @@ class PartialTracking {
         int max_gap();
         virtual void max_gap(int new_max_gap);
 
-        virtual Peaks update_partials(Frame* frame);
+        virtual void update_partials(Frame* frame);
         virtual Frames find_partials(Frames frames);
 };
 
@@ -78,7 +78,7 @@ class MQPartialTracking : public PartialTracking {
         void reset();
         using PartialTracking::max_partials;
         void max_partials(int new_max_partials);
-        Peaks update_partials(Frame* frame);
+        void update_partials(Frame* frame);
 };
 
 // ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ class SMSPartialTracking : public PartialTracking {
         void min_good_frames(int new_min_good_frames);
         bool clean_tracks();
         void clean_tracks(bool new_clean_tracks);
-        Peaks update_partials(Frame* frame);
+        void update_partials(Frame* frame);
 };
 
 
@@ -135,7 +135,7 @@ class SndObjPartialTracking : public PartialTracking {
         void reset();
         using PartialTracking::max_partials;
         void max_partials(int new_max_partials);
-        Peaks update_partials(Frame* frame);
+        void update_partials(Frame* frame);
 };
 
 // ---------------------------------------------------------------------------
@@ -165,7 +165,7 @@ class LorisPartialTracking : public PartialTracking {
         void reset();
         using PartialTracking::max_partials;
         void max_partials(int new_max_partials);
-        Peaks update_partials(Frame* frame);
+        void update_partials(Frame* frame);
 };
 
 

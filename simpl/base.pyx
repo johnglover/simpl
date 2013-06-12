@@ -69,7 +69,8 @@ cdef class Frame:
         def __set__(self, int i): self.thisptr.max_peaks(i)
 
     def add_peak(self, Peak p not None):
-        self.thisptr.add_peak(p.thisptr)
+        self.thisptr.add_peak(p.amplitude, p.frequency,
+                              p.phase, p.bandwidth)
 
     def add_peaks(self, peaks not None):
         for p in peaks:
@@ -115,7 +116,8 @@ cdef class Frame:
         def __set__(self, int i): self.thisptr.max_partials(i)
 
     def add_partial(self, Peak p not None):
-        self.thisptr.add_partial(p.thisptr)
+        self.thisptr.add_partial(p.amplitude, p.frequency,
+                                 p.phase, p.bandwidth)
 
     def add_partials(self, peaks not None):
         for p in peaks:
@@ -139,7 +141,8 @@ cdef class Frame:
                 peak.copy(c_p)
                 return peak
         else:
-            self.thisptr.partial(i, p.thisptr)
+            self.thisptr.partial(i, p.amplitude, p.frequency,
+                                 p.phase, p.bandwidth)
 
     property partials:
         def __get__(self):

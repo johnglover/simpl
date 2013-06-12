@@ -40,14 +40,8 @@ cdef class PartialTracking:
         def __set__(self, int i): self.thisptr.max_gap(i)
 
     def update_partials(self, Frame frame not None):
-        peaks = []
-        cdef vector[c_Peak*] c_peaks = self.thisptr.update_partials(frame.thisptr)
-        for i in range(c_peaks.size()):
-            peak = Peak(False)
-            peak.set_peak(c_peaks[i])
-            peaks.append(peak)
-        frame.partials = peaks
-        return peaks
+        self.thisptr.update_partials(frame.thisptr)
+        return frame.partials
 
     def find_partials(self, frames):
         partial_frames = []

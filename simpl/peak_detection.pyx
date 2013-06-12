@@ -66,14 +66,8 @@ cdef class PeakDetection:
         return f
 
     def find_peaks_in_frame(self, Frame frame not None):
-        peaks = []
-        cdef vector[c_Peak*] c_peaks = self.thisptr.find_peaks_in_frame(frame.thisptr)
-        for i in range(c_peaks.size()):
-            peak = Peak(False)
-            peak.set_peak(c_peaks[i])
-            peaks.append(peak)
-        frame.peaks = peaks
-        return peaks
+        self.thisptr.find_peaks_in_frame(frame.thisptr)
+        return frame.peaks
 
     def find_peaks(self, np.ndarray[dtype_t, ndim=1] audio):
         self.frames = []

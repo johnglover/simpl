@@ -223,7 +223,8 @@ void Frame::max_peaks(int new_max_peaks) {
     resize_peaks(_max_peaks);
 }
 
-void Frame::add_peak(Peak* peak) {
+void Frame::add_peak(sample amplitude, sample frequency,
+                     sample phase, sample bandwidth) {
     if(_num_peaks >= _max_peaks) {
         printf("Warning: attempted to add more than the specified"
                " maximum number of peaks (%d) to a frame, ignoring.\n",
@@ -231,15 +232,6 @@ void Frame::add_peak(Peak* peak) {
         return;
     }
 
-    if(_peaks[_num_peaks]) {
-        delete _peaks[_num_peaks];
-    }
-    _peaks[_num_peaks] = peak;
-    _num_peaks++;
-}
-
-void Frame::add_peak(sample amplitude, sample frequency,
-                     sample phase, sample bandwidth) {
     _peaks[_num_peaks]->amplitude = amplitude;
     _peaks[_num_peaks]->frequency = frequency;
     _peaks[_num_peaks]->phase = phase;
@@ -251,8 +243,12 @@ Peak* Frame::peak(int peak_number) {
     return _peaks[peak_number];
 }
 
-void Frame::peak(int peak_number, Peak* peak) {
-    _peaks[peak_number] = peak;
+void Frame::peak(int peak_number, sample amplitude, sample frequency,
+                    sample phase, sample bandwidth) {
+    _peaks[peak_number]->amplitude = amplitude;
+    _peaks[peak_number]->frequency = frequency;
+    _peaks[peak_number]->phase = phase;
+    _peaks[peak_number]->bandwidth = bandwidth;
 }
 
 // Frame - partials
@@ -282,7 +278,8 @@ void Frame::max_partials(int new_max_partials) {
     resize_partials(_max_partials);
 }
 
-void Frame::add_partial(Peak* peak) {
+void Frame::add_partial(sample amplitude, sample frequency,
+                        sample phase, sample bandwidth) {
     if(_num_partials >= _max_partials) {
         printf("Warning: attempted to add more than the specified"
                " maximum number of partials (%d) to a frame, ignoring.\n",
@@ -290,12 +287,6 @@ void Frame::add_partial(Peak* peak) {
         return;
     }
 
-    _partials[_num_partials] = peak;
-    _num_partials++;
-}
-
-void Frame::add_partial(sample amplitude, sample frequency,
-                        sample phase, sample bandwidth) {
     _partials[_num_partials]->amplitude = amplitude;
     _partials[_num_partials]->frequency = frequency;
     _partials[_num_partials]->phase = phase;
@@ -307,8 +298,12 @@ Peak* Frame::partial(int partial_number) {
     return _partials[partial_number];
 }
 
-void Frame::partial(int partial_number, Peak* peak) {
-    _partials[partial_number] = peak;
+void Frame::partial(int partial_number, sample amplitude, sample frequency,
+                    sample phase, sample bandwidth) {
+    _partials[partial_number]->amplitude = amplitude;
+    _partials[partial_number]->frequency = frequency;
+    _partials[partial_number]->phase = phase;
+    _partials[partial_number]->bandwidth = bandwidth;
 }
 
 
@@ -343,7 +338,7 @@ void Frame::synth_size(int new_size) {
 
 void Frame::audio(sample* new_audio) {
     if(_alloc_memory) {
-        memcpy(_audio, new_audio, sizeof(sample) * _size);
+        std::copy(new_audio, new_audio + _size, _audio);
     }
     else {
         _audio = new_audio;
@@ -377,7 +372,7 @@ sample* Frame::audio() {
 
 void Frame::synth(sample* new_synth) {
     if(_alloc_memory) {
-        memcpy(_synth, new_synth, sizeof(sample) * _synth_size);
+        std::copy(new_synth, new_synth + _synth_size, _synth);
     }
     else {
         _synth = new_synth;

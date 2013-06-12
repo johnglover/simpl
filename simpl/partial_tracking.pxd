@@ -23,7 +23,7 @@ cdef extern from "../src/simpl/partial_tracking.h" namespace "simpl":
         void min_partial_length(int new_min_partial_length)
         int max_gap()
         void max_gap(int new_max_gap)
-        vector[c_Peak*] update_partials(c_Frame* frame)
+        void update_partials(c_Frame* frame)
         vector[c_Frame*] find_partials(vector[c_Frame*] frames)
 
     cdef cppclass c_MQPartialTracking "simpl::MQPartialTracking"(c_PartialTracking):

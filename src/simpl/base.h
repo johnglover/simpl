@@ -85,22 +85,22 @@ class Frame {
         void num_peaks(int new_num_peaks);
         int max_peaks();
         void max_peaks(int new_max_peaks);
-        void add_peak(Peak* peak);
         void add_peak(sample amplitude, sample frequency,
                       sample phase, sample bandwidth);
         Peak* peak(int peak_number);
-        void peak(int peak_number, Peak* peak);
+        void peak(int peak_number, sample amplitude, sample frequency,
+                  sample phase, sample bandwidth);
 
         // partials
         int num_partials();
         void num_partials(int new_num_partials);
         int max_partials();
         void max_partials(int new_max_partials);
-        void add_partial(Peak* peak);
         void add_partial(sample amplitude, sample frequency,
                          sample phase, sample bandwidth);
         Peak* partial(int partial_number);
-        void partial(int partial_number, Peak* peak);
+        void partial(int partial_number, sample amplitude, sample frequency,
+                     sample phase, sample bandwidth);
 
         // audio buffers
         int size();

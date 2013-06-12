@@ -51,7 +51,8 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         int max_peaks()
         void max_peaks(int new_max_peaks)
         c_Peak* peak(int peak_number)
-        void add_peak(c_Peak* peak)
+        void add_peak(double amplitude, double frequency,
+                      double phase, double bandwidth)
         void clear_peaks()
 
         # partials
@@ -59,9 +60,11 @@ cdef extern from "../src/simpl/base.h" namespace "simpl":
         void num_partials(int new_num_partials)
         int max_partials()
         void max_partials(int new_max_partials)
-        void add_partial(c_Peak* peak)
+        void add_partial(double amplitude, double frequency,
+                         double phase, double bandwidth)
         c_Peak* partial(int partial_number)
-        void partial(int partial_number, c_Peak* peak)
+        void partial(int partial_number, double amplitude, double frequency,
+                     double phase, double bandwidth)
         void clear_partials()
 
         # audio buffers

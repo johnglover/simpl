@@ -48,6 +48,10 @@ class TestFrame(object):
 
         assert_almost_equals(f.peaks[0].amplitude, p.amplitude,
                              float_precision)
+        assert_almost_equals(f.peaks[0].frequency, p.frequency,
+                             float_precision)
+        assert_almost_equals(f.peaks[0].phase, p.phase,
+                             float_precision)
 
         f.clear()
         assert len(f.peaks) == 0

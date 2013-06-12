@@ -357,13 +357,18 @@ void Frame::audio(sample* new_audio, int size) {
         throw Exception(std::string("Memory not managed by Frame."));
     }
 
-    // copy size should also be less than or equal to the current frame size
-    if(size > _size) {
-        throw Exception(std::string("Specified copy size is too large, "
-                                    "it must be less than the Frame size."));
+    if((size < _size) && (_size % size == 0)) {
+        std::rotate(_audio, _audio + size, _audio + _size);
+        std::copy(new_audio, new_audio + size, _audio + (_size - size));
     }
-
-    memcpy(_audio, new_audio, sizeof(sample) * size);
+    else if(size == _size) {
+        std::copy(new_audio, new_audio + size, _audio);
+    }
+    else {
+        printf("size: %d (%d)\n", size, _size);
+        throw Exception(std::string("Specified copy size must be a multiple "
+                                    "of the current Frame size."));
+    }
 }
 
 sample* Frame::audio() {

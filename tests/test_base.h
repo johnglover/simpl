@@ -41,6 +41,7 @@ class TestFrame : public CPPUNIT_NS::TestCase {
     CPPUNIT_TEST(test_max_partials);
     CPPUNIT_TEST(test_add_peak);
     CPPUNIT_TEST(test_clear);
+    CPPUNIT_TEST(test_audio);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -56,6 +57,7 @@ protected:
     void test_max_partials();
     void test_add_peak();
     void test_clear();
+    void test_audio();
 };
 
 } // end of namespace simpl

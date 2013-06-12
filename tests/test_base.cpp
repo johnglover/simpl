@@ -19,7 +19,7 @@ void TestPeak::tearDown() {
 // ---------------------------------------------------------------------------
 
 void TestFrame::setUp() {
-    frame = new Frame();
+    frame = new Frame(512, true);
 }
 
 void TestFrame::tearDown() {
@@ -65,4 +65,27 @@ void TestFrame::test_clear() {
     CPPUNIT_ASSERT(frame->num_peaks() == 1);
     frame->clear();
     CPPUNIT_ASSERT(frame->num_peaks() == 0);
+}
+
+void TestFrame::test_audio() {
+    sample samples[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+    frame->size(8);
+    frame->audio(&samples[0], 8);
+
+    CPPUNIT_ASSERT(frame->size() == 8);
+
+    for(int i = 0; i < 8; i++) {
+        CPPUNIT_ASSERT(frame->audio()[i] == samples[i]);
+    }
+
+    sample new_samples[2] = {8, 9};
+    sample rotated_samples[8] = {2, 3, 4, 5, 6, 7, 8, 9};
+
+    frame->audio(&new_samples[0], 2);
+
+    CPPUNIT_ASSERT(frame->size() == 8);
+
+    for(int i = 0; i < 8; i++) {
+        CPPUNIT_ASSERT(frame->audio()[i] == rotated_samples[i]);
+    }
 }

@@ -128,6 +128,7 @@ void MQPartialTracking::update_partials(Frame* frame) {
     MQPeakList* partials = mq_track_peaks(_peak_list, &_mq_params);
     partials = mq_sort_peaks_by_frequency(partials, num_peaks);
 
+    _peak_list = partials;
     int num_partials = 0;
     while(partials && partials->peak && (num_partials < _max_partials)) {
         frame->add_partial(partials->peak->amplitude,

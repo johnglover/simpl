@@ -356,6 +356,12 @@ void Frame::audio(sample* new_audio, int size) {
         std::rotate(_audio, _audio + size, _audio + _size);
         std::copy(new_audio, new_audio + size, _audio + (_size - size));
     }
+    else if(size < _size) {
+        std::copy(new_audio, new_audio + size, _audio);
+        for(int i = size; i < _size; i++) {
+            _audio[i] = 0.0;
+        }
+    }
     else if(size == _size) {
         std::copy(new_audio, new_audio + size, _audio);
     }

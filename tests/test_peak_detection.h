@@ -73,6 +73,31 @@ protected:
     void test_find_peaks_change_hop_frame_size();
 };
 
+
+// ---------------------------------------------------------------------------
+//	TestSndObjPeakDetection
+// ---------------------------------------------------------------------------
+class TestSndObjPeakDetection : public CPPUNIT_NS::TestCase {
+    CPPUNIT_TEST_SUITE(TestSndObjPeakDetection);
+    CPPUNIT_TEST(test_find_peaks_in_frame_basic);
+    CPPUNIT_TEST(test_find_peaks_basic);
+    CPPUNIT_TEST(test_find_peaks_audio);
+    CPPUNIT_TEST(test_find_peaks_change_hop_frame_size);
+    CPPUNIT_TEST_SUITE_END();
+
+public:
+    void setUp();
+
+protected:
+    SndObjPeakDetection _pd;
+    SndfileHandle _sf;
+
+    void test_find_peaks_in_frame_basic();
+    void test_find_peaks_basic();
+    void test_find_peaks_audio();
+    void test_find_peaks_change_hop_frame_size();
+};
+
 } // end of namespace simpl
 
 #endif

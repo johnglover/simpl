@@ -60,7 +60,14 @@ IFGram::IFGram(Table* window, SndObj* input, double scale,
 }
 
 IFGram::~IFGram(){
-  delete[] m_diffwin;
+  if(m_diffwin){
+      delete[] m_diffwin;
+      m_diffwin = NULL;
+  }
+  if(m_pdiff){
+      delete[] m_pdiff;
+      m_pdiff = NULL;
+  }
 
   fftw_destroy_plan(m_diffplan);
   fftw_free(m_diffsig);

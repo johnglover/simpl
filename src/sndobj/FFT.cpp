@@ -108,8 +108,20 @@ FFT::~FFT(){
   fftw_destroy_plan(m_plan);
   fftw_free(m_fftIn);
   fftw_free(m_fftOut);
-  delete[] m_counter;
-  delete[] m_sigframe;
+  if(m_counter){
+      delete[] m_counter;
+      m_counter = NULL;
+  }
+  for(int i = 0; i < m_frames; i++){
+      if(m_sigframe[i]){
+          delete[] m_sigframe[i];
+          m_sigframe[i] = NULL;
+      }
+  }
+  if(m_sigframe){
+      delete[] m_sigframe;
+      m_sigframe = NULL;
+  }
 }
 
 void

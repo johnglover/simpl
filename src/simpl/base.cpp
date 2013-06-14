@@ -360,7 +360,6 @@ void Frame::audio(sample* new_audio, int size) {
         std::copy(new_audio, new_audio + size, _audio);
     }
     else {
-        printf("size: %d (%d)\n", size, _size);
         throw Exception(std::string("Specified copy size must be a multiple "
                                     "of the current Frame size."));
     }

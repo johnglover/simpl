@@ -374,7 +374,7 @@ SinAnal::peakdetection(){
 		}
 	}
 
-	for(i =0; i < n; i++){
+	for(i = 0; i < n; i++){
 		int rmax;
 		rmax = m_maxix[i];
 		
@@ -409,8 +409,7 @@ SinAnal::FindPeaks(){
 
 			if(m_enable){
 				// find peaks
-				int n = 0;
-				n = peakdetection();
+				int n = peakdetection();
 
 				// output peaks
 				for(m_vecpos=0; m_vecpos < m_vecsize; m_vecpos += 3){

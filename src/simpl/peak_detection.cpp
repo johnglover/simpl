@@ -363,15 +363,19 @@ SndObjPeakDetection::SndObjPeakDetection() {
 SndObjPeakDetection::~SndObjPeakDetection() {
     if(_input) {
         delete _input;
+        _input = NULL;
     }
     if(_window) {
         delete _window;
+        _window = NULL;
     }
     if(_ifgram) {
         delete _ifgram;
+        _ifgram = NULL;
     }
     if(_analysis) {
         delete _analysis;
+        _analysis = NULL;
     }
 }
 

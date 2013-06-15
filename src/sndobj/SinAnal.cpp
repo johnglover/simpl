@@ -112,8 +112,10 @@ SinAnal::SinAnal(SndObj* input, double threshold, int maxtracks,
 	AddMsg("max tracks", 21);
 	AddMsg("threshold", 22);
 	
-	for(i = 0; i < m_maxtracks; i++)
-		m_pkmags[m_prev][i] = m_bndx[m_prev][i] = m_adthresh[m_prev][i] = 0.f;
+	for(i = 0; i < m_maxtracks; i++) {
+		m_pkmags[0][i] = m_bndx[0][i] = m_adthresh[0][i] = 0.f;
+		m_pkmags[1][i] = m_bndx[1][i] = m_adthresh[1][i] = 0.f;
+    }
 }
 
 SinAnal::SinAnal(SndObj* input, int numbins, double threshold, int maxtracks,
@@ -184,8 +186,10 @@ SinAnal::SinAnal(SndObj* input, int numbins, double threshold, int maxtracks,
 	AddMsg("max tracks", 21);
 	AddMsg("threshold", 22);
 
-	for(i = 0; i < m_maxtracks; i++)
-		m_pkmags[m_prev][i] = m_bndx[m_prev][i] = m_adthresh[m_prev][i] = 0.f;
+	for(i = 0; i < m_maxtracks; i++) {
+		m_pkmags[0][i] = m_bndx[0][i] = m_adthresh[0][i] = 0.f;
+		m_pkmags[1][i] = m_bndx[1][i] = m_adthresh[1][i] = 0.f;
+    }
 }
 
 SinAnal::~SinAnal(){
@@ -483,7 +487,7 @@ SinAnal::PartialTracking(){
 
 	// loop to the end of tracks (indicate by the 0'd bins)
 	// find continuation tracks
-	for(j=0; m_bndx[m_prev][j] != 0.f && j < m_maxtracks; j++){
+	for(j=0; j < m_maxtracks && m_bndx[m_prev][j] != 0.f; j++){
 		int foundcont = 0;
 
 		if(m_numpeaks > 0){ // check for peaks; m_numpeaks will be > 0

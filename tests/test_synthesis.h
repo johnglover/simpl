@@ -80,6 +80,30 @@ protected:
     void test_changing_frame_size();
 };
 
+
+// ---------------------------------------------------------------------------
+//	TestSndObjSynthesis
+// ---------------------------------------------------------------------------
+class TestSndObjSynthesis : public CPPUNIT_NS::TestCase {
+    CPPUNIT_TEST_SUITE(TestSndObjSynthesis);
+    CPPUNIT_TEST(test_basic);
+    CPPUNIT_TEST(test_changing_frame_size);
+    CPPUNIT_TEST_SUITE_END();
+
+public:
+    void setUp();
+
+protected:
+    SndObjPeakDetection _pd;
+    SndObjPartialTracking _pt;
+    SndObjSynthesis _synth;
+    SndfileHandle _sf;
+    Frames _frames;
+
+    void test_basic();
+    void test_changing_frame_size();
+};
+
 } // end of namespace simpl
 
 #endif

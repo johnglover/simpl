@@ -183,3 +183,24 @@ void TestSMSSynthesis::test_basic() {
 void TestSMSSynthesis::test_changing_frame_size() {
     ::test_changing_frame_size(&_pd, &_pt, &_synth, &_sf);
 }
+
+
+// ---------------------------------------------------------------------------
+//	TestSndObjSynthesis
+// ---------------------------------------------------------------------------
+void TestSndObjSynthesis::setUp() {
+    _sf = SndfileHandle(TEST_AUDIO_FILE);
+
+    if(_sf.error() > 0) {
+        throw Exception(std::string("Could not open audio file: ") +
+                        std::string(TEST_AUDIO_FILE));
+    }
+}
+
+void TestSndObjSynthesis::test_basic() {
+    ::test_basic(&_pd, &_pt, &_synth, &_sf);
+}
+
+void TestSndObjSynthesis::test_changing_frame_size() {
+    ::test_changing_frame_size(&_pd, &_pt, &_synth, &_sf);
+}

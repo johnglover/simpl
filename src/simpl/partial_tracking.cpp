@@ -440,6 +440,9 @@ void SndObjPartialTracking::update_partials(Frame* frame) {
         _peak_frequency[i] = frame->peak(i)->frequency;
         _peak_phase[i] = frame->peak(i)->phase;
     }
+    for(int i = num_peaks; i < _max_partials; i++) {
+        _peak_amplitude[i] = _peak_frequency[i] = _peak_phase[i] = 0.0;
+    }
 
     _analysis->SetPeaks(_max_partials, _peak_amplitude,
                         _max_partials, _peak_frequency,

@@ -362,8 +362,11 @@ SinAnal::peakdetection(){
 	bool test1 = true, test2 = false;
 	
 	// take the logarithm of the magnitudes
-	for(i=0; i<m_numbins;i++)
-		m_mags[i] = log(m_mags[i]);
+	for(i=0; i<m_numbins;i++) {
+        if(m_mags[i] > 0) {
+            m_mags[i] = log(m_mags[i]);
+        }
+    }
 	
 	for(i=0;i < m_numbins-1; i++) {
 		

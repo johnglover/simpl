@@ -363,7 +363,7 @@ void SndObjSynthesis::synth_frame(Frame* frame) {
 
     _synth->DoProcess();
 
-    for(int i = 0; i < _frame_size; i++) {
+    for(int i = 0; i < _hop_size; i++) {
         frame->synth()[i] = _synth->Output(i);
     }
 }

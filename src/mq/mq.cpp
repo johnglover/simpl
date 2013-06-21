@@ -178,8 +178,7 @@ MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
         num_peaks = params->max_peaks;
     }
 
-    // return simpl::mq_sort_peaks_by_frequency(peak_list, num_peaks);
-    return peak_list;
+    return simpl::mq_sort_peaks_by_frequency(peak_list, num_peaks);
 }
 
 // ----------------------------------------------------------------------------

@@ -267,6 +267,21 @@ void SMSPartialTracking::harmonic(bool is_harmonic) {
     sms_allocFrameH(&_header, &_data);
 }
 
+double SMSPartialTracking::default_fundamental() {
+    return _analysis_params.fDefaultFundamental;
+}
+
+void SMSPartialTracking::default_fundamental(double new_default_fundamental) {
+    sms_freeAnalysis(&_analysis_params);
+    sms_freeFrame(&_data);
+
+    _analysis_params.fDefaultFundamental = new_default_fundamental;
+
+    sms_initAnalysis(&_analysis_params);
+    sms_fillHeader(&_header, &_analysis_params);
+    sms_allocFrameH(&_header, &_data);
+}
+
 int SMSPartialTracking::max_frame_delay() {
     return _analysis_params.iMaxDelayFrames;
 }

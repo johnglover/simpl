@@ -104,6 +104,8 @@ class SMSPartialTracking : public PartialTracking {
         void realtime(bool is_realtime);
         bool harmonic();
         void harmonic(bool is_harmonic);
+        double default_fundamental();
+        void default_fundamental(double new_default_fundamental);
         int max_frame_delay();
         void max_frame_delay(int new_max_frame_delay);
         int analysis_delay();

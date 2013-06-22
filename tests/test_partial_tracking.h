@@ -39,8 +39,11 @@ protected:
 class TestSMSPartialTracking : public CPPUNIT_NS::TestCase {
     CPPUNIT_TEST_SUITE(TestSMSPartialTracking);
     CPPUNIT_TEST(test_basic);
+    CPPUNIT_TEST(test_basic_harm);
     CPPUNIT_TEST(test_change_num_partials);
+    CPPUNIT_TEST(test_change_num_partials_harm);
     CPPUNIT_TEST(test_peaks);
+    CPPUNIT_TEST(test_peaks_harm);
     CPPUNIT_TEST(test_streaming);
     CPPUNIT_TEST_SUITE_END();
 
@@ -50,11 +53,15 @@ public:
 protected:
     SMSPeakDetection _pd;
     SMSPartialTracking _pt;
+    SMSPartialTracking _pt_harm;
     SndfileHandle _sf;
 
     void test_basic();
+    void test_basic_harm();
     void test_change_num_partials();
+    void test_change_num_partials_harm();
     void test_peaks();
+    void test_peaks_harm();
     void test_streaming();
 };
 

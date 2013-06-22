@@ -6,6 +6,7 @@
 #include "test_peak_detection.h"
 #include "test_partial_tracking.h"
 #include "test_synthesis.h"
+#include "test_residual.h"
 
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestPeak);
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestFrame);
@@ -21,6 +22,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestMQSynthesis);
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestLorisSynthesis);
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestSMSSynthesis);
 CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestSndObjSynthesis);
+CPPUNIT_TEST_SUITE_REGISTRATION(simpl::TestSMSResidual);
 
 int main(int arg, char **argv) {
     CppUnit::TextTestRunner runner;

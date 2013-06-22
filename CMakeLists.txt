@@ -48,7 +48,8 @@ if(BUILD_TESTS)
                  tests/test_base.cpp
                  tests/test_peak_detection.cpp
                  tests/test_partial_tracking.cpp
-                 tests/test_synthesis.cpp)
+                 tests/test_synthesis.cpp
+                 tests/test_residual.cpp)
 
     add_executable(tests ${test_src})
     target_link_libraries(tests ${libs})

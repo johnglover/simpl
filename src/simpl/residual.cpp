@@ -13,6 +13,24 @@ Residual::Residual() {
     _sampling_rate = 44100;
 }
 
+Residual::~Residual() {
+    clear();
+}
+
+void Residual::clear() {
+    for(int i = 0; i < _frames.size(); i++) {
+        if(_frames[i]) {
+            delete _frames[i];
+            _frames[i] = NULL;
+        }
+    }
+
+    _frames.clear();
+}
+
+void Residual::reset() {
+}
+
 int Residual::frame_size() {
     return _frame_size;
 }
@@ -64,11 +82,12 @@ Frames Residual::synth(Frames& frames) {
 }
 
 Frames Residual::synth(int original_size, sample* original) {
-    Frames frames;
+    clear();
     unsigned int pos = 0;
+    bool alloc_memory_in_frame = true;
 
     while(pos <= original_size - _hop_size) {
-        Frame* f = new Frame(_frame_size, true);
+        Frame* f = new Frame(_frame_size, alloc_memory_in_frame);
 
         if((int)pos <= (original_size - _frame_size)) {
             f->audio(&(original[pos]), _frame_size);
@@ -78,12 +97,12 @@ Frames Residual::synth(int original_size, sample* original) {
         }
 
         synth_frame(f);
-        frames.push_back(f);
+        _frames.push_back(f);
 
         pos += _hop_size;
     }
 
-    return frames;
+    return _frames;
 }
 
 
@@ -107,6 +126,9 @@ SMSResidual::SMSResidual() {
 SMSResidual::~SMSResidual() {
     sms_freeResidual(&_residual_params);
     sms_free();
+}
+
+void SMSResidual::reset() {
 }
 
 void SMSResidual::frame_size(int new_frame_size) {

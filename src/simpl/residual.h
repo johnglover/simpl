@@ -27,9 +27,14 @@ class Residual {
         int _frame_size;
         int _hop_size;
         int _sampling_rate;
+        Frames _frames;
+
+        void clear();
 
     public:
         Residual();
+        ~Residual();
+        virtual void reset();
         int frame_size();
         virtual void frame_size(int new_frame_size);
         int hop_size();
@@ -62,6 +67,7 @@ class SMSResidual : public Residual {
     public:
         SMSResidual();
         ~SMSResidual();
+        void reset();
         void frame_size(int new_frame_size);
         void hop_size(int new_hop_size);
         int num_stochastic_coeffs();

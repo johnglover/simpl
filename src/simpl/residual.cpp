@@ -61,13 +61,6 @@ void Residual::residual_frame(Frame* frame) {
 void Residual::find_residual(int synth_size, sample* synth,
                              int original_size, sample* original,
                              int residual_size, sample* residual) {
-    for(int i = 0; i < synth_size; i += _hop_size) {
-        Frame* f = new Frame(_hop_size);
-        f->audio(&original[i]);
-        f->synth(&synth[i]);
-        f->residual(&residual[i]);
-        residual_frame(f);
-    }
 }
 
 void Residual::synth_frame(Frame* frame) {

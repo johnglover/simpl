@@ -27,3 +27,4 @@ simpl/residual.cpp
 tests/testbase
 tests/testbase.dSYM
 tests/*.json
+tests/*.wav

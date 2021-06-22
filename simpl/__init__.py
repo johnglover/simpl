@@ -1,12 +1,12 @@
 import numpy as np
-import base
-import peak_detection
-import partial_tracking
-import synthesis
-import residual
-import plot
-import audio
-import pybase
+import simpl.base
+import simpl.peak_detection
+import simpl.partial_tracking
+import simpl.synthesis
+import simpl.residual
+import simpl.plot
+import simpl.audio
+import simpl.pybase
 
 dtype = np.double
 Frame = base.Frame
@@ -36,7 +36,7 @@ SMSResidual = residual.SMSResidual
 plot_peaks = plot.plot_peaks
 plot_partials = plot.plot_partials
 
-import mq
+import simpl.mq
 MQPeakDetection = mq.MQPeakDetection
 MQPartialTracking = mq.MQPartialTracking
 MQSynthesis = mq.MQSynthesis

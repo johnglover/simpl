@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import colours
+import simpl.plot.colours
 
 
 def plot_peaks(frames):
@@ -12,7 +12,7 @@ def plot_peaks(frames):
             max_amp = max(max_amp, max([p.amplitude for p in frame.peaks]))
 
     if not max_amp:
-        print "No peaks with an amplitude of > 0 to plot"
+        print("No peaks with an amplitude of > 0 to plot")
         return
 
     for frame_number, frame in enumerate(frames):
@@ -32,7 +32,7 @@ def plot_partials(frames, show_peaks=False):
             max_amp = max(max_amp, max([p.amplitude for p in frame.partials]))
 
     if not max_amp:
-        print "No partial peaks with an amplitude of > 0 to plot"
+        print("No partial peaks with an amplitude of > 0 to plot")
         return
 
     for n in range(len(frames) - 1):

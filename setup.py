@@ -29,13 +29,13 @@ try:
     except AttributeError:
         numpy_include = numpy.get_numpy_include()
 except ImportError:
-    print 'Error: Numpy was not found.'
+    print('Error: Numpy was not found.')
     exit(1)
 
 macros = []
 link_args = []
 include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
-                'src/loris', 'src/mq', numpy_include, '/usr/local/include']
+                'src/loris', 'src/mq', numpy_include, '/usr/local/include', '.']
 libs = ['m', 'fftw3', 'gsl', 'gslcblas']
 compile_args = ['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H']
 sources = []

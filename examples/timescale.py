@@ -7,7 +7,7 @@ usage = 'Usage: python {0} '.format(__file__) + \
     '<input wav file> <time scale factor> <output wav file>'
 
 if len(sys.argv) != 4:
-    print usage
+    print(usage)
     sys.exit(1)
 
 audio, sampling_rate = simpl.read_wav(sys.argv[1])

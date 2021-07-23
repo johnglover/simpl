@@ -33,7 +33,7 @@ C++ Library Dependencies
 Additional Python Module Dependencies
 -------------------------------------
 
-* Python (>= 2.6.*)
+* Python (>= 3.5)
 * Cython_
 * NumPy
 * SciPy

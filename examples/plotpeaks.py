@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 usage = 'Usage: python {0} <wav file>'.format(__file__)
 if len(sys.argv) != 2:
-    print usage
+    print(usage)
     sys.exit(1)
 
 audio = simpl.read_wav(sys.argv[1])[0]

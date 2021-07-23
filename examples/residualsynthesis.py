@@ -5,7 +5,7 @@ import simpl
 
 usage = 'Usage: python {0} <input wav file> <output wav file>'.format(__file__)
 if len(sys.argv) != 3:
-    print usage
+    print(usage)
     sys.exit(1)
 
 audio, sampling_rate = simpl.read_wav(sys.argv[1])

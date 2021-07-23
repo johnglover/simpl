@@ -186,7 +186,7 @@ class MQPartialTracking(simpl.PartialTracking):
         free_peaks = [p for p in free_peaks if p.amplitude > 0]
         distances = [abs(peak.frequency - p.frequency) for p in free_peaks]
         if len(distances):
-            min_distance_position = min(xrange(len(distances)),
+            min_distance_position = min(range(len(distances)),
                                         key=distances.__getitem__)
             if min(distances) < self._matching_interval:
                 return free_peaks[min_distance_position]

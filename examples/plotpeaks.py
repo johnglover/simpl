@@ -10,7 +10,7 @@ if len(sys.argv) != 2:
 audio = simpl.read_wav(sys.argv[1])[0]
 
 # take just a few frames
-audio = audio[len(audio) / 2:(len(audio) / 2) + 4096]
+audio = audio[len(audio) // 2:(len(audio) // 2) + 4096]
 
 # peak detection using the SndObj library
 pd = simpl.SndObjPeakDetection()

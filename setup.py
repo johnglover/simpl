@@ -36,6 +36,23 @@ macros = []
 link_args = []
 include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
                 'src/loris', 'src/mq', numpy_include, '/usr/local/include', '.']
+
+# add FFTW3 include directory
+if platform == 'Linux':
+    include_dirs.append('/usr/include/fftw3')
+elif platform == 'Darwin':
+    include_dirs.append('/opt/local/include')
+elif platform == 'Windows':
+    user_input = input('Please enter the path to the FFTW3 include directory: ')
+    # change backslashes to forward slashes
+    user_input = user_input.replace('\\', '/')
+    # remove trailing slash 
+    if user_input[-1] == '/':
+        user_input = user_input[:-1]
+    include_dirs.append(user_input)
+    include_dirs.append('include')
+
+
 libs = ['m', 'fftw3', 'gsl', 'gslcblas']
 compile_args = ['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H']
 sources = []

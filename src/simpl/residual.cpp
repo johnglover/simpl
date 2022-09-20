@@ -58,9 +58,9 @@ void Residual::sampling_rate(int new_sampling_rate) {
 void Residual::residual_frame(Frame* frame) {
 }
 
-void Residual::find_residual(int synth_size, sample* synth,
-                             int original_size, sample* original,
-                             int residual_size, sample* residual) {
+void Residual::find_residual(int synth_size, simpl_sample* synth,
+                             int original_size, simpl_sample* original,
+                             int residual_size, simpl_sample* residual) {
 }
 
 void Residual::synth_frame(Frame* frame) {
@@ -74,7 +74,7 @@ Frames Residual::synth(Frames& frames) {
     return frames;
 }
 
-Frames Residual::synth(int original_size, sample* original) {
+Frames Residual::synth(int original_size, simpl_sample* original) {
     clear();
     unsigned int pos = 0;
     bool alloc_memory_in_frame = true;

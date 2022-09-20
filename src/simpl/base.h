@@ -12,7 +12,11 @@
 namespace simpl
 {
 
-typedef double sample;
+typedef double simpl_sample;
+
+// sample is ambiguous in this context, how about simpl_sample?
+
+// typedef double sample;
 
 
 // ---------------------------------------------------------------------------
@@ -22,14 +26,14 @@ typedef double sample;
 // ---------------------------------------------------------------------------
 class Peak {
     public:
-        sample amplitude;
-        sample frequency;
-        sample phase;
-        sample bandwidth;
+        simpl_sample amplitude;
+        simpl_sample frequency;
+        simpl_sample phase;
+        simpl_sample bandwidth;
 
         Peak();
-        Peak(sample new_amplitude, sample new_frequency,
-             sample new_phase, sample new_bandwidth);
+        Peak(simpl_sample new_amplitude, simpl_sample new_frequency,
+             simpl_sample new_phase, simpl_sample new_bandwidth);
         ~Peak();
         void reset();
 };
@@ -58,10 +62,10 @@ class Frame {
         int _num_partials;
         Peaks _peaks;
         Peaks _partials;
-        sample* _audio;
-        sample* _synth;
-        sample* _residual;
-        sample* _synth_residual;
+        simpl_sample* _audio;
+        simpl_sample* _synth;
+        simpl_sample* _residual;
+        simpl_sample* _synth_residual;
         void init();
         bool _alloc_memory;
         void create_arrays();
@@ -85,40 +89,40 @@ class Frame {
         void num_peaks(int new_num_peaks);
         int max_peaks();
         void max_peaks(int new_max_peaks);
-        void add_peak(sample amplitude, sample frequency,
-                      sample phase, sample bandwidth);
+        void add_peak(simpl_sample amplitude, simpl_sample frequency,
+                      simpl_sample phase, simpl_sample bandwidth);
         Peak* peak(int peak_number);
-        void peak(int peak_number, sample amplitude, sample frequency,
-                  sample phase, sample bandwidth);
+        void peak(int peak_number, simpl_sample amplitude, simpl_sample frequency,
+                  simpl_sample phase, simpl_sample bandwidth);
 
         // partials
         int num_partials();
         void num_partials(int new_num_partials);
         int max_partials();
         void max_partials(int new_max_partials);
-        void add_partial(sample amplitude, sample frequency,
-                         sample phase, sample bandwidth);
+        void add_partial(simpl_sample amplitude, simpl_sample frequency,
+                         simpl_sample phase, simpl_sample bandwidth);
         Peak* partial(int partial_number);
-        void partial(int partial_number, sample amplitude, sample frequency,
-                     sample phase, sample bandwidth);
+        void partial(int partial_number, simpl_sample amplitude, simpl_sample frequency,
+                     simpl_sample phase, simpl_sample bandwidth);
 
         // audio buffers
         int size();
         void size(int new_size);
         int synth_size();
         void synth_size(int new_size);
-        void audio(sample* new_audio);
-        void audio(sample* new_audio, int size);
-        sample* audio();
-        void synth(sample* new_synth);
-        void synth(sample* new_synth, int size);
-        sample* synth();
-        void residual(sample* new_residual);
-        void residual(sample* new_residual, int size);
-        sample* residual();
-        void synth_residual(sample* new_synth_residual);
-        void synth_residual(sample* new_synth_residual, int size);
-        sample* synth_residual();
+        void audio(simpl_sample* new_audio);
+        void audio(simpl_sample* new_audio, int size);
+        simpl_sample* audio();
+        void synth(simpl_sample* new_synth);
+        void synth(simpl_sample* new_synth, int size);
+        simpl_sample* synth();
+        void residual(simpl_sample* new_residual);
+        void residual(simpl_sample* new_residual, int size);
+        simpl_sample* residual();
+        void synth_residual(simpl_sample* new_synth_residual);
+        void synth_residual(simpl_sample* new_synth_residual, int size);
+        simpl_sample* synth_residual();
 };
 
 typedef std::vector<Frame*> Frames;

@@ -4,10 +4,8 @@
 #include "base.h"
 
 #include "mq.h"
+#include "sms.h"
 
-extern "C" {
-    #include "sms.h"
-}
 
 #include "SndObj.h"
 #include "HammingTable.h"
@@ -89,9 +87,9 @@ class SMSPartialTracking : public PartialTracking {
         SMSAnalysisParams _analysis_params;
         SMSHeader _header;
         SMSData _data;
-        sample* _peak_amplitude;
-        sample* _peak_frequency;
-        sample* _peak_phase;
+        simpl_sample* _peak_amplitude;
+        simpl_sample* _peak_frequency;
+        simpl_sample* _peak_phase;
         void init_peaks();
 
     public:
@@ -123,13 +121,13 @@ class SMSPartialTracking : public PartialTracking {
 // ---------------------------------------------------------------------------
 class SndObjPartialTracking : public PartialTracking {
     private:
-        sample _threshold;
+        simpl_sample _threshold;
         int _num_bins;
         SndObj* _input;
         SinAnal* _analysis;
-        sample* _peak_amplitude;
-        sample* _peak_frequency;
-        sample* _peak_phase;
+        simpl_sample* _peak_amplitude;
+        simpl_sample* _peak_frequency;
+        simpl_sample* _peak_phase;
 
     public:
         SndObjPartialTracking();

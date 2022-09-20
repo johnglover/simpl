@@ -58,10 +58,10 @@ class Synthesis {
 // ---------------------------------------------------------------------------
 class MQSynthesis : public Synthesis {
     private:
-        sample* _prev_amps;
-        sample* _prev_freqs;
-        sample* _prev_phases;
-        sample hz_to_radians(sample f);
+        simpl_sample* _prev_amps;
+        simpl_sample* _prev_freqs;
+        simpl_sample* _prev_phases;
+        simpl_sample hz_to_radians(sample f);
 
     public:
         MQSynthesis();
@@ -136,7 +136,7 @@ class SndObjSynthesis : public Synthesis {
 class LorisSynthesis : public Synthesis {
     private:
         std::vector<Loris::Oscillator> _oscs;
-        sample _bandwidth;
+        simpl_sample _bandwidth;
 
     public:
         LorisSynthesis();
@@ -144,8 +144,8 @@ class LorisSynthesis : public Synthesis {
         void reset();
         using Synthesis::max_partials;
         void max_partials(int new_max_partials);
-        sample bandwidth();
-        void bandwidth(sample new_bandwidth);
+        simpl_sample bandwidth();
+        void bandwidth(simpl_sample new_bandwidth);
         void synth_frame(Frame* frame);
 };
 

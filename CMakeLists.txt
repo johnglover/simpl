@@ -4,13 +4,15 @@ project(simpl)
 file(GLOB simpl_src src/simpl/*.cpp)
 file(GLOB sms_src src/sms/*.c)
 file(GLOB sndobj_src src/sndobj/*.cpp)
-file(GLOB loris_src src/loris/*.C)
+file(GLOB loris_src src/loris/*.c)
 file(GLOB mq_src src/mq/*.cpp)
 list(APPEND source_files ${simpl_src}
                          ${sndobj_src}
                          ${sms_src}
                          ${loris_src}
                          ${mq_src})
+
+# In
 
 file(GLOB simpl_include src/simpl/*.h)
 set(sms_include src/sms/sms.h)
@@ -23,12 +25,24 @@ list(APPEND include_files ${simpl_include}
                           ${loris_include}
                           ${mq_include})
 
-add_definitions(-DHAVE_FFTW3_H)
-set(libs m fftw3 gsl gslcblas)
+# change all /c to C:  (windows only)
+if(WIN32)
+  foreach(file ${source_files})
+    string(REGEX REPLACE "/c" "C:" file ${file})
+  endforeach()
+  foreach(file ${include_files})
+    string(REGEX REPLACE "/c" "C:" file ${file})
+  endforeach()
+endif()
 
-include_directories(src/simpl src/sms src/sndobj src/loris src/mq)
 
-add_library(simpl SHARED ${source_files})
+                
+# include mingw64 FFTW3
+set(FFTW3_INCLUDE_DIR "C:/msys64/mingw64/include")
+set(FFTW3_LIBRARY "C:/msys64/mingw64/lib/libfftw3-3.dll.a")
+
+
+add_library(simpl SHARED ${source_files} ${include_files})
 target_link_libraries(simpl ${libs})
 
 install(TARGETS simpl LIBRARY DESTINATION lib)

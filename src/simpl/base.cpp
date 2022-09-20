@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <algorithm>
 #include "base.h"
 
 using namespace std;
@@ -13,8 +12,8 @@ Peak::Peak() {
     reset();
 }
 
-Peak::Peak(sample new_amplitude, sample new_frequency,
-           sample new_phase, sample new_bandwidth) {
+Peak::Peak(simpl_sample new_amplitude, simpl_sample new_frequency,
+           simpl_sample new_phase, simpl_sample new_bandwidth) {
     amplitude = new_amplitude;
     frequency = new_frequency;
     phase = new_phase;
@@ -89,10 +88,10 @@ void Frame::init() {
 }
 
 void Frame::create_arrays() {
-    _audio = new sample[_size];
-    _residual = new sample[_size];
-    memset(_audio, 0.0, sizeof(sample) * _size);
-    memset(_residual, 0.0, sizeof(sample) * _size);
+    _audio = new simpl_sample[_size];
+    _residual = new simpl_sample[_size];
+    memset(_audio, 0.0, sizeof(simpl_sample) * _size);
+    memset(_residual, 0.0, sizeof(simpl_sample) * _size);
     create_synth_arrays();
 }
 
@@ -110,10 +109,10 @@ void Frame::destroy_arrays() {
 }
 
 void Frame::create_synth_arrays() {
-    _synth = new sample[_synth_size];
-    _synth_residual = new sample[_synth_size];
-    memset(_synth, 0.0, sizeof(sample) * _synth_size);
-    memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
+    _synth = new simpl_sample[_synth_size];
+    _synth_residual = new simpl_sample[_synth_size];
+    memset(_synth, 0.0, sizeof(simpl_sample) * _synth_size);
+    memset(_synth_residual, 0.0, sizeof(simpl_sample) * _synth_size);
 }
 
 void Frame::destroy_synth_arrays() {
@@ -166,7 +165,7 @@ void Frame::clear() {
     clear_partials();
 
     if(_alloc_memory) {
-        memset(_audio, 0.0, sizeof(sample) * _size);
+        memset(_audio, 0.0, sizeof(simpl_sample) * _size);
     }
     clear_synth();
 }
@@ -191,9 +190,9 @@ void Frame::clear_partials() {
 
 void Frame::clear_synth() {
     if(_alloc_memory) {
-        memset(_synth, 0.0, sizeof(sample) * _synth_size);
-        memset(_residual, 0.0, sizeof(sample) * _size);
-        memset(_synth_residual, 0.0, sizeof(sample) * _synth_size);
+        memset(_synth, 0.0, sizeof(simpl_sample) * _synth_size);
+        memset(_residual, 0.0, sizeof(simpl_sample) * _size);
+        memset(_synth_residual, 0.0, sizeof(simpl_sample) * _synth_size);
     }
 }
 
@@ -225,8 +224,8 @@ void Frame::max_peaks(int new_max_peaks) {
     resize_peaks(_max_peaks);
 }
 
-void Frame::add_peak(sample amplitude, sample frequency,
-                     sample phase, sample bandwidth) {
+void Frame::add_peak(simpl_sample amplitude, simpl_sample frequency,
+                     simpl_sample phase, simpl_sample bandwidth) {
     if(_num_peaks >= _max_peaks) {
         printf("Warning: attempted to add more than the specified"
                " maximum number of peaks (%d) to a frame, ignoring.\n",
@@ -245,8 +244,8 @@ Peak* Frame::peak(int peak_number) {
     return _peaks[peak_number];
 }
 
-void Frame::peak(int peak_number, sample amplitude, sample frequency,
-                    sample phase, sample bandwidth) {
+void Frame::peak(int peak_number, simpl_sample amplitude, simpl_sample frequency,
+                    simpl_sample phase, simpl_sample bandwidth) {
     _peaks[peak_number]->amplitude = amplitude;
     _peaks[peak_number]->frequency = frequency;
     _peaks[peak_number]->phase = phase;
@@ -280,8 +279,8 @@ void Frame::max_partials(int new_max_partials) {
     resize_partials(_max_partials);
 }
 
-void Frame::add_partial(sample amplitude, sample frequency,
-                        sample phase, sample bandwidth) {
+void Frame::add_partial(simpl_sample amplitude, simpl_sample frequency,
+                        simpl_sample phase, simpl_sample bandwidth) {
     if(_num_partials >= _max_partials) {
         printf("Warning: attempted to add more than the specified"
                " maximum number of partials (%d) to a frame, ignoring.\n",
@@ -300,8 +299,8 @@ Peak* Frame::partial(int partial_number) {
     return _partials[partial_number];
 }
 
-void Frame::partial(int partial_number, sample amplitude, sample frequency,
-                    sample phase, sample bandwidth) {
+void Frame::partial(int partial_number, simpl_sample amplitude, simpl_sample frequency,
+                    simpl_sample phase, simpl_sample bandwidth) {
     _partials[partial_number]->amplitude = amplitude;
     _partials[partial_number]->frequency = frequency;
     _partials[partial_number]->phase = phase;
@@ -338,7 +337,7 @@ void Frame::synth_size(int new_size) {
     }
 }
 
-void Frame::audio(sample* new_audio) {
+void Frame::audio(simpl_sample* new_audio) {
     if(_alloc_memory) {
         std::copy(new_audio, new_audio + _size, _audio);
     }
@@ -347,7 +346,7 @@ void Frame::audio(sample* new_audio) {
     }
 }
 
-void Frame::audio(sample* new_audio, int size) {
+void Frame::audio(simpl_sample* new_audio, int size) {
     // this should only be called if the Frame is managing the memory
     // for the sample arrays
     if(!_alloc_memory) {
@@ -373,11 +372,11 @@ void Frame::audio(sample* new_audio, int size) {
     }
 }
 
-sample* Frame::audio() {
+simpl_sample* Frame::audio() {
     return _audio;
 }
 
-void Frame::synth(sample* new_synth) {
+void Frame::synth(simpl_sample* new_synth) {
     if(_alloc_memory) {
         std::copy(new_synth, new_synth + _synth_size, _synth);
     }
@@ -386,7 +385,7 @@ void Frame::synth(sample* new_synth) {
     }
 }
 
-void Frame::synth(sample* new_synth, int size) {
+void Frame::synth(simpl_sample* new_synth, int size) {
     // this should only be called if the Frame is managing the memory
     // for the sample arrays
     if(!_alloc_memory) {
@@ -399,23 +398,23 @@ void Frame::synth(sample* new_synth, int size) {
                                     "it must be less than the Frame synth size."));
     }
 
-    memcpy(_synth, new_synth, sizeof(sample) * size);
+    memcpy(_synth, new_synth, sizeof(simpl_sample) * size);
 }
 
-sample* Frame::synth() {
+simpl_sample* Frame::synth() {
     return _synth;
 }
 
-void Frame::residual(sample* new_residual) {
+void Frame::residual(simpl_sample* new_residual) {
     if(_alloc_memory) {
-        memcpy(_residual, new_residual, sizeof(sample) * _size);
+        memcpy(_residual, new_residual, sizeof(simpl_sample) * _size);
     }
     else {
         _residual = new_residual;
     }
 }
 
-void Frame::residual(sample* new_residual, int size) {
+void Frame::residual(simpl_sample* new_residual, int size) {
     // this should only be called if the Frame is managing the memory
     // for the sample arrays
     if(!_alloc_memory) {
@@ -428,23 +427,23 @@ void Frame::residual(sample* new_residual, int size) {
                                     "it must be less than the Frame size."));
     }
 
-    memcpy(_residual, new_residual, sizeof(sample) * size);
+    memcpy(_residual, new_residual, sizeof(simpl_sample) * size);
 }
 
-sample* Frame::residual() {
+simpl_sample* Frame::residual() {
     return _residual;
 }
 
-void Frame::synth_residual(sample* new_synth_residual) {
+void Frame::synth_residual(simpl_sample* new_synth_residual) {
     if(_alloc_memory) {
-        memcpy(_synth_residual, new_synth_residual, sizeof(sample) * _synth_size);
+        memcpy(_synth_residual, new_synth_residual, sizeof(simpl_sample) * _synth_size);
     }
     else {
         _synth_residual = new_synth_residual;
     }
 }
 
-void Frame::synth_residual(sample* new_synth_residual, int size) {
+void Frame::synth_residual(simpl_sample* new_synth_residual, int size) {
     // this should only be called if the Frame is managing the memory
     // for the sample arrays
     if(!_alloc_memory) {
@@ -457,9 +456,9 @@ void Frame::synth_residual(sample* new_synth_residual, int size) {
                                     "it must be less than the Frame synth size."));
     }
 
-    memcpy(_synth_residual, new_synth_residual, sizeof(sample) * size);
+    memcpy(_synth_residual, new_synth_residual, sizeof(simpl_sample) * size);
 }
 
-sample* Frame::synth_residual() {
+simpl_sample* Frame::synth_residual() {
     return _synth_residual;
 }

@@ -83,7 +83,9 @@ sources.extend(sms_sources)
 # -----------------------------------------------------------------------------
 # Loris
 # -----------------------------------------------------------------------------
-loris_sources = glob.glob(os.path.join('src', 'loris', '*.C'))
+compile_loris = False
+
+loris_sources = glob.glob(os.path.join('src', 'loris', '*.c'))
 sources.extend(loris_sources)
 
 # -----------------------------------------------------------------------------
@@ -109,8 +111,9 @@ base = Extension(
 # -----------------------------------------------------------------------------
 peak_detection = Extension(
     'simpl.peak_detection',
-    sources=sources + ['simpl/peak_detection.pyx',
-                       'src/simpl/peak_detection.cpp',
+    sources=sources + [
+                    #'simpl/peak_detection.pyx',
+                    #    'src/simpl/peak_detection.cpp',
                        'src/simpl/base.cpp',
                        'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,

@@ -1,14 +1,22 @@
 #ifndef PEAK_DETECTION_H
 #define PEAK_DETECTION_H
 
+
+#ifdef _WIN64 
+// #define _HAS_AUTO_PTR_ETC 1
+// #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#endif
+
 #include "base.h"
 
 #include "mq.h"
 #include "twm.h"
+#include "sms.h"
 
-extern "C" {
-    #include "sms.h"
-}
+// extern "C" {
+    
+// }
+
 
 #include "SndObj.h"
 #include "HammingTable.h"
@@ -29,7 +37,6 @@ using namespace std;
 namespace simpl
 {
 
-
 // ---------------------------------------------------------------------------
 // PeakDetection
 //
@@ -45,7 +52,7 @@ class PeakDetection {
         int _max_peaks;
         std::string _window_type;
         int _window_size;
-        sample _min_peak_separation;
+        simpl_sample _min_peak_separation;
         Frames _frames;
 
     public:
@@ -68,8 +75,8 @@ class PeakDetection {
         virtual void window_type(std::string new_window_type);
         virtual int window_size();
         virtual void window_size(int new_window_size);
-        virtual sample min_peak_separation();
-        virtual void min_peak_separation(sample new_min_peak_separation);
+        virtual simpl_sample min_peak_separation();
+        virtual void min_peak_separation(simpl_sample new_min_peak_separation);
         int num_frames();
         Frame* frame(int frame_number);
         Frames frames();
@@ -82,7 +89,7 @@ class PeakDetection {
         // If the signal contains more than 1 frame worth of audio, it will be
         // broken up into separate frames, with an array of peaks returned for
         // each frame
-        virtual Frames find_peaks(int audio_size, sample* audio);
+        virtual Frames find_peaks(int audio_size, simpl_sample* audio);
 };
 
 
@@ -91,7 +98,9 @@ class PeakDetection {
 // ---------------------------------------------------------------------------
 class MQPeakDetection : public PeakDetection {
     private:
-        MQParameters _mq_params;
+        // MQParameters is defined in mq.h
+        
+        //MQParameters _mq_params;
         void reset();
 
     public:
@@ -128,7 +137,7 @@ class SMSPeakDetection : public PeakDetection {
         int realtime();
         void realtime(int new_realtime);
         void find_peaks_in_frame(Frame* frame);
-        Frames find_peaks(int audio_size, sample* audio);
+        Frames find_peaks(int audio_size, simpl_sample* audio);
 };
 
 
@@ -141,7 +150,7 @@ class SndObjPeakDetection : public PeakDetection {
         HammingTable* _window;
         IFGram* _ifgram;
         SinAnal* _analysis;
-        sample _threshold;
+        simpl_sample _threshold;
         void reset();
 
     public:
@@ -162,19 +171,19 @@ class SndObjPeakDetection : public PeakDetection {
 // ---------------------------------------------------------------------------
 class SimplLorisAnalyzer : public Loris::Analyzer {
     protected:
-        sample _window_shape;
-        std::vector<sample> _window;
-        std::vector<sample> _window_deriv;
+        simpl_sample _window_shape;
+        std::vector<simpl_sample> _window;
+        std::vector<simpl_sample> _window_deriv;
         Loris::ReassignedSpectrum* _spectrum;
         Loris::SpectralPeakSelector* _peak_selector;
         std::auto_ptr<Loris::AssociateBandwidth> _bw_associator;
 
     public:
-        SimplLorisAnalyzer(int window_size, sample resolution,
-                           int hop_size, sample sampling_rate);
+        SimplLorisAnalyzer(int window_size, simpl_sample resolution,
+                           int hop_size, simpl_sample sampling_rate);
         ~SimplLorisAnalyzer();
         Loris::Peaks peaks;
-        void analyze(int audio_size, sample* audio);
+        void analyze(int audio_size, simpl_sample* audio);
 };
 
 

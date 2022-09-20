@@ -43,13 +43,13 @@ class Residual {
         void sampling_rate(int new_sampling_rate);
 
         virtual void residual_frame(Frame* frame);
-        virtual void find_residual(int synth_size, sample* synth,
-                                   int original_size, sample* original,
-                                   int residual_size, sample* residual);
+        virtual void find_residual(int synth_size, simpl_sample* synth,
+                                   int original_size, simpl_sample* original,
+                                   int residual_size, simpl_sample* residual);
 
         virtual void synth_frame(Frame* frame);
         virtual Frames synth(Frames& frames);
-        virtual Frames synth(int original_size, sample* original);
+        virtual Frames synth(int original_size, simpl_sample* original);
 };
 
 

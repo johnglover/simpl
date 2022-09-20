@@ -94,11 +94,11 @@ void PeakDetection::window_size(int new_window_size) {
     _window_size = new_window_size;
 }
 
-sample PeakDetection::min_peak_separation() {
+simpl_sample PeakDetection::min_peak_separation() {
     return _min_peak_separation;
 }
 
-void PeakDetection::min_peak_separation(sample new_min_peak_separation) {
+void PeakDetection::min_peak_separation(simpl_sample new_min_peak_separation) {
     _min_peak_separation = new_min_peak_separation;
 }
 
@@ -126,7 +126,7 @@ void PeakDetection::find_peaks_in_frame(Frame* frame) {
 // If the signal contains more than 1 frame worth of audio, it will be broken
 // up into separate frames, each containing a std::vector of peaks.
 // Frames* PeakDetection::find_peaks(const samples& audio)
-Frames PeakDetection::find_peaks(int audio_size, sample* audio) {
+Frames PeakDetection::find_peaks(int audio_size, simpl_sample* audio) {
     clear();
     unsigned int pos = 0;
     bool alloc_memory_in_frame = true;
@@ -311,7 +311,7 @@ void SMSPeakDetection::find_peaks_in_frame(Frame* frame) {
 // If the signal contains more than 1 frame worth of audio,
 // it will be broken up into separate frames, with a list of
 // peaks returned for each frame.
-Frames SMSPeakDetection::find_peaks(int audio_size, sample* audio) {
+Frames SMSPeakDetection::find_peaks(int audio_size, simpl_sample* audio) {
     clear();
     unsigned int pos = 0;
     bool alloc_memory_in_frame = true;
@@ -432,8 +432,8 @@ void SndObjPeakDetection::find_peaks_in_frame(Frame* frame) {
 // ---------------------------------------------------------------------------
 // LorisPeakDetection
 // ---------------------------------------------------------------------------
-SimplLorisAnalyzer::SimplLorisAnalyzer(int window_size, sample resolution,
-                                       int hop_size, sample sampling_rate) :
+SimplLorisAnalyzer::SimplLorisAnalyzer(int window_size, simpl_sample resolution,
+                                       int hop_size, simpl_sample sampling_rate) :
     Loris::Analyzer(resolution, 2 * resolution) {
 
     buildFundamentalEnv(false);
@@ -459,7 +459,7 @@ SimplLorisAnalyzer::~SimplLorisAnalyzer() {
     delete _peak_selector;
 }
 
-void SimplLorisAnalyzer::analyze(int audio_size, sample* audio) {
+void SimplLorisAnalyzer::analyze(int audio_size, simpl_sample* audio) {
     m_ampEnvBuilder->reset();
     m_f0Builder->reset();
     m_partials.clear();

@@ -21,9 +21,6 @@ extra_link_args = ["-Wl,-Bstatic", "-lpthread"]
 # Global
 # -----------------------------------------------------------------------------
 
-#
-
-
 # detect platform
 platform = os.uname()[0] if hasattr(os, 'uname') else 'Windows'
 
@@ -51,16 +48,21 @@ sources = []
 # change Python Include directory for Windows
 if platform == 'Windows':
     # get python from MiniConda
-    python_include = glob.glob('C:/Users/Neimog/miniconda3/envs/composition/include/')[0]
+    # input = add the path to the python include directory
+    enviroment_user_path = os.environ['CONDA_PREFIX']
+
+    python_include = glob.glob(os.path.join(enviroment_user_path, 'include', 'python*'))[0]
     include_dirs.append(python_include)
     # python library for Windows in MiniConda is called python310
     libs.append('python310')
     # add compile args for Windows
     compile_args.append('-DMS_WIN64')
-    # add link args for Windows
-    link_args.append('/LIBPATH:C:/Users/Neimog/miniconda3/envs/composition/libs')
-    link_args.append('/LIBPATH:C:/Users/Neimog/miniconda3/envs/composition')
-    link_args.append('/LIBPATH:C:/Users/Neimog/miniconda3/envs/composition/libs/python310')
+    # add environment user path + lib to link args
+    link_args.append(os.path.join(enviroment_user_path, 'lib'))
+    # add environment user path + include to include dirs
+    include_dirs.append(os.path.join(enviroment_user_path, 'include'))
+    # add environment user path + include to include dirs
+    include_dirs.append(os.path.join(enviroment_user_path, 'Library', 'include'))
 
 
 # -----------------------------------------------------------------------------

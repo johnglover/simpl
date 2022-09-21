@@ -10,13 +10,19 @@ compare and contrast many of the published analysis/synthesis algorithms.
 '''
 import os
 import glob
-from distutils.core import setup
+from setuptools import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
+import distutils.cygwinccompiler
+distutils.cygwinccompiler.get_msvcr = lambda: []
+extra_link_args = ["-Wl,-Bstatic", "-lpthread"]
 
 # -----------------------------------------------------------------------------
 # Global
 # -----------------------------------------------------------------------------
+
+#
+
 
 # detect platform
 platform = os.uname()[0] if hasattr(os, 'uname') else 'Windows'
@@ -32,30 +38,30 @@ except ImportError:
     print('Error: Numpy was not found.')
     exit(1)
 
+
 macros = []
 link_args = []
 include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
                 'src/loris', 'src/mq', numpy_include, '/usr/local/include', '.']
-
-# add FFTW3 include directory
-if platform == 'Linux':
-    include_dirs.append('/usr/include/fftw3')
-elif platform == 'Darwin':
-    include_dirs.append('/opt/local/include')
-elif platform == 'Windows':
-    user_input = input('Please enter the path to the FFTW3 include directory: ')
-    # change backslashes to forward slashes
-    user_input = user_input.replace('\\', '/')
-    # remove trailing slash 
-    if user_input[-1] == '/':
-        user_input = user_input[:-1]
-    include_dirs.append(user_input)
-    include_dirs.append('include')
-
-
 libs = ['m', 'fftw3', 'gsl', 'gslcblas']
-compile_args = ['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H']
+   
+compile_args = ['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H', '-DMS_WIN64']
 sources = []
+
+# change Python Include directory for Windows
+if platform == 'Windows':
+    # get python from MiniConda
+    python_include = glob.glob('C:/Users/Neimog/miniconda3/envs/composition/include/')[0]
+    include_dirs.append(python_include)
+    # python library for Windows in MiniConda is called python310
+    libs.append('python310')
+    # add compile args for Windows
+    compile_args.append('-DMS_WIN64')
+    # add link args for Windows
+    link_args.append('/LIBPATH:C:/Users/Neimog/miniconda3/envs/composition/libs')
+    link_args.append('/LIBPATH:C:/Users/Neimog/miniconda3/envs/composition')
+    link_args.append('/LIBPATH:C:/Users/Neimog/miniconda3/envs/composition/libs/python310')
+
 
 # -----------------------------------------------------------------------------
 # SndObj Library
@@ -83,9 +89,7 @@ sources.extend(sms_sources)
 # -----------------------------------------------------------------------------
 # Loris
 # -----------------------------------------------------------------------------
-compile_loris = False
-
-loris_sources = glob.glob(os.path.join('src', 'loris', '*.c'))
+loris_sources = glob.glob(os.path.join('src', 'loris', '*.C'))
 sources.extend(loris_sources)
 
 # -----------------------------------------------------------------------------
@@ -111,9 +115,8 @@ base = Extension(
 # -----------------------------------------------------------------------------
 peak_detection = Extension(
     'simpl.peak_detection',
-    sources=sources + [
-                    #'simpl/peak_detection.pyx',
-                    #    'src/simpl/peak_detection.cpp',
+    sources=sources + ['simpl/peak_detection.pyx',
+                       'src/simpl/peak_detection.cpp',
                        'src/simpl/base.cpp',
                        'src/simpl/exceptions.cpp'],
     include_dirs=include_dirs,

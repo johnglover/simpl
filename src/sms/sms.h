@@ -28,7 +28,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <memory.h>
-#include <strings.h> 
+
+// equivalent to strings.h for windows
+#include <string.h>
+// #include <strings.h> 
 
 #define SMS_VERSION 1.15 /*!< \brief version control number */
 

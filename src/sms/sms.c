@@ -1089,7 +1089,7 @@ sfloat sms_random()
 #ifdef MERSENNE_TWISTER
     return genrand_real1();
 #else
-    return (sfloat)(random() * 2 * INV_HALF_MAX);
+    return (sfloat)(rand() * 2 * INV_HALF_MAX);
 #endif
 }
 

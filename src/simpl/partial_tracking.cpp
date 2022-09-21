@@ -205,13 +205,13 @@ void SMSPartialTracking::init_peaks() {
         delete [] _peak_phase;
     }
 
-    _peak_amplitude = new sample[_max_partials];
-    _peak_frequency = new sample[_max_partials];
-    _peak_phase = new sample[_max_partials];
+    _peak_amplitude = new simpl_sample[_max_partials];
+    _peak_frequency = new simpl_sample[_max_partials];
+    _peak_phase = new simpl_sample[_max_partials];
 
-    memset(_peak_amplitude, 0.0, sizeof(sample) * _max_partials);
-    memset(_peak_frequency, 0.0, sizeof(sample) * _max_partials);
-    memset(_peak_phase, 0.0, sizeof(sample) * _max_partials);
+    memset(_peak_amplitude, 0.0, sizeof(simpl_sample) * _max_partials);
+    memset(_peak_frequency, 0.0, sizeof(simpl_sample) * _max_partials);
+    memset(_peak_phase, 0.0, sizeof(simpl_sample) * _max_partials);
 }
 
 void SMSPartialTracking::reset() {
@@ -429,13 +429,13 @@ void SndObjPartialTracking::reset() {
 
     _input = new SndObj();
     _analysis = new SinAnal(_input, _num_bins, _threshold, _max_partials);
-    _peak_amplitude = new sample[_max_partials];
-    _peak_frequency = new sample[_max_partials];
-    _peak_phase = new sample[_max_partials];
+    _peak_amplitude = new simpl_sample[_max_partials];
+    _peak_frequency = new simpl_sample[_max_partials];
+    _peak_phase = new simpl_sample[_max_partials];
 
-    memset(_peak_amplitude, 0.0, sizeof(sample) * _max_partials);
-    memset(_peak_frequency, 0.0, sizeof(sample) * _max_partials);
-    memset(_peak_phase, 0.0, sizeof(sample) * _max_partials);
+    memset(_peak_amplitude, 0.0, sizeof(simpl_sample) * _max_partials);
+    memset(_peak_frequency, 0.0, sizeof(simpl_sample) * _max_partials);
+    memset(_peak_phase, 0.0, sizeof(simpl_sample) * _max_partials);
 }
 
 void SndObjPartialTracking::max_partials(int new_max_partials) {

@@ -6,16 +6,16 @@
 #include "base.h"
 
 extern "C" {
-    #include "sms.h"
+    #include "../sms/sms.h"
 }
 
-#include "SndObj.h"
-#include "HarmTable.h"
-#include "SinAnal.h"
-#include "AdSyn.h"
+#include "../sndobj/SndObj.h"
+#include "../sndobj/HarmTable.h"
+#include "../sndobj/SinAnal.h"
+#include "../sndobj/AdSyn.h"
 
-#include "Breakpoint.h"
-#include "Oscillator.h"
+#include "../loris/Breakpoint.h"
+#include "../loris/Oscillator.h"
 
 using namespace std;
 
@@ -61,7 +61,7 @@ class MQSynthesis : public Synthesis {
         simpl_sample* _prev_amps;
         simpl_sample* _prev_freqs;
         simpl_sample* _prev_phases;
-        simpl_sample hz_to_radians(sample f);
+        simpl_sample hz_to_radians(simpl_sample f);
 
     public:
         MQSynthesis();

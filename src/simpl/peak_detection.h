@@ -8,28 +8,25 @@
 #endif
 
 #include "base.h"
+#include "../mq/mq.h"
+#include "../mq/twm.h"
 
-#include "mq.h"
-#include "twm.h"
-#include "sms.h"
+extern "C" {
+    #include "../sms/sms.h"
+}
 
-// extern "C" {
-    
-// }
+#include "../sndobj/SndObj.h"
+#include "../sndobj/HammingTable.h"
+#include "../sndobj/IFGram.h"
+#include "../sndobj/SinAnal.h"
 
-
-#include "SndObj.h"
-#include "HammingTable.h"
-#include "IFGram.h"
-#include "SinAnal.h"
-
-#include "Analyzer.h"
-#include "AssociateBandwidth.h"
-#include "BreakpointEnvelope.h"
-#include "KaiserWindow.h"
-#include "PartialBuilder.h"
-#include "ReassignedSpectrum.h"
-#include "SpectralPeakSelector.h"
+#include "../loris/Analyzer.h"
+#include "../loris/AssociateBandwidth.h"
+#include "../loris/BreakpointEnvelope.h"
+#include "../loris/KaiserWindow.h"
+#include "../loris/PartialBuilder.h"
+#include "../loris/ReassignedSpectrum.h"
+#include "../loris/SpectralPeakSelector.h"
 
 using namespace std;
 
@@ -98,9 +95,7 @@ class PeakDetection {
 // ---------------------------------------------------------------------------
 class MQPeakDetection : public PeakDetection {
     private:
-        // MQParameters is defined in mq.h
-        
-        //MQParameters _mq_params;
+        MQParameters _mq_params;
         void reset();
 
     public:

@@ -4,9 +4,9 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/Users/Neimog/OneDrive_usp.br/Documents/Codigos/DLL/fftw/win64",
+                "C:/Users/Neimog/Git/simpl/fftw/win64",
                 "C:/Users/Neimog/Git/simpl/include",
-                "C:/Users/Neimog/AppData/Local/Programs/Python/Python310/include",
+                "C:/Users/Neimog/miniconda3/include",
                 "C:/Users/Neimog/miniconda3/envs/composition/Lib/site-packages/numpy/core/include/numpy",
                 "C:/Users/Neimog/miniconda3/envs/composition/Lib/site-packages/numpy/core/include"
             ],

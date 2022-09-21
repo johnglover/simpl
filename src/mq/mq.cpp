@@ -5,8 +5,8 @@ using namespace simpl;
 // ----------------------------------------------------------------------------
 // Windowing
 
-void hamming_window(int window_size, sample* window) {
-    sample sum = 0;
+void hamming_window(int window_size, simpl_sample* window) {
+    simpl_sample sum = 0;
 
 	for(int i = 0; i < window_size; i++) {
         window[i] = 0.54 - (0.46 * cos(2.0 * M_PI * i / (window_size - 1)));
@@ -23,11 +23,11 @@ void hamming_window(int window_size, sample* window) {
 
 int simpl::init_mq(MQParameters* params) {
     // allocate memory for window
-    params->window = new sample[params->frame_size];
+    params->window = new simpl_sample[params->frame_size];
     hamming_window(params->frame_size, params->window);
 
 	// allocate memory for FFT
-	params->fft_in = (sample*) fftw_malloc(sizeof(sample) *
+	params->fft_in = (simpl_sample*) fftw_malloc(sizeof(simpl_sample) *
                                            params->frame_size);
 	params->fft_out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) *
                                                   params->num_bins);
@@ -117,22 +117,22 @@ void simpl::delete_peak_list(MQPeakList* peak_list) {
     }
 }
 
-sample get_magnitude(sample x, sample y) {
+simpl_sample get_magnitude(simpl_sample x, simpl_sample y) {
     return sqrt((x*x) + (y*y));
 }
 
-sample get_phase(sample x, sample y) {
+simpl_sample get_phase(simpl_sample x, simpl_sample y) {
     return atan2(y, x);
 }
 
-MQPeakList* simpl::mq_find_peaks(int signal_size, sample* signal,
+MQPeakList* simpl::mq_find_peaks(int signal_size, simpl_sample* signal,
                                  MQParameters* params) {
     int num_peaks = 0;
-    sample prev_amp, current_amp, next_amp;
+    simpl_sample prev_amp, current_amp, next_amp;
     MQPeakList* peak_list = new MQPeakList();
 
     // take fft of the signal
-    memcpy(params->fft_in, signal, sizeof(sample)*params->frame_size);
+    memcpy(params->fft_in, signal, sizeof(simpl_sample)*params->frame_size);
     for(int i = 0; i < params->frame_size; i++) {
         params->fft_in[i] *= params->window[i];
     }
@@ -306,8 +306,8 @@ MQPeak* find_closest_match(MQPeak* p, MQPeakList* peak_list,
                            MQParameters* params, int backwards) {
     MQPeakList* current = peak_list;
     MQPeak* match = NULL;
-    sample best_distance = 44100.0;
-    sample distance;
+    simpl_sample best_distance = 44100.0;
+    simpl_sample distance;
 
     while(current && current->peak) {
         if(backwards) {
@@ -340,7 +340,7 @@ MQPeak* find_closest_match(MQPeak* p, MQPeakList* peak_list,
 MQPeak* free_peak_below(MQPeak* p, MQPeakList* peak_list) {
     MQPeakList* current = peak_list;
     MQPeak* free_peak = NULL;
-    sample closest_frequency = 44100;
+    simpl_sample closest_frequency = 44100;
 
     while(current && current->peak) {
         if(current->peak != p) {

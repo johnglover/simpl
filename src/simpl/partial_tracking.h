@@ -2,24 +2,27 @@
 #define PARTIAL_TRACKING_H
 
 #include "base.h"
+#include "../mq/mq.h"
 
-#include "mq.h"
-#include "sms.h"
+// declare C headers
+extern "C" {
+    #include "../sms/sms.h"
+}
 
 
-#include "SndObj.h"
-#include "HammingTable.h"
-#include "IFGram.h"
-#include "SinAnal.h"
+#include "../sndobj/SndObj.h"
+#include "../sndobj/HammingTable.h"
+#include "../sndobj/IFGram.h"
+#include "../sndobj/SinAnal.h"
 
-#include "Analyzer.h"
-#include "AssociateBandwidth.h"
-#include "BreakpointEnvelope.h"
-#include "KaiserWindow.h"
-#include "PartialBuilder.h"
-#include "PartialList.h"
-#include "ReassignedSpectrum.h"
-#include "SpectralPeakSelector.h"
+#include "../loris/Analyzer.h"
+#include "../loris/AssociateBandwidth.h"
+#include "../loris/BreakpointEnvelope.h"
+#include "../loris/KaiserWindow.h"
+#include "../loris/PartialBuilder.h"
+#include "../loris/PartialList.h"
+#include "../loris/ReassignedSpectrum.h"
+#include "../loris/SpectralPeakSelector.h"
 
 using namespace std;
 

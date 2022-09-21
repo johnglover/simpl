@@ -7,7 +7,7 @@
 #include "synthesis.h"
 
 extern "C" {
-    #include "sms.h"
+    #include "../sms/sms.h"
 }
 
 using namespace std;

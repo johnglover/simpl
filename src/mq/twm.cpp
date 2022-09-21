@@ -4,9 +4,9 @@
 using namespace simpl;
 
 
-int simpl::best_match(sample freq, std::vector<sample> candidates) {
-    sample best_diff = 22050.0;
-    sample diff = 0.0;
+int simpl::best_match(simpl_sample freq, std::vector<simpl_sample> candidates) {
+    simpl_sample best_diff = 22050.0;
+    simpl_sample diff = 0.0;
     int best = 0;
 
     for(int i = 0; i < candidates.size(); i++) {
@@ -20,19 +20,19 @@ int simpl::best_match(sample freq, std::vector<sample> candidates) {
     return best;
 }
 
-sample simpl::twm(Peaks peaks, sample f_min, sample f_max, sample f_step) {
-    sample p = 0.5;
-    sample q = 1.4;
-    sample r = 0.5;
-    sample rho = 0.33;
+simpl_sample simpl::twm(Peaks peaks, simpl_sample f_min, simpl_sample f_max, simpl_sample f_step) {
+    simpl_sample p = 0.5;
+    simpl_sample q = 1.4;
+    simpl_sample r = 0.5;
+    simpl_sample rho = 0.33;
     int N = 30;
-    std::map<sample, sample> err;
+    std::map<simpl_sample, simpl_sample> err;
 
     if(peaks.size() == 0) {
         return 0.0;
     }
 
-    sample max_amp = 0.0;
+    simpl_sample max_amp = 0.0;
     for(int i = 0; i < peaks.size(); i++) {
         if(peaks[i]->amplitude > max_amp) {
             max_amp = peaks[i]->amplitude;
@@ -53,25 +53,25 @@ sample simpl::twm(Peaks peaks, sample f_min, sample f_max, sample f_step) {
     }
 
     // get the max frequency of the remaining peaks
-    sample max_freq = 0.0;
+    simpl_sample max_freq = 0.0;
     for(int i = 0; i < peaks.size(); i++) {
         if(peaks[i]->frequency > max_freq) {
             max_freq = peaks[i]->frequency;
         }
     }
 
-    std::vector<sample> peak_freqs;
+    std::vector<simpl_sample> peak_freqs;
     for(int i = 0; i < peaks.size(); i++) {
         peak_freqs.push_back(peaks[i]->frequency);
     }
 
-    sample f_current = f_min;
+    simpl_sample f_current = f_min;
     while(f_current < f_max) {
-        sample err_pm = 0.0;
-        sample err_mp = 0.0;
-        std::vector<sample> harmonics;
+        simpl_sample err_pm = 0.0;
+        simpl_sample err_mp = 0.0;
+        std::vector<simpl_sample> harmonics;
 
-        for(sample f = f_current; f <= f_max; f += f_current) {
+        for(simpl_sample f = f_current; f <= f_max; f += f_current) {
             harmonics.push_back(f);
             if(harmonics.size() >= N) {
                 break;
@@ -80,20 +80,20 @@ sample simpl::twm(Peaks peaks, sample f_min, sample f_max, sample f_step) {
 
         // calculate mismatch between predicted and actual peaks
         for(int i = 0; i < harmonics.size(); i++) {
-            sample h = harmonics[i];
+            simpl_sample h = harmonics[i];
             int k = best_match(h, peak_freqs);
-            sample f = peaks[k]->frequency;
-            sample a = peaks[k]->amplitude;
+            simpl_sample f = peaks[k]->frequency;
+            simpl_sample a = peaks[k]->amplitude;
             err_pm += (fabs(h - f) * pow(h, -p)) +
                       (((a / max_amp) * (q * fabs(h - f)) * (pow(h, -p) - r)));
         }
 
         // calculate the mismatch between actual and predicted peaks
         for(int i = 0; i < peaks.size(); i++) {
-            sample f = peaks[i]->frequency;
-            sample a = peaks[i]->amplitude;
+            simpl_sample f = peaks[i]->frequency;
+            simpl_sample a = peaks[i]->amplitude;
             int k = best_match(f, harmonics);
-            sample h = harmonics[k];
+            simpl_sample h = harmonics[k];
             err_mp += (fabs(f - h) * pow(f, -p)) +
                       ((a / max_amp) * (q * fabs(f - h)) * (pow(f, -p) - r));
         }
@@ -106,9 +106,9 @@ sample simpl::twm(Peaks peaks, sample f_min, sample f_max, sample f_step) {
     }
 
     // return the value with the minimum total error
-    sample best_freq = 0;
-    sample min_error = 22050;
-    for(std::map<sample, sample>::iterator i = err.begin(); i != err.end(); i++) {
+    simpl_sample best_freq = 0;
+    simpl_sample min_error = 22050;
+    for(std::map<simpl_sample, simpl_sample>::iterator i = err.begin(); i != err.end(); i++) {
         if(fabs((*i).second) < min_error) {
             min_error = fabs((*i).second);
             best_freq = (*i).first;

@@ -28,3 +28,6 @@ tests/testbase
 tests/testbase.dSYM
 tests/*.json
 tests/*.wav
+
+# fftw 
+fftw

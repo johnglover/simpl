@@ -22,16 +22,11 @@ analysis/synthesis algorithms.
 C++ Library Dependencies
 ------------------------
 
-* CMake_
-* fftw3_
+* [CMake](http://www.cmake.org) 
+* [fftw3](http://www.fftw.org) 
 * GNU Scientific Library (for libsms)
 
-* CMake: http://www.cmake.org
-* fftw3: http://www.fftw.org
-* gsl: https://github.com/ampl/gsl
-
-
-Additional Python Module Dependencies
+#### Additional Python Module Dependencies
 -------------------------------------
 
 * Python (>= 3.5) || Last builded in Python 3.10
@@ -42,11 +37,8 @@ Additional Python Module Dependencies
 #### Additional Test Dependencies
 ----------------------------
 
-* sndobj
-* libsms
-
-* sndobj: http://sndobj.sourceforge.net
-* libsms: http://mtg.upf.edu/static/libsms
+* [sndobj] (http://sndobj.sourceforge.net)
+* [libsms] (http://mtg.upf.edu/static/libsms)
 
 
 Installation

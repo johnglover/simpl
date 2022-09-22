@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.omlib": "lisp",
-        "*.pdlibbuilder": "makefile",
-        "algorithm": "cpp",
-        "vector": "cpp"
-    }
-}

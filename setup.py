@@ -64,8 +64,7 @@ elif platform == 'Linux':
 
 elif platform == 'Darwin':
     # The Darwin platform is not supported yet
-    print('Error: Darwin platform is not supported yet.')
-    sys.exit(1)
+    print('See if the config work for MacOS')
 
 
 sources = []

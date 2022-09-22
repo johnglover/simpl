@@ -10,7 +10,7 @@ compare and contrast many of the published analysis/synthesis algorithms.
 '''
 import os
 import glob
-from setuptools import setup
+from setuptools import setup, find_packages
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 import distutils.cygwinccompiler
@@ -42,18 +42,11 @@ include_dirs = ['simpl', 'src/simpl', 'src/sms', 'src/sndobj',
                 'src/loris', 'src/mq', numpy_include, '/usr/local/include', '.']
 libs = ['m', 'fftw3', 'gsl', 'gslcblas']
    
-compile_args = ['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H', '-DMS_WIN64']
-sources = []
+compile_args = ['-DMERSENNE_TWISTER', '-DHAVE_FFTW3_H']
 
-# change Python Include directory for Windows
 if platform == 'Windows':
     # get python from MiniConda
-    # input = add the path to the python include directory
     enviroment_user_path = os.environ['CONDA_PREFIX']
-
-    python_include = glob.glob(os.path.join(enviroment_user_path, 'include', 'python*'))[0]
-    include_dirs.append(python_include)
-    # python library for Windows in MiniConda is called python310
     libs.append('python310')
     # add compile args for Windows
     compile_args.append('-DMS_WIN64')
@@ -63,8 +56,19 @@ if platform == 'Windows':
     include_dirs.append(os.path.join(enviroment_user_path, 'include'))
     # add environment user path + include to include dirs
     include_dirs.append(os.path.join(enviroment_user_path, 'Library', 'include'))
+elif platform == 'Linux':
+    # add FFTW3 library to link args
+    link_args.append('/usr/local/lib')
+    # add FFTW3 include to include dirs
+    include_dirs.append('/usr/local/include')
+
+elif platform == 'Darwin':
+    # The Darwin platform is not supported yet
+    print('Error: Darwin platform is not supported yet.')
+    sys.exit(1)
 
 
+sources = []
 # -----------------------------------------------------------------------------
 # SndObj Library
 # -----------------------------------------------------------------------------
@@ -189,9 +193,10 @@ setup(
     license='GPL',
     author='John Glover',
     author_email='j@johnglover.net',
+    packages=find_packages(),
+    install_requires=['scipy', 'numpy', 'cython'],
     platforms=['Linux', 'Mac OS-X', 'Unix'],
     version='0.3',
     ext_modules=[base, peak_detection, partial_tracking, synthesis, residual],
     cmdclass={'build_ext': build_ext},
-    packages=['simpl', 'simpl.plot']
 )

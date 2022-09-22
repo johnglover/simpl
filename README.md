@@ -66,7 +66,7 @@ conda create -n simpl python3.10
 conda activate simpl
 pip install numpy cython scipy
 ```
-5. Inside your enviroment install `C:\Users\<Username>\miniconda3\envs\simpl\Lib\distutils` add the file distutils.cfg with this text:
+5. Inside your enviroment install `C:\Users\<Username>\miniconda3\envs\simpl\Lib\distutils` add the file `distutils.cfg` with this text:
 ```
 [build]
 compiler = mingw32

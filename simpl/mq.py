@@ -64,7 +64,12 @@ def twm(peaks, f_min=0.0, f_max=3000.0, f_step=20.0):
         f_current += f_step
 
     # return the value with the minimum total error
+    # in python2 this is the code
+    ''' 
     return min(Err.iteritems(), key=op.itemgetter(1))[0]
+    '''
+    # in python3 this is the code
+    return min(Err.items(), key=op.itemgetter(1))[0]
 
 
 class MQPeakDetection(simpl.PeakDetection):
@@ -157,14 +162,16 @@ class MQPeakDetection(simpl.PeakDetection):
                 self._current_peaks.append(p)
 
         # sort peaks, largest amplitude first, and up to a max
-        # of self.num_peaks peaks
+        # in python2 this is the code 
+        '''
         self._current_peaks.sort(cmp=simpl.compare_peak_amps)
         self._current_peaks.reverse()
+        ''' 
+        # in python3 this is the code
+        self._current_peaks.sort(key=op.attrgetter('amplitude'), reverse=True)
         if len(self._current_peaks) > self.max_peaks:
             self._current_peaks = self._current_peaks[0:self.max_peaks]
 
-        # put back into ascending frequency order
-        self._current_peaks.sort(cmp=simpl.compare_peak_freqs)
         frame.peaks = list(self._current_peaks)
         return self._current_peaks
 
@@ -266,8 +273,13 @@ class MQPartialTracking(simpl.PartialTracking):
             # if more peaks than paritals, select the max_partials largest
             # amplitude peaks in frame
             if len(frame.peaks) > self.max_partials:
+                # in python2 this is the code
+                '''
                 frame.peaks.sort(cmp=simpl.compare_peak_amps)
                 frame.peaks.reverse()
+                '''
+                # in python3 this is the code
+                frame.peaks.sort(key=op.attrgetter('amplitude'), reverse=True)
                 partials = frame.peaks[0:self.max_partials]
             # if not, save all peaks as new partials, and add a few zero
             # peaks if necessary

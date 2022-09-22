@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include "../simpl/base.h"
+#include "base.h"
 
 namespace simpl
 {

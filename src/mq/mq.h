@@ -24,7 +24,7 @@ typedef unsigned long ULONG, *PULONG;
 #include <math.h>
 #include <string.h>
 
-#include "../simpl/base.h"
+#include "base.h"
 
 namespace simpl
 {

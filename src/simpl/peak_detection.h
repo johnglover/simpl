@@ -3,30 +3,30 @@
 
 
 #ifdef _WIN64 
-// #define _HAS_AUTO_PTR_ETC 1
+// #define _HAS_unique_ptr_ETC 1
 // #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #endif
 
 #include "base.h"
-#include "../mq/mq.h"
-#include "../mq/twm.h"
+#include "mq.h"
+#include "twm.h"
 
 extern "C" {
-    #include "../sms/sms.h"
+    #include "sms.h"
 }
 
-#include "../sndobj/SndObj.h"
-#include "../sndobj/HammingTable.h"
-#include "../sndobj/IFGram.h"
-#include "../sndobj/SinAnal.h"
+#include "SndObj.h"
+#include "HammingTable.h"
+#include "IFGram.h"
+#include "SinAnal.h"
 
-#include "../loris/Analyzer.h"
-#include "../loris/AssociateBandwidth.h"
-#include "../loris/BreakpointEnvelope.h"
-#include "../loris/KaiserWindow.h"
-#include "../loris/PartialBuilder.h"
-#include "../loris/ReassignedSpectrum.h"
-#include "../loris/SpectralPeakSelector.h"
+#include "Analyzer.h"
+#include "AssociateBandwidth.h"
+#include "BreakpointEnvelope.h"
+#include "KaiserWindow.h"
+#include "PartialBuilder.h"
+#include "ReassignedSpectrum.h"
+#include "SpectralPeakSelector.h"
 
 using namespace std;
 
@@ -171,7 +171,7 @@ class SimplLorisAnalyzer : public Loris::Analyzer {
         std::vector<simpl_sample> _window_deriv;
         Loris::ReassignedSpectrum* _spectrum;
         Loris::SpectralPeakSelector* _peak_selector;
-        std::auto_ptr<Loris::AssociateBandwidth> _bw_associator;
+        std::unique_ptr<Loris::AssociateBandwidth> _bw_associator; // what is the new unique_ptr?  unique_ptr is deprecated replace with unique_ptr
 
     public:
         SimplLorisAnalyzer(int window_size, simpl_sample resolution,

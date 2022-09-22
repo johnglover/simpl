@@ -6,16 +6,16 @@
 #include "base.h"
 
 extern "C" {
-    #include "../sms/sms.h"
+    #include "sms.h"
 }
 
-#include "../sndobj/SndObj.h"
-#include "../sndobj/HarmTable.h"
-#include "../sndobj/SinAnal.h"
-#include "../sndobj/AdSyn.h"
+#include "SndObj.h"
+#include "HarmTable.h"
+#include "SinAnal.h"
+#include "AdSyn.h"
 
-#include "../loris/Breakpoint.h"
-#include "../loris/Oscillator.h"
+#include "Breakpoint.h"
+#include "Oscillator.h"
 
 using namespace std;
 

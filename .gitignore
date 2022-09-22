@@ -31,3 +31,11 @@ tests/*.wav
 
 # fftw 
 fftw
+
+# python dist, tar.gz and wheel
+dist
+*.tar.gz
+*.whl
+
+# vscode
+.vscode

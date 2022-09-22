@@ -38,10 +38,11 @@ analysis/synthesis algorithms.
 * [libsms] (http://mtg.upf.edu/static/libsms)
 
 
-### Installation
+### Build Dynamic Library
 ------------
 
 To build and install the C++ module, from the simpl root folder run:
+* On Windows in Mingw64, see step 1 and 2 of Build Python Module for Windows.
 
 ```
     mkdir build
@@ -50,6 +51,7 @@ To build and install the C++ module, from the simpl root folder run:
     cmake --build .
 ```
 
+### Build Python Module
 To build and install the Python module, from the simpl root folder run:
 
 #### On Windows 
@@ -64,7 +66,7 @@ conda create -n simpl python3.10
 conda activate simpl
 pip install numpy cython scipy
 ```
-5. Inside your enviroment install [C:\Users\<Username>\miniconda3\envs\simpl\Lib\distutils] add the file distutils.cfg with this text:
+5. Inside your enviroment install `C:\Users\<Username>\miniconda3\envs\simpl\Lib\distutils` add the file distutils.cfg with this text:
 ```
 [build]
 compiler = mingw32
@@ -74,7 +76,7 @@ compiler = mingw32
 
 ```
 6. Then run `python setup.py build_ext -DMS_WIN64`
-7. Inside the builded folder you need to copy this dll: libfftw3-3 libgcc_s_seh-1 libgsl-27 libstdc++-6 libgslcblas-0 libwinpthread-1.
+7. Inside the builded folder you need to copy this dll: `libfftw3-3 libgcc_s_seh-1 libgsl-27 libstdc++-6 libgslcblas-0 libwinpthread-1`.
 
 #### On Linux
 

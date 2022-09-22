@@ -26,14 +26,15 @@ C++ Library Dependencies
 * fftw3_
 * GNU Scientific Library (for libsms)
 
-** CMake: http://www.cmake.org
-** fftw3: http://www.fftw.org
+* CMake: http://www.cmake.org
+* fftw3: http://www.fftw.org
+* gsl: https://github.com/ampl/gsl
 
 
 Additional Python Module Dependencies
 -------------------------------------
 
-* Python (>= 3.5) || Tested on 3.10
+* Python (>= 3.5) || Last builded in Python 3.10
 * Cython - http://cython.org
 * NumPy
 * SciPy

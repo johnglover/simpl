@@ -6,8 +6,8 @@ Version 0.3 (alpha)
 http://simplsound.sourceforge.net  
 
 
-Introduction
-------------
+### Introduction
+
 
 Simpl is an open source library for sinusoidal modelling written in C/C++ and Python,
 and making use of Scientific Python (SciPy). The aim of this
@@ -19,7 +19,7 @@ in the field, allowing them to easily combine, compare and contrast many of the 
 analysis/synthesis algorithms.
 
 
-C++ Library Dependencies
+### C++ Library Dependencies
 ------------------------
 
 * [CMake](http://www.cmake.org) 
@@ -41,7 +41,7 @@ C++ Library Dependencies
 * [libsms] (http://mtg.upf.edu/static/libsms)
 
 
-Installation
+### Installation
 ------------
 
 To build and install the C++ module, from the simpl root folder run:
@@ -55,7 +55,7 @@ To build and install the C++ module, from the simpl root folder run:
 
 To build and install the Python module, from the simpl root folder run:
 
-##### On Windows 
+#### On Windows 
 
 1. We need to install FFTW, gsl in the Mingw64 
 2. Install Msys2 for Windows using winget: `winget install msys2.msys2`.
@@ -79,13 +79,15 @@ compiler = mingw32
 5. Then run `python setup.py build_ext -DMS_WIN64`
 6. Inside the builded folder you need to copy this dll: libfftw3-3 libgcc_s_seh-1 libgsl-27 libstdc++-6 libgslcblas-0 libwinpthread-1.
 
-##### On Linux
+#### On Linux
 
 1. Tested on Miniconda Enviroment;
 2. Run `sudo apt install -y build-essential cmake libfftw3-dev libgsl-dev`
 3. Inside Conda Enviroment: `pip install scipy numpy cython`.
 4. Then `pip setup.py build` and `pip setup.py install`.
 
+#### On MacOS
+?
 
 ### Usage
 

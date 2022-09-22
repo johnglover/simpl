@@ -75,16 +75,27 @@ To build and install the Python module, from the simpl root folder run:
 2. Add Mingw64 to the Path enviroment of Windows
 3. Inside your enviroment install {enviroment}/Lib/distutils/ add the file distutils.cfg
 
+```
 [build]
 compiler = mingw32
 
 [build_ext]
 compiler = mingw32
 
-4. Install Cython: `pip install Cython`
-Then run python setup.py build_ext -DMS_WIN64
+```
 
-5. Inside the builded folder you need to copy this dll: libfftw3-3 libgcc_s_seh-1 libgsl-27 libstdc++-6 libgslcblas-0 libwinpthread-1.
+4. Install Cython: `pip install Cython`
+5. Then run `python setup.py build_ext -DMS_WIN64`
+
+6. Inside the builded folder you need to copy this dll: libfftw3-3 libgcc_s_seh-1 libgsl-27 libstdc++-6 libgslcblas-0 libwinpthread-1.
+
+## Build on Linux
+
+1. Tested on Miniconda Enviroment;
+2. Run `sudo apt install -y build-essential cmake libfftw3-dev libgsl-dev`
+
+
+
 
 ### Usage
 

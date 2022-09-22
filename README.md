@@ -54,8 +54,8 @@ To build and install the Python module, from the simpl root folder run:
 
 #### On Windows 
 
-1. We need to install FFTW, gsl in the Mingw64 
-2. Install Msys2 for Windows using winget: `winget install msys2.msys2`.
+1. Install Msys2 for Windows using winget: `winget install msys2.msys2`.
+2. Install `pacman -S mingw-w64-x86_64-fftw mingw-w64-x86_64-gsl mingw-w64-x86_64-cmake`.
 3. Add Mingw64 to the Path enviroment of Windows. It should be `C:\msys64\mingw64\bin`.
 4. Build a new enviroment using miniconda and add packages: 
 ```
@@ -64,7 +64,7 @@ conda create -n simpl python3.10
 conda activate simpl
 pip install numpy cython scipy
 ```
-6. Inside your enviroment install [C:\Users\<Username>\miniconda3\envs\simpl\Lib\distutils] add the file distutils.cfg with this text:
+5. Inside your enviroment install [C:\Users\<Username>\miniconda3\envs\simpl\Lib\distutils] add the file distutils.cfg with this text:
 ```
 [build]
 compiler = mingw32
@@ -73,8 +73,8 @@ compiler = mingw32
 compiler = mingw32
 
 ```
-5. Then run `python setup.py build_ext -DMS_WIN64`
-6. Inside the builded folder you need to copy this dll: libfftw3-3 libgcc_s_seh-1 libgsl-27 libstdc++-6 libgslcblas-0 libwinpthread-1.
+6. Then run `python setup.py build_ext -DMS_WIN64`
+7. Inside the builded folder you need to copy this dll: libfftw3-3 libgcc_s_seh-1 libgsl-27 libstdc++-6 libgslcblas-0 libwinpthread-1.
 
 #### On Linux
 

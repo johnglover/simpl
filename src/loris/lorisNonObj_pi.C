@@ -214,9 +214,9 @@ createFreqReference( PartialList * partials, double minFreq, double maxFreq,
 	{
 		ThrowIfNull((PartialList *) partials);
 		
-		//	use auto_ptr to manage memory in case 
+		//	use unique_ptr to manage memory in case 
 		//	an exception is generated (hard to imagine):
-		std::auto_ptr< LinearEnvelope > env_ptr;
+		std::unique_ptr< LinearEnvelope > env_ptr;
 		if ( numSamps != 0 )
 		{
 			env_ptr.reset( new LinearEnvelope( 

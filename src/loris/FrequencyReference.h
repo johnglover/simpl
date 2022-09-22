@@ -57,7 +57,7 @@ class LinearEnvelope;
 class FrequencyReference : public Envelope
 {
 //	-- instance variables --
-	std::auto_ptr< LinearEnvelope > _env;
+	std::unique_ptr< LinearEnvelope > _env; // auto_ptr is deprecated in C++11
 	
 //	-- public interface --
 public:

@@ -546,7 +546,7 @@ Analyzer::analyze( const double * bufBegin, const double * bufEnd, double srate,
     
     //  configure bw association policy, unless
     //  bandwidth association is disabled:
-    std::auto_ptr< AssociateBandwidth > bwAssociator;
+    std::unique_ptr< AssociateBandwidth > bwAssociator;
     if( m_bwAssocParam > 0 )
     {
         debugger << "Using bandwidth association regions of width " 

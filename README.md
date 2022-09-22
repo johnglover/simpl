@@ -1,10 +1,7 @@
 Sinusoidal Modelling - A Python Library (SiMPL)
 ===============================================
 
-Version 0.3 (alpha)
-
-http://simplsound.sourceforge.net  
-
+Version 0.3 (alpha) : http://simplsound.sourceforge.net  
 
 ### Introduction
 
